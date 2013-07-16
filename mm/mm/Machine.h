@@ -15,9 +15,9 @@ namespace MM
   //callback type defintion
   typedef MM::VOID (*CALLBACK)
   (
-  MM::VOID *caller, //caller
-  MM::UINT32 pool,  //pool element handle
-  MM::UINT32 val    //new pool value
+    MM::VOID *caller, //caller
+    MM::UINT32 pool,  //pool element handle
+    MM::UINT32 val    //new pool value
   );
   
   class Machine
@@ -82,7 +82,7 @@ namespace MM
                                  MM::CHAR   * name);
     
     //removes an element from the model
-    MM::VOID   destroy          (MM::UINT32 node); //0 -> global scope)
+    MM::VOID   destroy          (MM::UINT32   node); //0 -> global scope)
     
     //adds an observer to the model
     //the caller receives a callback
