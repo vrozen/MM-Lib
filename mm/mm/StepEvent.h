@@ -10,7 +10,7 @@
 #define __mm__StepEvent__
 namespace MM
 {
-  class StepEvent : public Event
+  class StepEvent : public MM::Event
   {
   private:
   public:

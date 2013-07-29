@@ -11,13 +11,15 @@
 
 namespace MM
 {
+  class ValExp;
   class Exp
   {
-  private:
-    MM::UINT32 val;
-  public: //protected
-    Exp(MM::UINT32 val);
-    virtual ~Exp();
+  protected:
+    Exp();
+  public:
+    virtual ~Exp() = 0;
+    virtual MM::ValExp * eval() = 0;
+    virtual MM::VOID toString(MM::String * buf) = 0;
   };
 }
 #endif /* defined(__mm__Exp__) */

@@ -11,7 +11,7 @@
 
 namespace MM
 {
-  class FlowEvent : public Event
+  class FlowEvent : public MM::Event
   {
   private:
     MM::Node * src;

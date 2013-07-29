@@ -10,9 +10,11 @@
 #include "Types.h"
 #include "String.h"
 
-#define MM_STRING_SPACE_STR (MM::CHAR*)     " "
-#define MM_STRING_LINEBREAK_STR (MM::CHAR*) "\n"
-#define MM_STRING_RESIZE                    2
+const MM::CHAR * MM::String::SPACE_STR      = " ";
+const MM::CHAR * MM::String::LINEBREAK_STR  = "\n";
+const MM::UINT32 MM::String::SPACE_LEN      = 1;
+const MM::UINT32 MM::String::LINEBREAK_LEN  = 1;
+const MM::UINT32 MM::String::RESIZE_FACTOR  = 2;
 
 MM::String::String(MM::UINT32 size)
 {
@@ -25,6 +27,13 @@ MM::String::String(MM::UINT32 size)
 MM::String::~String()
 {
   delete buf;
+}
+
+MM::String * MM::String::clone()
+{
+  MM::String * r = new MM::String(size);
+  r->append(this);
+  return r;
 }
 
 MM::UINT32 MM::String::getSize()
@@ -56,7 +65,7 @@ MM::VOID MM::String::append(MM::CHAR * buf, MM::UINT32 len)
   }
   else
   {
-    resize(this->size * MM_STRING_RESIZE);
+    resize(this->size * MM::String::RESIZE_FACTOR);
     append(buf, len);
   }
 }
@@ -82,19 +91,19 @@ MM::VOID MM::String::append(MM::INT32 val)
   }
   else
   {
-    resize(this->size * MM_STRING_RESIZE);
+    resize(this->size * MM::String::RESIZE_FACTOR);
     append(val);
   }
 }
 
 MM::VOID MM::String::space()
 {
-  append(MM_STRING_SPACE_STR, strlen(MM_STRING_SPACE_STR));
+  append((MM::CHAR*)MM::String::SPACE_STR, MM::String::SPACE_LEN);
 }
 
 MM::VOID MM::String::linebreak()
 {
-  append(MM_STRING_LINEBREAK_STR, strlen(MM_STRING_LINEBREAK_STR));
+  append((MM::CHAR*)MM::String::LINEBREAK_STR, MM::String::LINEBREAK_LEN);
 }
 
 MM::VOID MM::String::clear()
@@ -106,12 +115,13 @@ MM::VOID MM::String::clear()
 MM::VOID MM::String::print()
 {
   fprintf(stdout, "%s", buf);
+  fflush(stdout);
 }
 
 MM::UINT32 MM::String::digits(MM::INT32 val)
 {
   MM::UINT32 digits = 0;
-  if (val < 0)
+  if (val <= 0)
   {
     digits = 1;
   }

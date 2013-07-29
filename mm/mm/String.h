@@ -14,6 +14,11 @@ namespace MM
   class String
   {
   private:
+    static const MM::CHAR * SPACE_STR;
+    static const MM::CHAR * LINEBREAK_STR;
+    static const MM::UINT32 SPACE_LEN;
+    static const MM::UINT32 LINEBREAK_LEN;
+    static const MM::UINT32 RESIZE_FACTOR;
     MM::UINT32 size;
     MM::UINT32 used;
     MM::CHAR * buf;
@@ -22,6 +27,7 @@ namespace MM
   public:
     String(MM::UINT32 size);
     ~String();
+    MM::String * clone();
     MM::UINT32 getSize();
     MM::UINT32 getUsed();
     MM::CHAR * getBuffer();

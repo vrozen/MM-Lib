@@ -9,16 +9,6 @@
 #ifndef __mm__Transition__
 #define __mm__Transition__
 
-#include <vector>
-#include "String.h"
-#include "Types.h"
-#include "Element.h"
-#include "Exp.h"
-#include "Edge.h"
-#include "Node.h"
-#include "Event.h"
-#include "Transition.h"
-
 namespace MM
 {
   class Transition
@@ -29,10 +19,10 @@ namespace MM
     Transition();
     ~Transition();
     MM::VOID add(Event * event);
-    MM::VOID toString(MM::String * str);
     MM::VOID clear();
     MM::VOID step();
     MM::VOID back();
+    MM::VOID toString(MM::String * str);
   };
 }
 #endif /* defined(__mm__Transition__) */

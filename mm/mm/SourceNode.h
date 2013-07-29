@@ -10,10 +10,17 @@
 #define __mm__SourceNode__
 namespace MM
 {
-  class SourceNode : public Node
+  class SourceNode : public MM::Node
   {
+  private:
+    static const MM::CHAR * SOURCE_STR;
+    static const MM::UINT32 SOURCE_LEN;
   public:
-    SourceNode(MM::When when, MM::Act act, MM::How how, MM::String * name);
+    SourceNode(MM::Node::IO   io,
+               MM::Node::When when,
+               MM::Node::Act  act,
+               MM::Node::How  how,
+               MM::Name     * name);
     ~SourceNode();
     MM::Transition * step();
     

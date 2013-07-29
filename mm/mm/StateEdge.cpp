@@ -7,20 +7,23 @@
 //
 
 #include "Types.h"
+#include "Location.h"
 #include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
 #include <vector>
 #include "Node.h"
 #include "StateEdge.h"
 
-#define MM_STATE_EDGE_DOT_STR    (const MM::CHAR*) "."
-#define MM_STATE_EDGE_DOTGT_STR  (const MM::CHAR*) ".>"
-#define MM_STATE_EDGE_DOT_LEN    1
-#define MM_STATE_EDGE_DOTGT_LEN  2
+const MM::CHAR * MM::StateEdge::DOT_STR   = ".";
+const MM::CHAR * MM::StateEdge::DOTGT_STR = ".>";
+const MM::UINT32 MM::StateEdge::DOT_LEN   = 1;
+const MM::UINT32 MM::StateEdge::DOTGT_LEN = 2;
 
-MM::StateEdge::StateEdge(MM::Node * src, MM::Exp * exp, MM::Node * tgt) : MM::Edge(src, exp, tgt)
+MM::StateEdge::StateEdge(MM::Name * src, MM::Exp * exp, MM::Name * tgt) : MM::Edge(src, exp, tgt)
 {
 }
 
@@ -30,10 +33,15 @@ MM::StateEdge::~StateEdge()
 
 MM::VOID MM::StateEdge::toString(MM::String * buf)
 {
-  buf->append(getSource()->getName());
-  buf->append((MM::CHAR*)MM_STATE_EDGE_DOT_STR, MM_STATE_EDGE_DOT_LEN);
-  //exp->toString(buf);
-  buf->append((MM::CHAR*)MM_STATE_EDGE_DOTGT_STR, MM_STATE_EDGE_DOTGT_LEN);
-  buf->append(getTarget()->getName());
-  buf->linebreak();
+  Element * src = getSource();
+  Element * tgt = getTarget();
+  
+  if(src != MM_NULL && tgt != MM_NULL)
+  {
+    getSource()->toString(buf);
+    buf->append((MM::CHAR*)MM::StateEdge::DOT_STR, MM::StateEdge::DOT_LEN);
+    getExp()->toString(buf);
+    buf->append((MM::CHAR*)MM::StateEdge::DOTGT_STR, MM::StateEdge::DOTGT_LEN);
+    getTarget()->toString(buf);
+  }
 }

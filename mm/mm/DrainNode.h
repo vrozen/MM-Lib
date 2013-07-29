@@ -10,13 +10,19 @@
 #define __mm__DrainNode__
 namespace MM
 {
-  class DrainNode : public Node
+  class DrainNode : public MM::Node
   {
+  private:
+    static const MM::CHAR * DRAIN_STR;
+    static const MM::UINT32 DRAIN_LEN;
   public:
-    DrainNode(MM::When when, MM::Act act, MM::How how, MM::String * name);
+    DrainNode(MM::Node::IO    io,
+              MM::Node::When  when,
+              MM::Node::Act   act,
+              MM::Node::How   how,
+              MM::Name      * name);
     ~DrainNode();
-    MM::Transition * step();
-    
+    MM::Transition * step();    
     MM::BOOLEAN hasCapacity();
     MM::BOOLEAN hasResources();
     MM::BOOLEAN hasCapacity(MM::UINT32 amount);

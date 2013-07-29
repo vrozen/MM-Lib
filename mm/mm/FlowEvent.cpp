@@ -7,8 +7,11 @@
 //
 
 #include "Types.h"
+#include "Location.h"
 #include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
 #include <vector>
@@ -41,10 +44,10 @@ MM::VOID MM::FlowEvent::back()
 
 MM::VOID MM::FlowEvent::toString(MM::String * buf)
 {
-  buf->append(src->getName());
+  src->getName()->toString(buf);
   buf->space();
   //exp->toString(buf);
   buf->space();
-  buf->append(tgt->getName());
+  tgt->getName()->toString(buf);
   buf->linebreak();
 }

@@ -7,138 +7,46 @@
 //
 
 #include "Types.h"
+#include "Location.h"
 #include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
 #include <vector>
 #include "Node.h"
-#include "Event.h"
-#include "FlowEvent.h"
-#include "Transition.h"
 #include "PoolNode.h"
 
-#define MM_POOL_NODE_POOL_STR (const MM::CHAR*) "pool"
-#define MM_POOL_NODE_AT_STR   (const MM::CHAR*) "at"
-#define MM_POOL_NODE_MAX_STR  (const MM::CHAR*) "max"
-#define MM_POOL_NODE_ADD_STR  (const MM::CHAR*) "add"
+const MM::CHAR * MM::PoolNode::POOL_STR = "pool";
+const MM::CHAR * MM::PoolNode::AT_STR   = "at";
+const MM::CHAR * MM::PoolNode::MAX_STR  = "max";
+const MM::CHAR * MM::PoolNode::ADD_STR  = "add";
+const MM::UINT32 MM::PoolNode::POOL_LEN = 4;
+const MM::UINT32 MM::PoolNode::AT_LEN   = 2;
+const MM::UINT32 MM::PoolNode::MAX_LEN  = 3;
+const MM::UINT32 MM::PoolNode::ADD_LEN  = 3;
 
-#define MM_POOL_NODE_POOL_LEN (const MM::CHAR*) 4
-#define MM_POOL_NODE_AT_LEN   (const MM::CHAR*) 2
-#define MM_POOL_NODE_MAX_LEN  (const MM::CHAR*) 3
-#define MM_POOL_NODE_ADD_LEN  (const MM::CHAR*) 3
-
-
-MM::PoolNode::PoolNode(When when, Act act, How how,
-                       MM::String * name, MM::INT32 at, MM::UINT32 max,
-                       MM::Exp * exp): Node(when, act, how, name)
+MM::PoolNode::PoolNode(MM::Node::IO    io,
+                       MM::Node::When  when,
+                       MM::Node::Act   act,
+                       MM::Node::How   how,
+                       MM::Name      * name,
+                       MM::INT32       at,
+                       MM::UINT32      max,
+                       MM::Exp       * exp): MM::Node(io, when, act, how, name)
 {
   this->val = at;
   this->at = at;
   this->max = max;
   this->exp = exp;
-  this->val_new = val;
-  this->val_old = val;
+  //this->val_new = val;
+  //this->val_old = val;
 }
 
 MM::PoolNode::~PoolNode()
 {
 }
-
-
-
-MM::Transition * MM::PoolNode::stepAll(std::vector<Edge*> * work)
-{
-  std::vector<Edge*>::iterator i;
-  bool success = true;
-  Transition * tr = new Transition();
-  
-  for(i = work->begin(); i != work->end(); i++)
-  {
-    Edge* edge = *i;
-    MM::INT32 flow = 0;
-    Node * src = edge->getSource();
-    Node * tgt = edge->getTarget();
-    
-    if(flow > 0 && src->hasResources(flow) && tgt->hasCapacity(flow))
-    {
-      src->sub(flow);
-      tgt->add(flow);
-      tr->add(new FlowEvent(src,flow,tgt));
-    }
-    else
-    {
-      success = false;
-      break;
-    }
-  }
-  
-  if(!success)
-  {
-    tr->back();
-    tr->clear();
-  }
-  
-  return tr;
-}
-
-MM::Transition * MM::PoolNode::stepAny(std::vector<Edge*> * work)
-{
-  std::vector<Edge*>::iterator i;
-  std::vector<Edge*> rnd(work->size());
-  rnd = *work;
-  
-  Transition * tr = new Transition();
-  std::random_shuffle ( rnd.begin(), rnd.end() );
-  
-  for(i = rnd.begin(); i != rnd.end(); i++)
-  {
-    Edge* edge = *i;
-    MM::INT32 flow = 0;
-    Node * src = edge->getSource();
-    Node * tgt = edge->getTarget();
-    
-    if(flow > 0 && src->hasResources() && tgt->hasCapacity())
-    {
-      if(src->hasResources(flow))
-      {
-        if(tgt->hasCapacity(flow))
-        {
-          src->sub(flow);
-          tgt->add(flow);
-          tr->add(new FlowEvent(src,flow,tgt));
-        }
-        else
-        {
-          flow = ((PoolNode*)tgt)->getCapacity();
-          src->sub(flow);
-          tgt->add(flow);
-          tr->add(new FlowEvent(src,flow,tgt));
-        }
-      }
-      else
-      {
-        flow = ((PoolNode*)src)->getResources();
-        if(tgt->hasCapacity(flow))
-        {
-          src->sub(flow);
-          tgt->add(flow);
-          tr->add(new FlowEvent(src,flow,tgt));
-        }
-        else
-        {
-          flow = ((PoolNode*)tgt)->getCapacity();
-          src->sub(flow);
-          tgt->add(flow);
-          tr->add(new FlowEvent(src,flow,tgt));
-        }
-      }
-    }
-  }
-  
-  return tr;
-}
-
 
 //available resources
 MM::INT32 MM::PoolNode::getResources()
@@ -152,53 +60,53 @@ MM::INT32 MM::PoolNode::getCapacity()
   return max - val_new;
 }
 
-MM::Transition * MM::PoolNode::step()
+
+MM::BOOLEAN MM::PoolNode::hasCapacity()
 {
-  std::vector<Edge*> * work;
-  if(this->getAct() == ACT_PULL)
+  if(this->val_new < this->max)
   {
-    work = this->getInput();
-  }
-  else if(this->getAct() == ACT_PUSH)
-  {
-    work = this->getOutput();
+    return MM_TRUE;
   }
   else
   {
-    //error
+    return MM_FALSE;
   }
-  
-  if(this->getHow() == HOW_ALL)
+}
+
+MM::BOOLEAN MM::PoolNode::hasResources()
+{
+  if(this->val_old > 0)
   {
-    return stepAll(work);
+    return MM_TRUE;
   }
   else
   {
-    return stepAny(work);
+    return MM_FALSE;
   }
-  
-  //error
 }
 
-
-bool MM::PoolNode::hasCapacity()
+MM::BOOLEAN MM::PoolNode::hasCapacity(MM::UINT32 amount)
 {
-  return (this->val_new < this->max);
+  if(this->val_new + amount <= this->max)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM_FALSE;
+  }
 }
 
-bool MM::PoolNode::hasResources()
+MM::BOOLEAN MM::PoolNode::hasResources(MM::UINT32 amount)
 {
-  return (this->val_old > 0);
-}
-
-bool MM::PoolNode::hasCapacity(MM::UINT32 amount)
-{
-  return (this->val_new + amount <= this->max);
-}
-
-bool MM::PoolNode::hasResources(MM::UINT32 amount)
-{
-  return (this->val_old >= amount);
+  if(this->val_old >= amount)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM_FALSE;
+  }
 }
 
 MM::VOID MM::PoolNode::add(MM::UINT32 amount)
@@ -215,20 +123,28 @@ MM::VOID MM::PoolNode::sub(MM::UINT32 amount)
 void MM::PoolNode::toString(MM::String * buf)
 {
   MM::Node::toString(buf);
-  buf->append((MM::CHAR*)MM_POOL_NODE_POOL_STR, (MM::UINT32) MM_POOL_NODE_POOL_LEN);
+  buf->append((MM::CHAR*)MM::PoolNode::POOL_STR, MM::PoolNode::POOL_LEN);
   buf->space();
-  buf->append(getName());
+  getName()->toString(buf);
   buf->space();
-  buf->append((MM::CHAR*)MM_POOL_NODE_AT_STR, (MM::UINT32) MM_POOL_NODE_AT_LEN);
-  buf->space();
-  buf->append(at);
-  buf->space();
-  buf->append((MM::CHAR*)MM_POOL_NODE_MAX_STR, (MM::UINT32) MM_POOL_NODE_MAX_LEN);
-  buf->space();
-  buf->append(max);
-  buf->space();
-  buf->append((MM::CHAR*)MM_POOL_NODE_ADD_STR, (MM::UINT32) MM_POOL_NODE_ADD_LEN);
-  buf->space();
-  //exp->toString(buf);
-  buf->linebreak();
+  if(at!= 0)
+  {
+    buf->append((MM::CHAR*)MM::PoolNode::AT_STR, MM::PoolNode::AT_LEN);
+    buf->space();
+    buf->append(at);
+    buf->space();
+  }
+  if(max != 0)
+  {
+    buf->append((MM::CHAR*)MM::PoolNode::MAX_STR, MM::PoolNode::MAX_LEN);
+    buf->space();
+    buf->append(max);
+    buf->space();
+  }
+  if(exp != MM_NULL)
+  {
+    buf->append((MM::CHAR*)MM::PoolNode::ADD_STR, MM::PoolNode::ADD_LEN);
+    buf->space();
+    exp->toString(buf);
+  }
 }

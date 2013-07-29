@@ -15,8 +15,8 @@ namespace MM
   {
   protected:
     Element();
-    virtual ~Element() = 0;
   public:
+    virtual ~Element() = 0;
     virtual MM::VOID toString(MM::String * buf) = 0;
   };
 }

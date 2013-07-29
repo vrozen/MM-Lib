@@ -1,0 +1,3 @@
+a { pool B  ref C}
+a A
+assert hello false : "hello world"

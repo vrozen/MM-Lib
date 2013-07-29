@@ -7,8 +7,11 @@
 //
 
 #include "Types.h"
+#include "Location.h"
 #include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
 #include <vector>
@@ -18,9 +21,20 @@
 #include "Transition.h"
 #include "SourceNode.h"
 
-#define MM_SOURCE_NODE_SOURCE_STR (const MM::CHAR*)  "source"
+const MM::CHAR * MM::SourceNode::SOURCE_STR = "source";
+const MM::UINT32  MM::SourceNode::SOURCE_LEN = 6;
 
-#define MM_SOURCE_NODE_SOURCE_LEN (const MM::UINT32) 6
+MM::SourceNode::SourceNode(MM::Node::IO io,
+                           MM::Node::When when,
+                           MM::Node::Act act,
+                           MM::Node::How how,
+                           MM::Name * name): Node(io, when, act, how, name)
+{
+}
+
+MM::SourceNode::~SourceNode()
+{
+}
 
 MM::BOOLEAN MM::SourceNode::hasCapacity()
 {
@@ -55,6 +69,7 @@ MM::VOID MM::SourceNode::sub(MM::UINT32 amount)
 MM::VOID MM::SourceNode::toString(MM::String *buf)
 {
   MM::Node::toString(buf);
-  buf->append((MM::CHAR*)MM_SOURCE_NODE_SOURCE_STR, (MM::UINT32)MM_SOURCE_NODE_SOURCE_LEN);
-  buf->linebreak();
+  buf->append((MM::CHAR*)MM::SourceNode::SOURCE_STR, MM::SourceNode::SOURCE_LEN);
+  buf->space();
+  getName()->toString(buf);
 }

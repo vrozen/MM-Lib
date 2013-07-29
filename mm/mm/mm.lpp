@@ -1,0 +1,172 @@
+%option interactive
+%{
+/* * * * * * * * * * * *
+ * * * DEFINITIONS * * *
+ * * * * * * * * * * * */
+%}
+
+%{
+
+  #include "YYLTYPE.h"
+  #include <list>
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include "YYLTYPE.h"
+  #include "Types.h"
+  #include "Location.h"
+  #include "String.h"
+  #include "Name.h"
+  #include "Element.h"
+  #include "Operator.h"
+  #include "Exp.h"
+  #include "Assert.h"
+  #include "Edge.h"
+  #include "StateEdge.h"
+  #include "FlowEdge.h"
+  #include <vector>
+  #include "Node.h"
+  #include "Event.h"
+  #include "FlowEvent.h"
+  #include "Transition.h"
+  #include "PoolNode.h"
+  #include "SourceNode.h"
+  #include "DrainNode.h"
+  #include "RefNode.h"
+  #include "Declaration.h"
+  #include "Definition.h"
+  #include "Operator.h"
+  #include "ValExp.h"
+  #include "UnExp.h"
+  #include "BinExp.h"
+  #include "RangeValExp.h"
+  #include "BooleanValExp.h"
+  #include "NumberValExp.h"
+  #include "OverrideExp.h"
+  #include "ActiveExp.h"
+  #include "AllExp.h"
+  #include "AliasExp.h"
+  #include "OneExp.h"
+  #include "VarExp.h"
+  #include "Machine.h"
+  #include "y.tab.h"
+  
+int yycolumn = 1;
+
+#define YY_USER_ACTION \
+  yylloc.first_line = (int) yylineno; \
+  yylloc.last_line = (int) yylineno; \
+  yylloc.first_column = (int) yycolumn; \
+  yylloc.last_column = (int) yycolumn + (int) yyleng - 1; \
+  yycolumn += yyleng;
+%}
+
+%option yylineno
+%option noyywrap
+
+DIGIT  [0-9]
+LETTER [a-zA-Z]
+DOT    [.]
+QUOTES ["]
+
+%{
+  /* * * * * * * * * *
+   * * * STATES  * * *
+   * * * * * * * * * */
+%}
+
+%x ERROR
+
+%%
+
+%{
+/* * * * * * * * * 
+ * * * RULES * * *
+ * * * * * * * * */
+%}
+
+[ \t\f\r]	{ /*col++;*/ };		 // ignore white space
+
+\n        { yycolumn = 1;          }
+"-"	      { return SUB;            }
+"~"       { return UNM;            }
+"+"	      { return ADD;            }
+"*"	      { return MUL;            }
+"/"	      { return DIV;            }
+"("	      { return LPAREN;         }
+")"	      { return RPAREN;         }
+"=="      { return EQ;             }
+"!="      { return NE;             }
+"<"       { return LT;             }
+">"       { return GT;             }
+"<="      { return LE;             }
+">="      { return GE;             }
+"="       { return ALIAS;          }
+"."       { return DOT;            }
+"!"       { return NOT;            }
+"|"       { return PER;            }
+".>"      { return DOT_GT;         }
+"->"      { return SUB_GT;         }
+"{"       { return LCURLY;         }
+"}"       { return RCURLY;         }
+","       { return COMMA;          }
+":"       { return COLON;          }
+"&&"      { return AND;            }
+"||"      { return OR;             }
+"#"       { return RANGE;          }
+"%"       { return PERCENT;        }
+"source"  { return SOURCE;         }
+"drain"   { return DRAIN;          }
+"pool"    { return POOL;           }
+"push"    { return PUSH;           }
+"pull"    { return PULL;           }
+"passive" { return PASSIVE;        }
+"all"     { return ALL;            }
+"any"     { return ANY;            }
+"auto"    { return AUTO;           }
+"user"    { return USER;           }
+"start"   { return START;          }
+"max"     { return MAX;            }
+"at"      { return AT;             }
+"in"      { return IN;             }
+"out"     { return OUT;            }
+"inout"   { return INOUT;          }
+"ref"     { return REF;            }
+"dice"    { return DICE;           }
+"active"  { return ACTIVE;         }
+"false"   { return FALSE;          }
+"true"    { return TRUE;           }
+"assert"  { return ASSERT;         }
+"private" { return PRIVATE;        }
+"add"     { return ADDITION;       }
+
+{QUOTES}[^QUOTES]*{QUOTES} {
+  yylval.str = strdup(yytext);
+  return STRING;
+}
+
+{DIGIT}+{DOT}?{DIGIT}?{DIGIT}? {
+  yylval.val = atol(yytext) * 100;
+  
+  size_t size = strcspn(yytext, ".");
+  if(size < yyleng)
+  {
+    yylval.val += atol(yytext+size+1);
+  }
+  
+  return FPVAL;
+}
+
+{LETTER}* {
+  /*col += yyleng;*/
+/*QUOTES{LETTER}*QUOTES { yylval.str = strdup(yytext); return STRING; }*/
+  yylval.str = strdup(yytext);
+  return ID;
+}
+
+. { BEGIN(ERROR); yymore(); }
+<ERROR>[^{DIGIT}{LETTER}+\-/*()= \t\n\f\r] { yymore(); }
+<ERROR>(.|\n) { yyless((int)yyleng-1); printf("error token: %s on line %u column %u\n", yytext,  yylineno,  yycolumn);
+           BEGIN(INITIAL); }
+
+%%
+

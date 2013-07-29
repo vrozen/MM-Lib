@@ -7,11 +7,12 @@
 //
 
 #include "Types.h"
+#include "String.h"
+#include "Operator.h"
 #include "Exp.h"
 
-MM::Exp::Exp(MM::UINT32 val)
+MM::Exp::Exp()
 {
-  this->val = val;
 }
 
 MM::Exp::~Exp()

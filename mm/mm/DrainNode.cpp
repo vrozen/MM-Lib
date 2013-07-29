@@ -7,8 +7,11 @@
 //
 
 #include "Types.h"
+#include "Location.h"
 #include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
 #include <vector>
@@ -18,13 +21,14 @@
 #include "Transition.h"
 #include "DrainNode.h"
 
-#define MM_DRAIN_NODE_DRAIN_STR (const MM::CHAR*)  "drain"
+const MM::CHAR * MM::DrainNode::DRAIN_STR = "drain";
+const MM::UINT32  MM::DrainNode::DRAIN_LEN = 5;
 
-#define MM_DRAIN_NODE_DRAIN_LEN (const MM::UINT32) 5
-
-
-MM::DrainNode::DrainNode(When when, Act act, How how,
-                       MM::String * name): Node(when, act, how, name)
+MM::DrainNode::DrainNode(MM::Node::IO io,
+                         MM::Node::When when,
+                         MM::Node::Act act,
+                         MM::Node::How how,
+                         MM::Name * name): Node(io, when, act, how, name)
 {
 }
 
@@ -62,10 +66,10 @@ MM::VOID MM::DrainNode::sub(MM::UINT32 amount)
   //TODO: throw exception
 }
 
-MM::VOID MM::DrainNode::toString(MM::String *buf)
+MM::VOID MM::DrainNode::toString(MM::String * buf)
 {
-
   MM::Node::toString(buf);
-  buf->append((MM::CHAR*)MM_DRAIN_NODE_DRAIN_STR, (MM::UINT32)MM_DRAIN_NODE_DRAIN_LEN);
-  buf->linebreak();
+  buf->append((MM::CHAR*)MM::DrainNode::DRAIN_STR, MM::DrainNode::DRAIN_LEN);
+  buf->space();
+  getName()->toString(buf);
 }

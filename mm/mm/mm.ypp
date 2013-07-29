@@ -1,0 +1,239 @@
+%{
+  #include <list>
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include "YYLTYPE.h"
+  #include "Types.h"
+  #include "Location.h"
+  #include "String.h"
+  #include "Name.h"
+  #include "Element.h"
+  #include "Operator.h"
+  #include "Exp.h"
+  #include "Assert.h"
+  #include "Edge.h"
+  #include "StateEdge.h"
+  #include "FlowEdge.h"
+  #include <vector>
+  #include "Node.h"
+  #include "Event.h"
+  #include "FlowEvent.h"
+  #include "Transition.h"
+  #include "PoolNode.h"
+  #include "SourceNode.h"
+  #include "DrainNode.h"
+  #include "RefNode.h"
+  #include "Declaration.h"
+  #include "Definition.h"
+  #include "Operator.h"
+  #include "ValExp.h"
+  #include "UnExp.h"
+  #include "BinExp.h"
+  #include "RangeValExp.h"
+  #include "BooleanValExp.h"
+  #include "NumberValExp.h"
+  #include "OverrideExp.h"
+  #include "ActiveExp.h"
+  #include "AllExp.h"
+  #include "AliasExp.h"
+  #include "OneExp.h"
+  #include "VarExp.h"
+  #include "Machine.h"
+  
+
+  
+  extern MM::Machine mm;
+  extern int yylineno;
+  extern int yycolumn;
+  int yylex();
+  void yyerror(char * s);
+  
+  
+%}
+%start program
+
+%union {
+  MM::UINT32         val;     //unsinged long
+  MM::CHAR         * str;     //string
+  MM::Name         * name;    //name
+  MM::Element      * element; //element
+  MM::Exp          * exp;     //expression
+  MM::Node::IO       io;      //io
+  MM::Node::When     when;    //when
+  MM::Node::Act      act;     //act
+  MM::Node::How      how;     //how  
+  std::vector<MM::Element*> * list;    //list of elements
+}
+
+%locations
+%error-verbose
+%token <str> ID
+%token NEWLINE
+%token <str> PRIVATE IN OUT INOUT
+%token <str> PASSIVE AUTO USER START
+%token <str> PUSH PULL
+%token <str> ALL ANY
+%token <str> EQ PRINT NE LT GT LE GE AND OR NOT TRUE FALSE ACTIVE ASSERT
+%token <str> AT MAX DICE
+%token <str> ALIAS DOT PER REF DOT_GT SUB_GT LCURLY RCURLY COMMA COLON RANGE PERCENT
+%token <str> SOURCE DRAIN POOL
+%token <str> SUB ADD MUL DIV
+%token <val> FPVAL
+%token <str> STRING
+%token <str> SEMICOLON
+%token <str> ADDITION
+
+%left AND OR
+%left ADD SUB
+%left MUL DIV
+%left LT GT LE GE NE EQ
+%nonassoc NOT PERCENT UNM
+%nonassoc PER
+%nonassoc RANGE
+%left LPAREN RPAREN
+%nonassoc DOT
+
+%type <element> program
+%type <list>    elementList
+%type <element> element
+%type <exp>     exp
+%type <io>      io
+%type <when>    when
+%type <act>     act
+%type <how>     how
+%type <val>     at
+%type <val>     max
+%type <exp>     add
+%type <name>    name
+%%
+
+program: elementList  {
+  MM::Element * e = mm.createDefinition(MM_NULL,$1);
+  MM::String * buf = new MM::String(1024 * 100);
+  e->toString(buf);
+  buf->print();  
+  $$ = e;
+}
+;
+
+elementList
+: elementList element { $$ = mm.createList($1,$2); }
+|                     { $$ = mm.createList();      }
+;
+
+element
+: io when act how SOURCE name          { $$ = mm.createSourceNode($1,$2,$3,$4,$6);        }
+| io when act how DRAIN name           { $$ = mm.createDrainNode($1,$2,$3,$4,$6);         }
+| io when act how POOL name at max add { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$7,$8,$9); }
+| REF name                             { $$ = mm.createRefNode($2);                       }
+| name name                            { $$ = mm.createDeclaration($1,$2);                }
+| name DOT exp DOT_GT name             { $$ = mm.createStateEdge($1,$3,$5);               }
+| name SUB exp SUB_GT name             { $$ = mm.createFlowEdge($1,$3,$5);                }
+| name LCURLY elementList RCURLY       { $$ = mm.createDefinition($1,$3);                 }
+| ASSERT name exp COLON STRING         { $$ = mm.createAssert($2,$3,$5,&@5);              }
+;
+
+io
+: PRIVATE { $$ = MM::Node::IO_PRIVATE; }
+| IN      { $$ = MM::Node::IO_IN;      }
+| OUT     { $$ = MM::Node::IO_OUT;     }
+| INOUT   { $$ = MM::Node::IO_INOUT;   }
+|         { $$ = MM::Node::IO_PRIVATE; }
+;
+
+when
+: PASSIVE { $$ = MM::Node::WHEN_PASSIVE; }
+| AUTO    { $$ = MM::Node::WHEN_AUTO;    }
+| USER    { $$ = MM::Node::WHEN_USER;    }
+| START   { $$ = MM::Node::WHEN_START;   }
+|         { $$ = MM::Node::WHEN_PASSIVE; }
+;
+
+act
+: PULL    { $$ = MM::Node::ACT_PULL; }
+| PUSH    { $$ = MM::Node::ACT_PUSH; }
+|         { $$ = MM::Node::ACT_PULL; }
+;
+
+how
+: ANY     { $$ = MM::Node::HOW_ANY; }
+| ALL     { $$ = MM::Node::HOW_ALL; }
+|         { $$ = MM::Node::HOW_ANY; }
+;
+
+at
+: AT FPVAL { $$ = (MM::UINT32) yylval.val; }
+|          { $$ = 0;                       }
+;
+
+max
+: MAX FPVAL { $$ = (MM::UINT32) yylval.val; }
+|           { $$ = 0;                       }
+;
+
+add
+: ADDITION exp { $$ = $2;      }
+|              { $$ = MM_NULL; }
+;
+
+exp
+:	exp AND exp       { $$ = mm.createBinExp($1,MM::Operator::OP_AND,&@2,$3); }
+| exp OR  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_OR,&@2,$3);  }
+| exp GT  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_GT,&@2,$3);  }
+| exp GE  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_GE,&@2,$3);  }
+| exp LT  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_LT,&@2,$3);  }
+| exp LE  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_LE,&@2,$3);  }
+| exp NE  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_NEQ,&@2,$3); }
+| exp EQ  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_EQ,&@2,$3);  }
+|	exp ADD exp       { $$ = mm.createBinExp($1,MM::Operator::OP_ADD,&@2,$3); }
+|	exp SUB exp       { $$ = mm.createBinExp($1,MM::Operator::OP_SUB,&@2,$3); }
+|	exp MUL exp       { $$ = mm.createBinExp($1,MM::Operator::OP_MUL,&@2,$3); }
+|	exp DIV exp       { $$ = mm.createBinExp($1,MM::Operator::OP_DIV,&@2,$3); }
+| UNM exp           { $$ = mm.createUnExp(MM::Operator::OP_UNM,&@1,$2);     }
+| NOT exp           { $$ = mm.createUnExp(MM::Operator::OP_NOT,&@1,$2);     }
+| exp PERCENT       { $$ = mm.createUnExp(MM::Operator::OP_PERCENT,&@1,$1); }
+//| FPVAL PER FPVAL   { printf("per\n");      $$ = mm.createUnExp(MM::Operator::OP_PER,&@1,$2);     }
+|	LPAREN exp RPAREN { $$ = mm.createOverrideExp(&@1,$2,&@3);                }
+| FPVAL RANGE FPVAL { $$ = mm.createRangeValExp($1,&@1,&@2,$3,&@3);         }
+| FPVAL             { $$ = mm.createNumberValExp(yylval.val,&@1);           }
+| TRUE              { $$ = mm.createBooleanValExp(MM_TRUE,&@1);             }
+| FALSE             { $$ = mm.createBooleanValExp(MM_FALSE,&@1);            }
+| ALL               { $$ = mm.createAllExp(&@1);                            }
+| ACTIVE name       { $$ = mm.createActiveExp(&@1,$2);                      }
+| ALIAS             { $$ = mm.createAliasExp(&@1);                          }
+| name              { $$ = mm.createVarExp($1);                             }
+| /*epsilon: one*/  { $$ = mm.createOneExp(&@0);                            }
+;
+
+name
+: name DOT ID  { $$ = mm.createName($1, yylval.str, &@3); }
+| ID           { $$ = mm.createName(yylval.str, &@1);     }
+;
+
+%%
+MM::Machine mm;
+
+extern FILE * yyin;
+int main(int argc, const char * argv[])
+{
+  if(argc==2)
+  {
+    yyin = fopen(argv[1], "r");
+    if(!yyin)
+    {
+      fprintf(stderr, "error reading file %s\n", argv[1]);
+      return 1;
+    }
+    else
+    {
+      yyparse();
+    }
+  }
+  return 0;
+}
+
+void yyerror(char * msg)
+{
+  fprintf(stderr, "line %d, %d: %s\n", yylineno, yycolumn, msg);
+}
+

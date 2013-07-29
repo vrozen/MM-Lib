@@ -11,10 +11,15 @@
 
 namespace MM
 {
-  class FlowEdge : Edge
+  class FlowEdge : public MM::Edge
   {
+  private:
+    static const MM::CHAR * MIN_STR;
+    static const MM::CHAR * MINGT_STR;
+    static const MM::UINT32 MIN_LEN;
+    static const MM::UINT32 MINGT_LEN;
   public:
-    FlowEdge(MM::Node * src, MM::Exp * exp, MM::Node * tgt);
+    FlowEdge(MM::Name * src, MM::Exp * exp, MM::Name * tgt);
     ~FlowEdge();
     MM::VOID toString(MM::String * buf);
   };

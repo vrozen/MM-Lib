@@ -11,10 +11,15 @@
 
 namespace MM
 {
-  class StateEdge : Edge
+  class StateEdge : public MM::Edge
   {
+  private:
+    static const MM::CHAR * DOT_STR;
+    static const MM::CHAR * DOTGT_STR;
+    static const MM::UINT32 DOT_LEN;
+    static const MM::UINT32 DOTGT_LEN;
   public:
-    StateEdge(MM::Node * src, MM::Exp * exp, MM::Node * tgt);
+    StateEdge(MM::Name * src, MM::Exp * exp, MM::Name * tgt);
     ~StateEdge();
     MM::VOID toString(MM::String * buf);
   };
