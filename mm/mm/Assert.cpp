@@ -6,8 +6,13 @@
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include "YYLTYPE.h"
 #include "Types.h"
+#include "Recyclable.h"
+#include "Vector.h"
+#include "Recycler.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -16,17 +21,14 @@
 #include "Assert.h"
 
 const MM::CHAR * MM::Assert::ASSERT_STR = "assert";
-const MM::UINT32 MM::Assert::ASSERT_LEN = 6;
-
-const MM::CHAR * MM::Assert::COLON_STR  = ":";
-const MM::UINT32 MM::Assert::COLON_LEN  = 1;
+const MM::UINT32 MM::Assert::ASSERT_LEN = strlen(MM::Assert::ASSERT_STR);
+const MM::CHAR   MM::Assert::COLON_CHAR  = ':';
 
 MM::Assert::Assert(MM::Name     * name,
                    MM::Exp      * exp,
                    MM::CHAR     * msg,
-                   MM::Location * loc) : MM::Element()
+                   MM::Location * loc) : MM::Element(name)
 {
-  this->name = name;
   this->exp = exp;
   this->msg = msg;
   this->loc = loc;
@@ -34,15 +36,35 @@ MM::Assert::Assert(MM::Name     * name,
 
 MM::Assert::~Assert()
 {
-  delete name;
-  delete exp;
-  delete msg;
-  delete loc;
+  name = MM_NULL;
+  exp = MM_NULL;
+  msg = MM_NULL;
+  loc = MM_NULL;
 }
 
-MM::Name * MM::Assert::getName()
+MM::VOID MM::Assert::recycle(MM::Recycler * r)
 {
-  return name;
+  exp->recycle(r);
+  r->uncreate(msg);
+  loc->recycle(r);
+  this->Element::recycle(r);
+}
+
+MM::TID MM::Assert::getTypeId()
+{
+  return MM::T_Assert;
+}
+
+MM::BOOLEAN MM::Assert::instanceof(MM::TID tid)
+{
+  if(tid == MM::T_Assert)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM::Element::instanceof(tid);
+  }
 }
 
 MM::Exp * MM::Assert::getExp()
@@ -76,13 +98,19 @@ MM::Location * MM::Assert::getLocation()
 
 MM::VOID MM::Assert::toString(MM::String * buf)
 {
+  toString(buf, 0);
+}
+
+MM::VOID MM::Assert::toString(MM::String * buf, MM::UINT32 indent)
+{
+  buf->space(indent);
   buf->append((MM::CHAR*)MM::Assert::ASSERT_STR, MM::Assert::ASSERT_LEN);
   buf->space();
   name->toString(buf);
   buf->space();
-  exp->toString(buf);
+  buf->append(MM::Assert::COLON_CHAR);
   buf->space();
-  buf->append((MM::CHAR*)MM::Assert::COLON_STR, MM::Assert::COLON_LEN);
+  exp->toString(buf);
   buf->space();
   buf->append(msg, getMessageLength());
 }

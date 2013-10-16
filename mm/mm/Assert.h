@@ -16,22 +16,24 @@ namespace MM
   public:
     static const MM::CHAR * ASSERT_STR;
     static const MM::UINT32 ASSERT_LEN;
-    static const MM::CHAR * COLON_STR;
-    static const MM::UINT32 COLON_LEN;
+    static const MM::CHAR COLON_CHAR;
   private:
-    MM::Name     * name;
+    //MM::Name     * name;
     MM::Exp      * exp;
     MM::CHAR     * msg;
     MM::Location * loc;
   public:
     Assert(MM::Name * name, MM::Exp * exp, MM::CHAR * msg, MM::Location * loc);
     ~Assert();
-    MM::Name * getName();
+    MM::VOID recycle(MM::Recycler * r);
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
     MM::Exp * getExp();
     MM::CHAR * getMessage();
     MM::UINT32 getMessageLength();
     MM::Location * getLocation();
     MM::VOID toString(MM::String * buf);
+    MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };
 }
 
