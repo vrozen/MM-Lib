@@ -138,11 +138,9 @@ MM::UINT32 MM::Location::getLength()
  */
 MM::VOID MM::Location::toString(MM::String * buf)
 {
-  buf->append((MM::CHAR*)MM::Location::LOCATION_STR,
-              MM::Location::LOCATION_LEN);
-  buf->space();
   buf->append((MM::CHAR*)MM::Location::LINE_STR,
               MM::Location::LINE_LEN);
+  buf->space();
   buf->appendInt(line);
   buf->space();
   buf->append((MM::CHAR*)MM::Location::COLUMN_STR,
