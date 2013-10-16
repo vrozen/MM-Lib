@@ -1,24 +1,29 @@
-//
-//  NumberValExp.cpp
-//  mm
-//
-//  Created by Riemer van Rozen on 7/19/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
-//
-
+/******************************************************************************
+ * Copyright (c) 2013 Riemer van Rozen. All rights reserved.
+ ******************************************************************************/
+/*!
+ * The NumberValExp abstraction defines number value expressions.
+ * @package MM
+ * @file    NumberValExp.cpp
+ * @author  Riemer van Rozen
+ * @date    July 19th 2013
+ */
+/******************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include "YYLTYPE.h"
 #include "Types.h"
+#include "Recyclable.h"
+#include "Vector.h"
+#include "Recycler.h"
 #include "Location.h"
 #include "String.h"
-#include "Element.h"
-#include "Operator.h"
+#include "Name.h"
 #include "Exp.h"
 #include "ValExp.h"
-#include "BooleanValExp.h"
-#include "RangeValExp.h"
 #include "NumberValExp.h"
 
-const MM::CHAR * MM::NumberValExp::DOT_STR = ".";
-const MM::UINT32 MM::NumberValExp::DOT_LEN = 1;
+const MM::CHAR MM::NumberValExp::DOT_CHAR = '.';
 
 MM::NumberValExp::NumberValExp(MM::INT32 val) : MM::ValExp()
 {
@@ -50,15 +55,34 @@ MM::NumberValExp::NumberValExp(MM::INT32 val,
 
 MM::NumberValExp::~NumberValExp()
 {
-  if(loc != MM_NULL)
-  {
-    delete loc;
-  }
+  this->val = 0;
+  this->loc = MM_NULL;
 }
 
-MM::ValExp::TYPE MM::NumberValExp::getType()
+MM::VOID MM::NumberValExp::recycle(MM::Recycler * r)
 {
-  return MM::ValExp::T_NUMBER;
+  if(loc != MM_NULL)
+  {
+    loc->recycle(r);
+  }
+  this->MM::ValExp::recycle(r);
+}
+
+MM::TID MM::NumberValExp::getTypeId()
+{
+  return MM::T_NumberValExp;
+}
+
+MM::BOOLEAN MM::NumberValExp::instanceof(MM::TID tid)
+{
+  if(tid == MM::T_NumberValExp)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM::ValExp::instanceof(tid);
+  }
 }
 
 MM::INT32 MM::NumberValExp::getValue()
@@ -71,319 +95,6 @@ MM::INT32 MM::NumberValExp::getIntValue()
   return val / 100;
 }
 
-MM::ValExp * MM::NumberValExp::eval()
-{
-  return new MM::NumberValExp(val/100, val%100);
-}
-
-MM::ValExp * MM::NumberValExp::eval(MM::Operator::OP op)
-{
-  MM::INT32 nvalr = 0;
-  switch(op)
-  {
-    case MM::Operator::OP_UNM:
-    {
-      nvalr = -val;
-      break;
-    }
-    default:
-    {
-      //todo: operand error
-      break;
-    }
-  }
-  return new MM::NumberValExp(nvalr);
-}
-
-MM::ValExp * MM::NumberValExp::eval(MM::Operator::OP op, MM::ValExp * v)
-{
-  switch(v->getType())
-  {
-    case MM::ValExp::T_NUMBER:
-      return evalNumber(op, (MM::NumberValExp *) v);
-      break;
-    case MM::ValExp::T_RANGE:
-      return evalRange(op, (MM::RangeValExp *)v);
-      break;
-    default:
-      //todo: type error
-      break;
-  }
-  return 0;
-}
-
-MM::ValExp * MM::NumberValExp::evalNumber(MM::Operator::OP op, MM::NumberValExp * v)
-{
-  MM::ValExp * r = 0;
-  MM::INT32   val2  = v->getValue();
-  MM::ValExp::TYPE rtype = MM::ValExp::T_ERROR;
-  MM::INT32   rnval = 0;
-  MM::BOOLEAN rbval = MM_FALSE;
-  
-  switch(op)
-  {
-    case MM::Operator::OP_ADD:
-    {
-      rnval = val + val2;
-      rtype = MM::ValExp::T_NUMBER;
-      break;
-    }
-    case MM::Operator::OP_SUB:
-    {
-      rnval = val - val2;
-      rtype = MM::ValExp::T_NUMBER;
-      break;
-    }
-    case MM::Operator::OP_MUL:
-    {
-      rnval = (val * val2) / 100;
-      rtype = MM::ValExp::T_NUMBER;
-      break;
-    }
-    case MM::Operator::OP_DIV:
-    {
-      rnval = (val * 100) / val2;
-      rtype = MM::ValExp::T_NUMBER;
-      break;
-    }
-    case MM::Operator::OP_EQ:
-    {
-      if(val == val2)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_NEQ:
-    {
-      if(val != val2)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_GT:
-    {
-      if(val > val2)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_LT:
-    {
-      if(val < val2)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_LE:
-    {
-      if(val <= val2)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_GE:
-    {
-      if(val >= val2)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }      
-    default:
-    {
-      //todo: exception
-      break;
-    }
-  }
-  
-  switch(rtype)
-  {
-    case MM::ValExp::T_BOOLEAN:
-      r = new MM::BooleanValExp(rbval);
-      break;
-    case MM::ValExp::T_NUMBER:
-      r = new MM::NumberValExp(rnval/100, rnval%100);
-      break;
-    default:
-      break;
-  }
-  
-  return r;
-}
-
-MM::ValExp * MM::NumberValExp::evalRange(MM::Operator::OP op, MM::RangeValExp * v)
-{
-  MM::ValExp * r = 0;
-  MM::ValExp::TYPE rtype = T_ERROR;
-  MM::UINT32 rrmin = 0;
-  MM::UINT32 rrmax = 0;
-  MM::UINT32 min = 0;
-  MM::UINT32 max = 0;
-  MM::INT32 val = getIntValue();
-  MM::BOOLEAN rbval = MM_FALSE;
-  
-  if(v->getType() == MM::ValExp::T_NUMBER)
-  {
-    min = v->getMin();
-    max = v->getMax();
-  }
-  else
-  {
-    //todo: type error
-  }
-  
-  switch(op)
-  {
-    case MM::Operator::OP_ADD:
-    {
-      rrmin = val + min;
-      rrmax = val + max;
-      rtype = MM::ValExp::T_RANGE;
-      break;
-    }
-    case MM::Operator::OP_SUB:
-    {
-      rrmin = val - min;
-      rrmax = val - max;
-      rtype = MM::ValExp::T_RANGE;
-      break;
-    }
-    case MM::Operator::OP_MUL:
-    {
-      rrmin = val * min;
-      rrmax = val * max;
-      rtype = MM::ValExp::T_RANGE;
-      break;
-    }
-    case MM::Operator::OP_DIV:
-    {
-      rrmin = val / min;
-      rrmax = val / max;
-      rtype = MM::ValExp::T_RANGE;
-      break;
-    }
-    case MM::Operator::OP_EQ:
-    {
-      rbval = MM_FALSE;
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_NEQ:
-    {
-      rbval = MM_TRUE;
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_GT:
-    {
-      if(val > max)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_LT:
-    {
-      if(val < min)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_LE:
-    {
-      if(val <= min)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    case MM::Operator::OP_GE:
-    {
-      if(val >= max)
-      {
-        rbval = MM_TRUE;
-      }
-      else
-      {
-        rbval = MM_FALSE;
-      }
-      rtype = MM::ValExp::T_BOOLEAN;
-      break;
-    }
-    default:
-    {
-      //todo: operand error
-      break;
-    }
-  }
-  
-  switch(rtype)
-  {
-    case MM::ValExp::T_BOOLEAN:
-      r = new MM::BooleanValExp(rbval);
-      break;
-    case MM::ValExp::T_RANGE:
-      r = new MM::RangeValExp(rrmin, rrmax);
-      break;
-    default:
-      //todo: return type error
-      break;
-  }
-  
-  return r;
-}
-
 MM::Location *  MM::NumberValExp::getLocation()
 {
   return loc;
@@ -391,8 +102,11 @@ MM::Location *  MM::NumberValExp::getLocation()
 
 MM::VOID MM::NumberValExp::toString(MM::String * buf)
 {
-  buf->append(val / 100);
-  buf->append((MM::CHAR*)MM::NumberValExp::DOT_STR, MM::NumberValExp::DOT_LEN);
-  buf->append(val % 100);
+  buf->appendInt(val / 100);
+  if(val % 100 != 0)
+  {
+    buf->append(MM::NumberValExp::DOT_CHAR);
+    buf->appendInt(val % 100);
+  }
 }
 
