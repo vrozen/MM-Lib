@@ -28,8 +28,8 @@ namespace MM
     static const MM::CHAR LPAREN_CHAR; /**> left parenthesis character */
     static const MM::CHAR RPAREN_CHAR; /**> right parenthesis character */
     OverrideExp(MM::Exp * exp);
-    OverrideExp(MM::Exp      * exp,
-                MM::Location * lparenLoc,
+    OverrideExp(MM::Location * lparenLoc,
+                MM::Exp      * exp,                
                 MM::Location * rparenLoc);
     ~OverrideExp();
     MM::VOID recycle(MM::Recycler * r);

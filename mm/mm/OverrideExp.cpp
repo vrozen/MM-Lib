@@ -45,8 +45,8 @@ MM::OverrideExp::OverrideExp(MM::Exp * exp)
  * @param rparenLoc right parenthesis source location
  * @return new OverrideExp object
  */
-MM::OverrideExp::OverrideExp(MM::Exp      * exp,
-                             MM::Location * lparenLoc,
+MM::OverrideExp::OverrideExp(MM::Location * lparenLoc,
+                             MM::Exp      * exp,                             
                              MM::Location * rparenLoc)
 {
   this->exp = exp;
