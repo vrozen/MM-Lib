@@ -11,21 +11,28 @@
 
 namespace MM
 {
+  /**
+   * @class DieExp
+   * @brief Defines the DieExp class
+   */
   class DieExp : public MM::Exp
   {
   private:
-    static const MM::CHAR * DIE_STR;
-    static const MM::UINT32 DIE_LEN;
-    MM::UINT32 max;
-    MM::Location * maxLoc;
-    MM::Location * dieLoc;
+    static const MM::CHAR * DIE_STR; /**> die string */
+    static const MM::UINT32 DIE_LEN; /**> die string length */
+    MM::UINT32 max;                  /**> maximum */
+    MM::Location * maxLoc;           /**> max location */
+    MM::Location * dieLoc;           /**> die location */
   public:
     DieExp(MM::UINT32 max);
     DieExp(MM::UINT32     max,
            MM::Location * maxLoc,
            MM::Location * dieLoc);
     ~DieExp();
-    MM::ValExp * eval();
+    MM::VOID recycle(MM::Recycler * r);
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
+    MM::UINT32 getMax();
     MM::VOID toString(MM::String * buf);
   };
 }
