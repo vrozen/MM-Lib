@@ -108,6 +108,10 @@
 "add"/[^a-z]       { inID = false; return ADDITION;   }
 "from"/[^a-z]      { inID = false; return FROM;       }
 "to"/[^a-z]        { inID = false; return TO;         }
+"signal"/[^a-z]    { inID = false; return SIGNAL;     }
+"modify"           { inID = false; return MODIFY;     }
+"step"             { inID = false; return STEP;       }
+
 
 ["][^"]*["] {
   inID = false;
