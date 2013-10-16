@@ -53,10 +53,12 @@ MM::Recycler::~Recycler()
     MM::Recyclable * r = i.getNext();
     str->append((MM::CHAR *) MM::Recycler::ORPHAN_MESSAGE,
                 MM::Recycler::ORPHAN_MESSAGE_SIZE);
-    MM::CHAR * bla = (MM::CHAR*)typeid(*r).name();
-    str->append(bla, strlen(bla));
+    str->space();
+    MM::CHAR * description = (MM::CHAR*)typeid(*r).name();
+    str->append(description, strlen(description));
     str->linebreak();
     r->toString(str);
+    str->linebreak();    
   }
 
   str->print();
