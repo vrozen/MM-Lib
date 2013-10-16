@@ -1,25 +1,27 @@
-//
-//  UnExp.cpp
-//  mm
-//
-//  Created by Riemer van Rozen on 7/19/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
-//
-
-#include <iostream>
+/******************************************************************************
+ * Copyright (c) 2013 Riemer van Rozen. All rights reserved.
+ ******************************************************************************/
+/*!
+ * The UnExp abstraction defines unary expressions.
+ * @package MM
+ * @file    UnExp.cpp
+ * @author  Riemer van Rozen
+ * @date    July 19th 2013
+ */
+/******************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "YYLTYPE.h"
 #include "Types.h"
+#include "Recyclable.h"
+#include "Vector.h"
+#include "Recycler.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
-#include "Element.h"
 #include "Operator.h"
 #include "Exp.h"
-#include "Edge.h"
-#include <vector>
-#include "Node.h"
-#include "PoolNode.h"
-#include "ValExp.h"
-#include "Operator.h"
 #include "UnExp.h"
 
 MM::UnExp::UnExp(MM::Operator::OP op,
@@ -40,23 +42,50 @@ MM::UnExp::UnExp(MM::Operator::OP op,
 
 MM::UnExp::~UnExp()
 {
-  delete exp;
+  exp = MM_NULL;
+  loc = MM_NULL;
+}
+
+MM::VOID MM::UnExp::recycle(MM::Recycler * r)
+{
   if(loc != MM_NULL)
   {
-    delete loc;
+    loc->recycle(r);
+  }
+  exp->recycle(r);
+  this->MM::Exp::recycle(r);
+}
+
+MM::TID MM::UnExp::getTypeId()
+{
+  return MM::T_UnExp;
+}
+
+MM::BOOLEAN MM::UnExp::instanceof(MM::TID tid)
+{
+  if(tid == MM::T_UnExp)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM::Exp::instanceof(tid);
   }
 }
 
-MM::ValExp * MM::UnExp::eval()
+MM::Exp * MM::UnExp::getExp()
 {
-  ValExp * val = exp->eval();
-  ValExp * ret = val->eval(op);
-  delete val;
-  return ret;
+  return this->exp;
+}
+
+MM::Operator::OP MM::UnExp::getOperator()
+{
+  return this->op;
 }
 
 MM::VOID MM::UnExp::toString(MM::String * buf)
 {
   buf->append((MM::CHAR*)MM::Operator::OP_STR[op], MM::Operator::OP_LEN[op]);
+  buf->space();
   exp->toString(buf);
 }
