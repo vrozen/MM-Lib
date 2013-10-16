@@ -14,70 +14,50 @@
 
 namespace MM
 {
-  typedef enum __MESSAGE
-  {
-    MSG_ERROR,    //error message
-    MSG_NEW_INST, //instance created
-    MSG_DEL_INST, //instance deleted
-    MSG_NEW_POOL, //pool created
-    MSG_DEL_POOL, //pool deleted
-    MSG_VAL_POOL, //pool value changed
-    MSG_SIGNAL    //signal condition
-  } MSG;
-  
-  //callback type defintions
-  typedef MM::VOID (*CALLBACK)
-  (
-    MM::VOID * caller,     //caller: Who're you gonna call?
-    MM::MSG    message,    //what happened?
-    MM::UINT32 instance,   //instance
-    MM::UINT32 definition, //definition
-    MM::UINT32 pool,       //pool when MSG_VAL_POOL, signal when MSG_SIGNAL
-    MM::UINT32 val         //new value in case of MSG_VAL_POOL
-  );
-  
-  typedef struct __Instance
-  {
-    MM::UINT32 type;
-    MM::UINT32 pools;
-    MM::UINT32 gates;
-    MM::UINT32 insts;
-    MM::CHAR mem[];
-  } Instance;
-  
   class Definition;
   
-  class Machine
+  class Machine : public MM::Recycler
   {
   private:
-    MM::UINT32 curDef;
-    MM::UINT32 curInst;
-    MM::Definition * defs[MAX_DEFS];
-    MM::Instance   * insts[MAX_INSTS];
-        
+    //MM::Definition * def;
+    //MM::Map<Name *, Definition *> * types;
+    //MM::Vector<Instance *> * instances;
+    MM::Reflector * reflector;
+    
   public:
     Machine();
     ~Machine();
+        
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
     
+    MM::Reflector * getReflector();
+    
+    MM::VOID setDefinition(MM::Definition * def);
+    MM::Definition * getDefinition();
+    
+    //evaluates input and adds elements to the model
+    MM::VOID eval (const MM::CHAR * input);
+    
+    /*
     //takes a step in an MM model
     MM::Transition * step       ();
     
-    //evaluates input and adds elements to the model
-    MM::VOID * eval             (MM::CHAR   * input);
-    
     //retrieves a definition from a parent element by name
-    MM::UINT32 get              (MM::UINT32   node,  //0 -> global scope
+    MM::UINT32 get              (MM::UINT32   def,  //0 -> global scope
                                  MM::CHAR   * name);
     
     MM::VOID   getName          (MM::UINT32   node,
                                  MM::CHAR *   buffer,
                                  MM::UINT32   bufferSize);
     
-    //activates an interactive node
-    MM::VOID   activate         (MM::UINT32   node);
+    //activates an interactive node in an instance
+    MM::VOID   activate         (MM::UINT32   node,
+                                 MM::UINT32   instance);
     
-    //removes an element from the model
-    MM::VOID   destroy          (MM::UINT32   node); //0 -> global scope
+    //removes an element from a type definition
+    MM::VOID   destroy          (MM::UINT32   def,   //0 -> global scope
+                                 MM::UINT32   node); //0 -> global scope
     
     //resets all instances to definition start values
     MM::VOID   reset            ();
@@ -87,11 +67,11 @@ namespace MM
     //the caller receives a callback
     MM::UINT32 addObserver(MM::UINT32 definition,
                            MM::VOID * caller,
-                           MM::CALLBACK);
+                           MM::CALLBACK callback);
     
     //removes an observer from a pools
     MM::VOID   removeObserver   (MM::UINT32 observer);
-    
+    */
     
     /*
      //adds a type definition and returns its API handle (definitions are global)
@@ -142,55 +122,78 @@ namespace MM
      */
     
     
+    //MM::Definition * getDefinition(MM::Name * name);
+    
+    //MM::VOID putDefinition(MM::Name * name, MM::Definition * def);
     
     //------------------------------------------------------------
     // Create
     //------------------------------------------------------------
-    std::vector<MM::Element*> * createList();
-    std::vector<MM::Element*> * createList(std::vector<MM::Element*> * elements, MM::Element * element);
+    MM::Vector<MM::Element *> * createElementVector();
+    //MM::Vector<MM::Element *> * createElementVector(MM::Vector<MM::Element*> * elements,
+    //                                                MM::Element * element);
+    MM::Vector<MM::Node *> * createNodeVector();
+    
+    MM::Vector<MM::Edge *> * createEdgeVector();
+    
+    MM::Map<MM::Name *, MM::Element *, MM::Name::Compare> * createName2ElementMap();
+    
+    MM::Map<MM::Name *, MM::Node *, MM::Name::Compare> * createName2NodeMap();
+    
+    MM::String * createString(MM::UINT32 size);
     
     MM::Location * createLocation(YYLTYPE * loc);
     
     MM::Name * createName(MM::Name * n1,
                           MM::CHAR * str,
                           YYLTYPE  * strLoc);
+    
+    MM::Name * createName(MM::CHAR   * str,
+                          MM::UINT32 * len,
+                          MM::UINT32 * start,
+                          MM::UINT32 * end);
+    
+    MM::VOID eatWhiteSpace(MM::CHAR   * str,
+                           MM::UINT32 * start,
+                           MM::UINT32 * end);
   
-    MM::Name * createName(MM::CHAR * str,
-                          YYLTYPE  * strLoc);
+    MM::Name * createName(MM::CHAR * str, YYLTYPE  * strLoc);
+        
+    MM::Node * createSourceNode(MM::NodeBehavior::IO    io,
+                                MM::NodeBehavior::When  when,
+                                MM::NodeBehavior::Act   act,
+                                MM::NodeBehavior::How   how,
+                                MM::Name      * name);
     
-    MM::SourceNode * createSourceNode(MM::Node::IO    io,
-                                      MM::Node::When  when,
-                                      MM::Node::Act   act,
-                                      MM::Node::How   how,
-                                      MM::Name      * name);
+    MM::Node * createDrainNode(MM::NodeBehavior::IO    io,
+                               MM::NodeBehavior::When  when,
+                               MM::NodeBehavior::Act   act,
+                               MM::NodeBehavior::How   how,
+                               MM::Name      * name);
     
-    MM::DrainNode * createDrainNode(MM::Node::IO    io,
-                                    MM::Node::When  when,
-                                    MM::Node::Act   act,
-                                    MM::Node::How   how,
-                                    MM::Name      * name);
+    MM::Node * createPoolNode(MM::NodeBehavior::IO    io,
+                              MM::NodeBehavior::When  when,
+                              MM::NodeBehavior::Act   act,
+                              MM::NodeBehavior::How   how,
+                              MM::Name      * name,
+                              MM::UINT32      at,
+                              MM::UINT32      max,
+                              MM::Exp       * exp);
     
-    MM::PoolNode * createPoolNode(MM::Node::IO    io,
-                                  MM::Node::When  when,
-                                  MM::Node::Act   act,
-                                  MM::Node::How   how,
-                                  MM::Name      * name,
-                                  MM::UINT32      at,
-                                  MM::UINT32      max,
-                                  MM::Exp       * exp);
+    MM::Node * createRefNode(MM::Name * name);
     
-    MM::RefNode * createRefNode(MM::Name * name);
-    
-    MM::StateEdge * createStateEdge(MM::Name * src,
+    MM::StateEdge * createStateEdge(MM::Name * name,
+                                    MM::Name * src,
                                     MM::Exp  * exp,
                                     MM::Name * tgt);
     
-    MM::FlowEdge * createFlowEdge(MM::Name * src,
+    MM::FlowEdge * createFlowEdge(MM::Name * name,
+                                  MM::Name * src,
                                   MM::Exp  * exp,
                                   MM::Name * tgt);
 
     MM::Definition * createDefinition(MM::Name * name,
-                                      std::vector<Element*> * es);
+                                      MM::Vector<Element*> * elements);
     
     MM::Declaration * createDeclaration(MM::Name * type,
                                         MM::Name * name);
@@ -199,6 +202,8 @@ namespace MM
                               MM::Exp  * exp,
                               MM::CHAR * msg,
                               YYLTYPE  * msgLoc);
+
+    MM::Delete * createDelete(MM::Name * name);
     
     MM::UnExp * createUnExp(MM::Operator::OP  op,
                             YYLTYPE         * opLoc,
@@ -240,45 +245,49 @@ namespace MM
     //------------------------------------------------------------
     // Recycle
     //------------------------------------------------------------
-    MM::VOID recycleLocation(MM::Location * loc);
+    MM::VOID recycle(MM::Location * loc);
     
-    MM::VOID recycleName(MM::Name * name);
+    MM::VOID recycle(MM::Name * name);
     
-    MM::VOID recycleSourceNode(MM::SourceNode * node);
+    MM::VOID recycle(MM::SourceNodeBehavior * node);
     
-    MM::VOID recycleDrainNode(MM::DrainNode * node);
+    MM::VOID recycle(MM::DrainNodeBehavior * node);
     
-    MM::VOID recyclePoolNode(MM::PoolNode * node);
+    MM::VOID recycle(MM::PoolNodeBehavior * node);
     
-    MM::VOID recycleRefNode(MM::RefNode * node);
+    MM::VOID recycle(MM::RefNodeBehavior * node);
     
-    MM::VOID recycleStateEdge(MM::StateEdge * edge);
+    MM::VOID recycle(MM::StateEdge * edge);
     
-    MM::VOID recycleFlowEdge(MM::FlowEdge * edge);
+    MM::VOID recycle(MM::FlowEdge * edge);
     
-    /* MM::Assert * createAssert */
+    MM::VOID recycle(MM::Definition * def);
     
-    MM::VOID recycleUnExp(MM::UnExp * exp);
+    MM::VOID recycle(MM::Declaration * decl);
     
-    MM::VOID recycleBinExp(MM::BinExp * exp);
+    MM::VOID recycle(MM::Assert * assert);
     
-    MM::VOID recycleOverrideExp(MM::OverrideExp * exp);
+    MM::VOID recycle(MM::UnExp * exp);
     
-    MM::VOID recycleRangevalExp(MM::RangeValExp * exp);
+    MM::VOID recycle(MM::BinExp * exp);
     
-    MM::VOID recycleNumberValExp(MM::NumberValExp * exp);
+    MM::VOID recycle(MM::OverrideExp * exp);
     
-    MM::VOID recycleBooleanValExp(MM::BooleanValExp * exp);
+    MM::VOID recycle(MM::RangeValExp * exp);
     
-    MM::VOID recycleAllExp(MM::AllExp * exp);
+    MM::VOID recycle(MM::NumberValExp * exp);
     
-    MM::VOID recycleActiveExp(MM::ActiveExp * exp);
+    MM::VOID recycle(MM::BooleanValExp * exp);
     
-    MM::VOID recycleAliasExp(MM::AliasExp * exp);
+    MM::VOID recycle(MM::AllExp * exp);
     
-    MM::VOID recycleOneExp(MM::OneExp * exp);
+    MM::VOID recycle(MM::ActiveExp * exp);
     
-    MM::VOID recycleVarExp(MM::VarExp * exp);    
+    MM::VOID recycle(MM::AliasExp * exp);
+    
+    MM::VOID recycle(MM::OneExp * exp);
+    
+    MM::VOID recycle(MM::VarExp * exp);    
     
   };
 }
