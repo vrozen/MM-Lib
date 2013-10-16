@@ -11,12 +11,14 @@
 
 namespace MM
 {
-  class Event
+  class Event : public MM::Recyclable
   {
   public:
     Event();
     virtual ~Event();
-  public:
+    MM::VOID recycle(MM::Recycler * r);    
+    virtual MM::TID getTypeId();
+    virtual MM::BOOLEAN instanceof(MM::TID tid);
     virtual MM::VOID toString(MM::String * buf) = 0;
     virtual MM::VOID step() = 0;
     virtual MM::VOID back() = 0;

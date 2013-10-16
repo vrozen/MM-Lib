@@ -16,6 +16,9 @@ namespace MM
   public:
     StepEvent();
     ~StepEvent();
+    MM::VOID recycle(MM::Recycler * r);
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
     MM::VOID toString(MM::String * buf);
     MM::VOID step();
     MM::VOID back();

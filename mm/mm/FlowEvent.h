@@ -16,11 +16,17 @@ namespace MM
   private:
     MM::Node * src;
     MM::Node * tgt;
-    MM::INT32 amount;
+    MM::UINT32 amount;
   public:
-    FlowEvent(MM::Node * src, MM::INT32 amount, MM::Node * tgt);
+    FlowEvent(MM::Node * src, MM::UINT32 amount, MM::Node * tgt);
     ~FlowEvent();
+    MM::VOID recycle(MM::Recycler * r);
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
     MM::VOID toString(MM::String * buf);
+    MM::Node * getSource();
+    MM::UINT32 getAmount();
+    MM::Node * getTarget();
     MM::VOID step();
     MM::VOID back();
   };
