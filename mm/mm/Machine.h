@@ -129,9 +129,10 @@ namespace MM
     //------------------------------------------------------------
     // Create
     //------------------------------------------------------------
+    MM::Vector<MM::Transformation *> * createTransformationVector();
+    
     MM::Vector<MM::Element *> * createElementVector();
-    //MM::Vector<MM::Element *> * createElementVector(MM::Vector<MM::Element*> * elements,
-    //                                                MM::Element * element);
+
     MM::Vector<MM::Node *> * createNodeVector();
     
     MM::Vector<MM::Edge *> * createEdgeVector();
@@ -143,7 +144,7 @@ namespace MM
     MM::String * createString(MM::UINT32 size);
     
     MM::Location * createLocation(YYLTYPE * loc);
-    
+        
     MM::Name * createName(MM::Name * n1,
                           MM::CHAR * str,
                           YYLTYPE  * strLoc);
@@ -157,8 +158,26 @@ namespace MM
                            MM::UINT32 * start,
                            MM::UINT32 * end);
   
-    MM::Name * createName(MM::CHAR * str, YYLTYPE  * strLoc);
-        
+    MM::Name * createName(MM::CHAR * str,
+                          YYLTYPE  * strLoc);
+    
+    MM::Program * createProgram(MM::Vector<MM::Transformation *> *
+                                transformations);
+
+    
+    MM::Modification * createModification(MM::Vector<MM::Element *> *
+                                          transformations);
+    
+    MM::Modification * createModification(MM::Vector<MM::Element *> *
+                                          transformations,
+                                          YYLTYPE * modifyLoc);
+    
+    MM::Transition * createTransition(MM::Vector<MM::Element *> * elements);
+    
+    
+    MM::Transition * createTransition(MM::Vector<MM::Element *> * elements,
+                                      YYLTYPE * stepLoc);
+    
     MM::Node * createSourceNode(MM::NodeBehavior::IO    io,
                                 MM::NodeBehavior::When  when,
                                 MM::NodeBehavior::Act   act,
@@ -198,25 +217,46 @@ namespace MM
     MM::Declaration * createDeclaration(MM::Name * type,
                                         MM::Name * name);
     
-    MM::Assert * createAssert(MM::Name * name,
-                              MM::Exp  * exp,
-                              MM::CHAR * msg,
-                              YYLTYPE  * msgLoc);
+    MM::Assertion * createAssertion(YYLTYPE  * assertLoc,
+                                    MM::Name * name,
+                                    MM::Exp  * exp,
+                                    MM::CHAR * msg);
 
-    MM::Delete * createDelete(MM::Name * name);
+    MM::Assertion * createAssertion(MM::Name * name,
+                                    MM::Exp  * exp,
+                                    MM::CHAR * msg);
     
+    MM::Deletion * createDeletion(MM::Name * name);
+    
+    MM::Deletion * createDeletion(YYLTYPE * deleteLoc,
+                                  MM::Name * name);
+    
+    MM::Signal * createSignal(MM::Name * name);
+
+    MM::Signal * createSignal(YYLTYPE * signalLoc,
+                              MM::Name * name);
+                              
     MM::UnExp * createUnExp(MM::Operator::OP  op,
                             YYLTYPE         * opLoc,
+                            MM::Exp         * exp);
+    
+    MM::UnExp * createUnExp(MM::Operator::OP  op,
                             MM::Exp         * exp);
     
     MM::BinExp * createBinExp(MM::Exp          * e1,
                               MM::Operator::OP   op,
                               YYLTYPE          * opLoc,
                               MM::Exp          * e2);
+
+    MM::BinExp * createBinExp(MM::Exp          * e1,
+                              MM::Operator::OP   op,
+                              MM::Exp          * e2);
     
     MM::OverrideExp * createOverrideExp(YYLTYPE * lparenLoc,
                                         MM::Exp * e,
                                         YYLTYPE * rparenLoc);
+    
+    MM::OverrideExp * createOverrideExp(MM::Exp * e);
     
     MM::RangeValExp * createRangeValExp(MM::INT32   v1,
                                         YYLTYPE   * v1Loc,
@@ -224,20 +264,32 @@ namespace MM
                                         MM::INT32   v2,
                                         YYLTYPE   * v2Loc);
     
+    MM::RangeValExp * createRangeValExp(MM::INT32 v1, MM::INT32 v2);
+    
     MM::NumberValExp * createNumberValExp(MM::INT32  val,
                                           YYLTYPE  * valLoc);
     
+    MM::NumberValExp * createNumberValExp(MM::INT32 val);
+    
     MM::BooleanValExp * createBooleanValExp(MM::BOOLEAN val,
                                             YYLTYPE * valLoc);
+    
+    MM::BooleanValExp * createBooleanValExp(MM::BOOLEAN val);
     
     MM::AllExp * createAllExp(YYLTYPE * allLoc);
     
     MM::ActiveExp * createActiveExp(YYLTYPE  * activeLoc,
                                     MM::Name * name);
     
+    MM::ActiveExp * createActiveExp(MM::Name * name);
+    
     MM::AliasExp * createAliasExp(YYLTYPE * aliasLoc);
     
+    MM::AliasExp * createAliasExp();
+    
     MM::OneExp * createOneExp(YYLTYPE * epsilonLoc);
+    
+    MM::OneExp * createOneExp();
     
     MM::VarExp * createVarExp(MM::Name * name);
 
@@ -265,7 +317,11 @@ namespace MM
     
     MM::VOID recycle(MM::Declaration * decl);
     
-    MM::VOID recycle(MM::Assert * assert);
+    MM::VOID recycle(MM::Assertion * assert);
+    
+    MM::VOID recycle(MM::Deletion * deletion);
+
+    MM::VOID recycle(MM::Signal * singal);
     
     MM::VOID recycle(MM::UnExp * exp);
     

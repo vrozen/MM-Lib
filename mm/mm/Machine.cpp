@@ -17,20 +17,21 @@
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
-#include "Pair.h"
 #include "Element.h"
+#include "Transformation.h"
+#include "Program.h"
+#include "Modification.h"
+#include "Transition.h"
 #include "Operator.h"
 #include "Exp.h"
-#include "Assert.h"
-#include "Delete.h"
+#include "Assertion.h"
+#include "Deletion.h"
+#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
 #include "NodeBehavior.h"
 #include "Node.h"
-#include "Event.h"
-#include "FlowEvent.h"
-#include "Transition.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
 #include "DrainNodeBehavior.h"
@@ -65,6 +66,7 @@ MM::Machine::Machine() : MM::Recycler()
 
 MM::Machine::~Machine()
 {
+  delete reflector;
   //delete types;
   //delete instances;
 }
@@ -138,8 +140,8 @@ MM::Transition * MM::Machine::step()
 }
 */
 
-extern MM::Definition * MM_parse(const MM::CHAR * input);
-extern MM::Definition * MM_parseFile(const MM::CHAR * input);
+extern MM::Program * MM_parse(const MM::CHAR * input);
+extern MM::Program * MM_parseFile(const MM::CHAR * input);
 
 MM::Reflector * MM::Machine::getReflector()
 {
@@ -148,20 +150,28 @@ MM::Reflector * MM::Machine::getReflector()
 
 MM::VOID MM::Machine::eval (const MM::CHAR * input)
 {
-  MM::Definition * def = MM_parseFile(input);
+  MM::Program * program = MM_parseFile(input);
   MM::String * buf = createString(1024 * 100 * 32);
-  def->toString(buf);
+  program->toString(buf);
   buf->print();
   
-  reflector->merge(def);
-  def = reflector->getDefinition();
-  buf->clear();
-  def->toString(buf);
-  buf->print();
-  
+  MM::Vector<Transformation *> * ts = program->getTransformations();
+  MM::Vector<Transformation *>::Iterator i = ts->getIterator();
+  while(i.hasNext() == MM_TRUE)
+  {
+    Transformation * t = i.getNext();
+    if(t->instanceof(MM::T_Modification) == MM_TRUE)
+    {
+      reflector->merge((MM::Modification *) t);
+      MM::Definition * def = reflector->getDefinition();
+      buf->clear();
+      def->toString(buf);
+      buf->print();
+    }
+  }
   
   buf->recycle(this);
-  def->recycle(this);
+  program->recycle(this);
 }
 
 //MM::VOID MM::Machine::setTree (MM::Definition * def)
@@ -183,6 +193,13 @@ MM::VOID MM::Machine::eval (const MM::CHAR * input)
 //{
   //types->put(name, def);
   //}
+
+MM::Vector<MM::Transformation *> * MM::Machine::createTransformationVector()
+{
+  MM::Vector<MM::Transformation *> * v = new Vector<MM::Transformation *> ();
+  //TODO: process vectors in recycler
+  return v;
+}
 
 MM::Vector<MM::Element *> * MM::Machine::createElementVector()
 {
@@ -338,6 +355,50 @@ MM::Name * MM::Machine::createName(MM::CHAR * str, YYLTYPE  * strLoc)
   return dotRoot;
 }
 
+MM::Program * MM::Machine::createProgram(MM::Vector<MM::Transformation *> *
+                                         transformations)
+{
+  MM::Program * r = new MM::Program(transformations);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Modification * MM::Machine::createModification(MM::Vector<MM::Element *> *
+                                                   elements)
+{
+  MM::Modification * r = new MM::Modification(elements);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Modification * MM::Machine::createModification(MM::Vector<MM::Element *> *
+                                                   elements,
+                                                   YYLTYPE * modifyLoc)
+{
+  MM::Location * loc = createLocation(modifyLoc);
+  MM::Modification * r = new MM::Modification(elements, loc);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Transition * MM::Machine::createTransition(MM::Vector<MM::Element *> *
+                                               elements)
+{
+  MM::Transition * r = new MM::Transition(elements);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Transition * MM::Machine::createTransition(MM::Vector<MM::Element *> *
+                                               elements,
+                                               YYLTYPE * stepLoc)
+{
+  MM::Location * loc = createLocation(stepLoc);
+  MM::Transition * r = new MM::Transition(elements, loc);
+  MM::Recycler::create(r);
+  return r;
+}
+
 MM::Node * MM::Machine::createSourceNode(MM::NodeBehavior::IO   io,
                                          MM::NodeBehavior::When when,
                                          MM::NodeBehavior::Act  act,
@@ -432,27 +493,65 @@ MM::Declaration * MM::Machine::createDeclaration(MM::Name * type,
   return r;
 }
 
-MM::Assert * MM::Machine::createAssert(MM::Name * name,
-                                       MM::Exp  * exp,
-                                       MM::CHAR * msg,
-                                       YYLTYPE  * msgLoc)
+MM::Assertion * MM::Machine::createAssertion(YYLTYPE  * assertLoc,
+                                             MM::Name * name,
+                                             MM::Exp  * exp,
+                                             MM::CHAR * msg)
 {
-  MM::Location * loc = MM::Machine::createLocation(msgLoc);
-
+  MM::Location * loc = MM::Machine::createLocation(assertLoc);
   MM::UINT32 len = strlen(msg);
   MM::CHAR * buf = MM::Recycler::createBuffer(len);
   strncpy(buf, msg, len);
-  MM::Assert * r = new MM::Assert(name,exp,buf,loc);
+  MM::Assertion * r = new MM::Assertion(name,exp,buf,loc);
   
   MM::Recycler::create(r);
   return r;
 }
 
-MM::Delete * MM::Machine::createDelete(MM::Name * name)
+MM::Assertion * MM::Machine::createAssertion(MM::Name * name,
+                                             MM::Exp  * exp,
+                                             MM::CHAR * msg)
 {
-  MM::Delete * r = new MM::Delete(name);
+  MM::UINT32 len = strlen(msg);
+  MM::CHAR * buf = MM::Recycler::createBuffer(len);
+  strncpy(buf, msg, len);
+  MM::Assertion * r = new MM::Assertion(name,exp,buf);
+  
   MM::Recycler::create(r);
   return r;
+}
+
+MM::Deletion * MM::Machine::createDeletion(YYLTYPE * deleteLoc,
+                                           MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(deleteLoc);
+  MM::Deletion * r = new MM::Deletion(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Deletion * MM::Machine::createDeletion(MM::Name * name)
+{
+  MM::Deletion * r = new MM::Deletion(name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+
+MM::Signal * MM::Machine::createSignal(MM::Name * name)
+{
+  MM::Signal * r = new MM::Signal(name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Signal * MM::Machine::createSignal(YYLTYPE * signalLoc,
+                                       MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(signalLoc);
+  MM::Signal * r = new MM::Signal(loc, name);
+  MM::Recycler::create(r);
+  return r;  
 }
 
 MM::UnExp * MM::Machine::createUnExp(MM::Operator::OP  op,
@@ -461,6 +560,14 @@ MM::UnExp * MM::Machine::createUnExp(MM::Operator::OP  op,
 {
   MM::Location * loc = MM::Machine::createLocation(opLoc);
   MM::UnExp * r = new MM::UnExp(op, exp, loc);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::UnExp * MM::Machine::createUnExp(MM::Operator::OP  op,
+                                     MM::Exp         * exp)
+{
+  MM::UnExp * r = new MM::UnExp(op, exp);
   MM::Recycler::create(r);
   return r;
 }
@@ -476,13 +583,30 @@ MM::BinExp * MM::Machine::createBinExp(MM::Exp          * e1,
   return r;
 }
 
+
+MM::BinExp * MM::Machine::createBinExp(MM::Exp          * e1,
+                                       MM::Operator::OP   op,
+                                       MM::Exp          * e2)
+{
+  MM::BinExp * r = new MM::BinExp(e1,op,e2);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::OverrideExp * MM::Machine::createOverrideExp(MM::Exp * e)
+{
+  MM::OverrideExp * r = new MM::OverrideExp(e);
+  MM::Recycler::create(r);
+  return r;
+}
+
 MM::OverrideExp * MM::Machine::createOverrideExp(YYLTYPE * lparenLoc,
                                                  MM::Exp * e,
                                                  YYLTYPE * rparenLoc)
 {
-  MM::Location * lparen_loc = MM::Machine::createLocation(lparenLoc);
-  MM::Location * rparen_loc = MM::Machine::createLocation(rparenLoc);
-  MM::OverrideExp * r = new MM::OverrideExp(e, lparen_loc, rparen_loc);
+  MM::Location * loc1 = createLocation(lparenLoc);
+  MM::Location * loc2 = createLocation(rparenLoc);
+  MM::OverrideExp * r = new MM::OverrideExp(loc1, e, loc2);
   MM::Recycler::create(r);
   return r;
 }
@@ -497,6 +621,14 @@ MM::RangeValExp * MM::Machine::createRangeValExp(MM::INT32   v1,
   MM::Location * v2_loc = MM::Machine::createLocation(v2Loc);
   MM::Location * range_loc = MM::Machine::createLocation(rangeLoc);
   MM::RangeValExp * r = new MM::RangeValExp(v1, v2, v1_loc, range_loc, v2_loc);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::RangeValExp * MM::Machine::createRangeValExp(MM::INT32   v1,
+                                                 MM::INT32   v2)
+{
+  MM::RangeValExp * r = new MM::RangeValExp(v1, v2);
   MM::Recycler::create(r);
   return r;
 }
