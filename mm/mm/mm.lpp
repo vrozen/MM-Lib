@@ -6,67 +6,31 @@
 %}
 
 %{
-
   #include "YYLTYPE.h"
-  #include <list>
-  #include <stdio.h>
-  #include <stdlib.h>
-  #include "YYLTYPE.h"
-  #include "Types.h"
-  #include "Location.h"
-  #include "String.h"
-  #include "Name.h"
-  #include "Element.h"
-  #include "Operator.h"
-  #include "Exp.h"
-  #include "Assert.h"
-  #include "Edge.h"
-  #include "StateEdge.h"
-  #include "FlowEdge.h"
-  #include <vector>
-  #include "Node.h"
-  #include "Event.h"
-  #include "FlowEvent.h"
-  #include "Transition.h"
-  #include "PoolNode.h"
-  #include "SourceNode.h"
-  #include "DrainNode.h"
-  #include "RefNode.h"
-  #include "Declaration.h"
-  #include "Definition.h"
-  #include "Operator.h"
-  #include "ValExp.h"
-  #include "UnExp.h"
-  #include "BinExp.h"
-  #include "RangeValExp.h"
-  #include "BooleanValExp.h"
-  #include "NumberValExp.h"
-  #include "OverrideExp.h"
-  #include "ActiveExp.h"
-  #include "AllExp.h"
-  #include "AliasExp.h"
-  #include "OneExp.h"
-  #include "VarExp.h"
-  #include "Machine.h"
+  #include "mm.h"
   #include "y.tab.h"
-  
-int yycolumn = 1;
+  #define LEX_ID_SIZE 256
 
-#define YY_USER_ACTION \
-  yylloc.first_line = (int) yylineno; \
-  yylloc.last_line = (int) yylineno; \
-  yylloc.first_column = (int) yycolumn; \
+  //FIXME: globals should be instance data
+  //TODO: add a Parser abstraction (a.k.a. re-entrant parsing)
+  int yycolumn = 0;          //TODO: attribute of parser
+  char yyid[256] = { 0 };    //TODO: attribute of parser
+  int yyidpos = 0;           //TODO: attribute of parser
+  bool inID = false;         //TODO: attribute of parser
+
+  #define YY_USER_ACTION \
+  if(inID == false) \
+  { \
+    yylloc.first_line = (int) yylineno; \
+    yylloc.first_column = (int) yycolumn; \
+    yylloc.last_line = (int) yylineno; \
+  } \
   yylloc.last_column = (int) yycolumn + (int) yyleng - 1; \
   yycolumn += yyleng;
 %}
 
 %option yylineno
 %option noyywrap
-
-DIGIT  [0-9]
-LETTER [a-zA-Z]
-DOT    [.]
-QUOTES ["]
 
 %{
   /* * * * * * * * * *
@@ -75,6 +39,8 @@ QUOTES ["]
 %}
 
 %x ERROR
+%x IDPART
+%x IDPART2
 
 %%
 
@@ -84,89 +50,177 @@ QUOTES ["]
  * * * * * * * * */
 %}
 
-[ \t\f\r]	{ /*col++;*/ };		 // ignore white space
+[ \t\r\f]          { inID = false; /*ignore*/         }
+\n                 { inID = false; yycolumn = 1;      }
+"&&"               { inID = false; return AND;        }
+"||"               { inID = false; return OR;         }
+".>"               { inID = false; return DOT_GT;     }
+"->"               { inID = false; return SUB_GT;     }
+"=="               { inID = false; return EQ;         }
+"!="               { inID = false; return NE;         }
+"<="               { inID = false; return LE;         }
+">="               { inID = false; return GE;         }
+"<"                { inID = false; return LT;         }
+">"                { inID = false; return GT;         }
+"."                { inID = false; return DOT;        }
+"-"	               { inID = false; return SUB;        }
+"~"                { inID = false; return UNM;        }
+"+"	               { inID = false; return ADD;        }
+"*"	               { inID = false; return MUL;        }
+"/"	               { inID = false; return DIV;        }
+"="                { inID = false; return ALIAS;      }
+"("	               { inID = false; return LPAREN;     }
+")"	               { inID = false; return RPAREN;     }
+"!"                { inID = false; return NOT;        }
+"|"                { inID = false; return PER;        }
+"{"                { inID = false; return LCURLY;     }
+"}"                { inID = false; return RCURLY;     }
+","                { inID = false; return COMMA;      }
+":"                { inID = false; return COLON;      }
+"#"                { inID = false; return RANGE;      }
+"%"                { inID = false; return PERCENT;    }
+"source"/[^a-z]    { inID = false; return SOURCE;     }
+"drain"/[^a-z]     { inID = false; return DRAIN;      }
+"pool"/[^a-z]      { inID = false; return POOL;       }
+"gate"/[^a-z]      { inID = false; return GATE;       }
+"converter"/[^a-z] { inID = false; return CONVERTER;  }
+"push"/[^a-z]      { inID = false; return PUSH;       }
+"pull"/[^a-z]      { inID = false; return PULL;       }
+"passive"/[^a-z]   { inID = false; return PASSIVE;    }
+"all"/[^a-z]       { inID = false; return ALL;        }
+"any"/[^a-z]       { inID = false; return ANY;        }
+"auto"/[^a-z]      { inID = false; return AUTO;       }
+"user"/[^a-z]      { inID = false; return USER;       }
+"start"/[^a-z]     { inID = false; return START;      }
+"max"/[^a-z]       { inID = false; return MAX;        }
+"at"/[^a-z]        { inID = false; return AT;         }
+"in"/[^a-z]        { inID = false; return IN;         }
+"out"/[^a-z]       { inID = false; return OUT;        }
+"inout"/[^a-z]     { inID = false; return INOUT;      }
+"ref"/[^a-z]       { inID = false; return REF;        }
+"dice"/[^a-z]      { inID = false; return DICE;       }
+"active"/[^a-z]    { inID = false; return ACTIVE;     }
+"false"/[^a-z]     { inID = false; return FALSE;      }
+"true"/[^a-z]      { inID = false; return TRUE;       }
+"assert"/[^a-z]    { inID = false; return ASSERT;     }
+"delete"/[^a-z]    { inID = false; return DELETE;     }
+"private"/[^a-z]   { inID = false; return PRIVATE;    }
+"add"/[^a-z]       { inID = false; return ADDITION;   }
+"from"/[^a-z]      { inID = false; return FROM;       }
+"to"/[^a-z]        { inID = false; return TO;         }
 
-\n        { yycolumn = 1;          }
-"-"	      { return SUB;            }
-"~"       { return UNM;            }
-"+"	      { return ADD;            }
-"*"	      { return MUL;            }
-"/"	      { return DIV;            }
-"("	      { return LPAREN;         }
-")"	      { return RPAREN;         }
-"=="      { return EQ;             }
-"!="      { return NE;             }
-"<"       { return LT;             }
-">"       { return GT;             }
-"<="      { return LE;             }
-">="      { return GE;             }
-"="       { return ALIAS;          }
-"."       { return DOT;            }
-"!"       { return NOT;            }
-"|"       { return PER;            }
-".>"      { return DOT_GT;         }
-"->"      { return SUB_GT;         }
-"{"       { return LCURLY;         }
-"}"       { return RCURLY;         }
-","       { return COMMA;          }
-":"       { return COLON;          }
-"&&"      { return AND;            }
-"||"      { return OR;             }
-"#"       { return RANGE;          }
-"%"       { return PERCENT;        }
-"source"  { return SOURCE;         }
-"drain"   { return DRAIN;          }
-"pool"    { return POOL;           }
-"push"    { return PUSH;           }
-"pull"    { return PULL;           }
-"passive" { return PASSIVE;        }
-"all"     { return ALL;            }
-"any"     { return ANY;            }
-"auto"    { return AUTO;           }
-"user"    { return USER;           }
-"start"   { return START;          }
-"max"     { return MAX;            }
-"at"      { return AT;             }
-"in"      { return IN;             }
-"out"     { return OUT;            }
-"inout"   { return INOUT;          }
-"ref"     { return REF;            }
-"dice"    { return DICE;           }
-"active"  { return ACTIVE;         }
-"false"   { return FALSE;          }
-"true"    { return TRUE;           }
-"assert"  { return ASSERT;         }
-"private" { return PRIVATE;        }
-"add"     { return ADDITION;       }
-
-{QUOTES}[^QUOTES]*{QUOTES} {
-  yylval.str = strdup(yytext);
+["][^"]*["] {
+  inID = false;
+  yylval.str = strdup(yytext);         //copy string in yyval.str
+   //printf("line %d col %d endline %d endcol %d\n",
+   //         yylloc.first_line,
+   //         yylloc.first_column,
+   //         yylloc.last_line, yylloc.last_column);
   return STRING;
 }
 
-{DIGIT}+{DOT}?{DIGIT}?{DIGIT}? {
-  yylval.val = atol(yytext) * 100;
-  
+[0-9]+[.][0-9][0-9]? {
+  inID = false;
+  yylval.val = atol(yytext) * 100;     //store integer
   size_t size = strcspn(yytext, ".");
   if(size < yyleng)
   {
-    yylval.val += atol(yytext+size+1);
+    yylval.val += atol(yytext+size+1); //store fraction
   }
-  
   return FPVAL;
 }
 
-{LETTER}* {
-  /*col += yyleng;*/
-/*QUOTES{LETTER}*QUOTES { yylval.str = strdup(yytext); return STRING; }*/
+[0-9]+ {
+  inID = false;
+  yylval.val = atol(yytext) * 100;     //store integer
+  return FPVAL;
+}
+
+[a-zA-Z][a-zA-Z0-9_]*/[^.] {
+  inID = false;
   yylval.str = strdup(yytext);
+  //printf("ID [%s]\n", yytext);
+  //yylloc.first_line = (int) yylineno;
+  //yylloc.first_column = (int) yycolumn;
+  //yylloc.last_line = (int) yylineno;
+  
+  //printf("first part [%s]\n", yytext);
+ 
   return ID;
 }
 
-. { BEGIN(ERROR); yymore(); }
-<ERROR>[^{DIGIT}{LETTER}+\-/*()= \t\n\f\r] { yymore(); }
-<ERROR>(.|\n) { yyless((int)yyleng-1); printf("error token: %s on line %u column %u\n", yytext,  yylineno,  yycolumn);
-           BEGIN(INITIAL); }
+[a-zA-Z][a-zA-Z0-9_]*"."/[^>] {
+  inID = true;
+
+  sprintf(yyid + yyidpos, "%s", yytext); //store remainder of the ID in global yyid
+  yyidpos += strlen(yytext);
+
+  //printf("IDPART [%s]\n", yytext);
+
+  BEGIN(IDPART);
+}
+
+[a-zA-Z][a-zA-Z0-9_]*":"[ \t\f\r]* {
+  inID = true;
+
+  sprintf(yyid + yyidpos, "%s", yytext); //store remainder of the ID in global yyid
+  yyidpos += strlen(yytext);
+
+  //printf("IDPART [%s]\n", yytext);
+
+  BEGIN(IDPART2);
+}
+
+<IDPART>[a-zA-Z][a-zA-Z0-9_]*"."/[^>] {
+  inID = true;
+  //printf("%s\n", yytext);
+  sprintf(yyid + yyidpos, "%s", yytext); //store remainder of the ID in global yyid
+  yyidpos += strlen(yytext);
+
+  //printf("IDPART [%s]\n", yytext);
+  
+  BEGIN(IDPART);
+}
+
+<IDPART>[a-zA-Z][a-zA-Z0-9_]*":"[ \t\f\r]* {
+  inID = true;
+  //printf("%s\n", yytext);
+  sprintf(yyid + yyidpos, "%s", yytext); //store remainder of the ID in global yyid
+  yyidpos += strlen(yytext);
+
+  //printf("IDPART [%s]\n", yytext);
+  
+  BEGIN(IDPART2);
+}
+
+<IDPART2>[a-zA-Z][a-zA-Z0-9_]*"."/[^>] {
+  inID = true;
+  //printf("%s\n", yytext);
+  sprintf(yyid + yyidpos, "%s", yytext); //store remainder of the ID in global yyid
+  yyidpos += strlen(yytext);
+
+  //printf("IDPART [%s]\n", yytext);
+  
+  BEGIN(IDPART2);
+}
+
+<IDPART,IDPART2>[a-zA-Z0-9_]* {
+  ///[^.]
+  inID = false;
+  sprintf(yyid + yyidpos, "%s", yytext); //store remainder of the ID in global yyid
+  yyidpos += strlen(yytext);
+  yylval.str = (MM::CHAR*) malloc(yyidpos + 2);    //allocate memory
+  memset(yylval.str, 0, yyidpos + 2);              //clear memory
+  snprintf(yylval.str, yyidpos + 2, "%s",yyid);  //store identifier
+  
+  //printf("part [%s]\n", yylval.str);
+  
+  yyidpos = 0;
+  memset(yyid, 0, LEX_ID_SIZE);
+  
+  BEGIN(INITIAL);
+  return ID;
+}
 
 %%
 

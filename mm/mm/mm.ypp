@@ -1,9 +1,12 @@
 %{
-  #include <list>
   #include <stdio.h>
   #include <stdlib.h>
   #include "YYLTYPE.h"
   #include "Types.h"
+  #include "Recyclable.h"
+  #include "Vector.h"
+  #include "Map.h"
+  #include "Recycler.h"
   #include "Location.h"
   #include "String.h"
   #include "Name.h"
@@ -11,18 +14,21 @@
   #include "Operator.h"
   #include "Exp.h"
   #include "Assert.h"
+  #include "Delete.h"
   #include "Edge.h"
   #include "StateEdge.h"
   #include "FlowEdge.h"
-  #include <vector>
+  #include "NodeBehavior.h"
   #include "Node.h"
   #include "Event.h"
   #include "FlowEvent.h"
   #include "Transition.h"
-  #include "PoolNode.h"
-  #include "SourceNode.h"
-  #include "DrainNode.h"
-  #include "RefNode.h"
+  #include "PoolNodeBehavior.h"
+  #include "SourceNodeBehavior.h"
+  #include "DrainNodeBehavior.h"
+  #include "RefNodeBehavior.h"
+  #include "Observer.h"
+  #include "Observable.h"
   #include "Declaration.h"
   #include "Definition.h"
   #include "Operator.h"
@@ -38,31 +44,32 @@
   #include "AliasExp.h"
   #include "OneExp.h"
   #include "VarExp.h"
+  #include "Reflector.h"
   #include "Machine.h"
   
-
-  
-  extern MM::Machine mm;
-  extern int yylineno;
-  extern int yycolumn;
-  int yylex();
-  void yyerror(char * s);
-  
-  
+  //FIXME: globals should be instance data
+  //TODO: add a Parser abstraction (a.k.a. re-entrant parsing)
+  extern MM::Machine mm;       //TODO: each machine has a parser
+  extern MM::Definition * def; //TODO: attribute of parser
+  extern int yylineno;         //TODO: attribute of parser
+  extern int yycolumn;         //TODO: attribute of parser
+  int yylex();                 //TODO: method of parser
+  void yyerror(char * s);      //TODO: method of parser
 %}
 %start program
 
 %union {
-  MM::UINT32         val;     //unsinged long
-  MM::CHAR         * str;     //string
-  MM::Name         * name;    //name
-  MM::Element      * element; //element
-  MM::Exp          * exp;     //expression
-  MM::Node::IO       io;      //io
-  MM::Node::When     when;    //when
-  MM::Node::Act      act;     //act
-  MM::Node::How      how;     //how  
-  std::vector<MM::Element*> * list;    //list of elements
+  MM::UINT32                 val;     //unsinged long
+  MM::CHAR                 * str;     //string
+  MM::Name                 * name;    //name
+  MM::Definition           * def;     //definition
+  MM::Element              * element; //element
+  MM::Exp                  * exp;     //expression
+  MM::NodeBehavior::IO       io;      //io
+  MM::NodeBehavior::When     when;    //when
+  MM::NodeBehavior::Act      act;     //act
+  MM::NodeBehavior::How      how;     //how
+  MM::Vector<MM::Element*> * list;    //list of elements
 }
 
 %locations
@@ -73,27 +80,27 @@
 %token <str> PASSIVE AUTO USER START
 %token <str> PUSH PULL
 %token <str> ALL ANY
-%token <str> EQ PRINT NE LT GT LE GE AND OR NOT TRUE FALSE ACTIVE ASSERT
+%token <str> FROM TO
+%token <str> EQ PRINT NE LT GT LE GE AND OR NOT TRUE FALSE ACTIVE ASSERT DELETE
 %token <str> AT MAX DICE
-%token <str> ALIAS DOT PER REF DOT_GT SUB_GT LCURLY RCURLY COMMA COLON RANGE PERCENT
-%token <str> SOURCE DRAIN POOL
+%token <str> ALIAS DOT PER REF DOT_GT SUB_GT LCURLY RCURLY COMMA COLON ATSIGN RANGE PERCENT
+%token <str> SOURCE DRAIN POOL GATE CONVERTER
 %token <str> SUB ADD MUL DIV
 %token <val> FPVAL
 %token <str> STRING
-%token <str> SEMICOLON
 %token <str> ADDITION
+%token <str> SUBSUB
+%token <str> DOTDOT
+
 
 %left AND OR
+%left LT GT LE GE NE EQ
 %left ADD SUB
 %left MUL DIV
-%left LT GT LE GE NE EQ
-%nonassoc NOT PERCENT UNM
-%nonassoc PER
-%nonassoc RANGE
-%left LPAREN RPAREN
-%nonassoc DOT
+%left NOT PERCENT UNM
+%nonassoc LPAREN RPAREN
 
-%type <element> program
+%type <def>     program
 %type <list>    elementList
 %type <element> element
 %type <exp>     exp
@@ -108,73 +115,83 @@
 %%
 
 program: elementList  {
-  MM::Element * e = mm.createDefinition(MM_NULL,$1);
-  MM::String * buf = new MM::String(1024 * 100);
-  e->toString(buf);
-  buf->print();  
-  $$ = e;
+  def = mm.createDefinition(MM_NULL,$1); $$ = def; //FIXME: remove global def
 }
 ;
 
 elementList
-: elementList element { $$ = mm.createList($1,$2); }
-|                     { $$ = mm.createList();      }
+: elementList element { $1->add($2); $$ = $1;          }
+| /*epsilon*/         { $$ = mm.createElementVector(); }
 ;
 
 element
-: io when act how SOURCE name          { $$ = mm.createSourceNode($1,$2,$3,$4,$6);        }
-| io when act how DRAIN name           { $$ = mm.createDrainNode($1,$2,$3,$4,$6);         }
-| io when act how POOL name at max add { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$7,$8,$9); }
-| REF name                             { $$ = mm.createRefNode($2);                       }
-| name name                            { $$ = mm.createDeclaration($1,$2);                }
-| name DOT exp DOT_GT name             { $$ = mm.createStateEdge($1,$3,$5);               }
-| name SUB exp SUB_GT name             { $$ = mm.createFlowEdge($1,$3,$5);                }
-| name LCURLY elementList RCURLY       { $$ = mm.createDefinition($1,$3);                 }
-| ASSERT name exp COLON STRING         { $$ = mm.createAssert($2,$3,$5,&@5);              }
+: io when act how SOURCE name            { $$ = mm.createSourceNode($1,$2,$3,$4,$6); }
+| io when act how DRAIN name             { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  }
+| io when act how GATE name              { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  /*fixme*/ }
+| io when act how POOL name at max add   { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$7,$8,$9); }
+| io when act how CONVERTER name from to { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  /*fixme*/ }
+| REF name                               { $$ = mm.createRefNode($2); }
+| name name                              { $$ = mm.createDeclaration($1,$2); }
+| name DOT exp DOT_GT name               { MM::Name * preName = $1->getPreName();
+                                           $1->setPreName(MM_NULL); //prevent double free
+                                           $$ = mm.createStateEdge(preName,$1,$3,$5); }
+| name SUB exp SUB_GT name               { MM::Name * preName = $1->getPreName();
+                                           $1->setPreName(MM_NULL); //prevent double free
+                                           $$ = mm.createFlowEdge(preName,$1,$3,$5);  }
+| name LCURLY elementList RCURLY         { $$ = mm.createDefinition($1,$3); }
+| ASSERT name COLON exp STRING           { $$ = mm.createAssert($2,$4,$5,&@5); }
+| DELETE name                            { $$ = mm.createDelete($2); }
 ;
 
 io
-: PRIVATE { $$ = MM::Node::IO_PRIVATE; }
-| IN      { $$ = MM::Node::IO_IN;      }
-| OUT     { $$ = MM::Node::IO_OUT;     }
-| INOUT   { $$ = MM::Node::IO_INOUT;   }
-|         { $$ = MM::Node::IO_PRIVATE; }
+: PRIVATE     { $$ = MM::NodeBehavior::IO_PRIVATE;   }
+| IN          { $$ = MM::NodeBehavior::IO_IN;        }
+| OUT         { $$ = MM::NodeBehavior::IO_OUT;       }
+| INOUT       { $$ = MM::NodeBehavior::IO_INOUT;     }
+| /*epsilon*/ { $$ = MM::NodeBehavior::IO_PRIVATE;   }
 ;
 
 when
-: PASSIVE { $$ = MM::Node::WHEN_PASSIVE; }
-| AUTO    { $$ = MM::Node::WHEN_AUTO;    }
-| USER    { $$ = MM::Node::WHEN_USER;    }
-| START   { $$ = MM::Node::WHEN_START;   }
-|         { $$ = MM::Node::WHEN_PASSIVE; }
+: PASSIVE     { $$ = MM::NodeBehavior::WHEN_PASSIVE; }
+| AUTO        { $$ = MM::NodeBehavior::WHEN_AUTO;    }
+| USER        { $$ = MM::NodeBehavior::WHEN_USER;    }
+| START       { $$ = MM::NodeBehavior::WHEN_START;   }
+| /*epsilon*/ { $$ = MM::NodeBehavior::WHEN_PASSIVE; }
 ;
 
 act
-: PULL    { $$ = MM::Node::ACT_PULL; }
-| PUSH    { $$ = MM::Node::ACT_PUSH; }
-|         { $$ = MM::Node::ACT_PULL; }
+: PULL        { $$ = MM::NodeBehavior::ACT_PULL; }
+| PUSH        { $$ = MM::NodeBehavior::ACT_PUSH; }
+| /*epsilon*/ { $$ = MM::NodeBehavior::ACT_PULL; }
 ;
 
 how
-: ANY     { $$ = MM::Node::HOW_ANY; }
-| ALL     { $$ = MM::Node::HOW_ALL; }
-|         { $$ = MM::Node::HOW_ANY; }
+: ANY         { $$ = MM::NodeBehavior::HOW_ANY; }
+| ALL         { $$ = MM::NodeBehavior::HOW_ALL; }
+| /*epsilon*/ { $$ = MM::NodeBehavior::HOW_ANY; }
 ;
 
 at
-: AT FPVAL { $$ = (MM::UINT32) yylval.val; }
-|          { $$ = 0;                       }
+: AT FPVAL    { $$ = (MM::UINT32) yylval.val / 100; }
+| /*epsilon*/ { $$ = 0;                             }
 ;
 
 max
-: MAX FPVAL { $$ = (MM::UINT32) yylval.val; }
-|           { $$ = 0;                       }
+: MAX FPVAL   { $$ = (MM::UINT32) yylval.val / 100; }
+| /*epsilon*/ { $$ = 0;                             }
 ;
 
 add
-: ADDITION exp { $$ = $2;      }
-|              { $$ = MM_NULL; }
-;
+: ADDITION LPAREN exp RPAREN { $$ = mm.createOverrideExp(&@2,$3,&@4);}
+| /*epsilon*/                { $$ = MM_NULL; }
+
+from
+: FROM name   {}
+| /*epsilon*/ {};
+
+to
+: TO name     {}
+| /*epsilon*/ {};
 
 exp
 :	exp AND exp       { $$ = mm.createBinExp($1,MM::Operator::OP_AND,&@2,$3); }
@@ -192,10 +209,10 @@ exp
 | UNM exp           { $$ = mm.createUnExp(MM::Operator::OP_UNM,&@1,$2);     }
 | NOT exp           { $$ = mm.createUnExp(MM::Operator::OP_NOT,&@1,$2);     }
 | exp PERCENT       { $$ = mm.createUnExp(MM::Operator::OP_PERCENT,&@1,$1); }
-//| FPVAL PER FPVAL   { printf("per\n");      $$ = mm.createUnExp(MM::Operator::OP_PER,&@1,$2);     }
+//| FPVAL PER FPVAL   { $$ = mm.createUnExp(MM::Operator::OP_PER,&@1,$2);     }
 |	LPAREN exp RPAREN { $$ = mm.createOverrideExp(&@1,$2,&@3);                }
 | FPVAL RANGE FPVAL { $$ = mm.createRangeValExp($1,&@1,&@2,$3,&@3);         }
-| FPVAL             { $$ = mm.createNumberValExp(yylval.val,&@1);           }
+| FPVAL             { $$ = mm.createNumberValExp($1,&@1);                   }
 | TRUE              { $$ = mm.createBooleanValExp(MM_TRUE,&@1);             }
 | FALSE             { $$ = mm.createBooleanValExp(MM_FALSE,&@1);            }
 | ALL               { $$ = mm.createAllExp(&@1);                            }
@@ -206,30 +223,42 @@ exp
 ;
 
 name
-: name DOT ID  { $$ = mm.createName($1, yylval.str, &@3); }
-| ID           { $$ = mm.createName(yylval.str, &@1);     }
+: ID { $$ = mm.createName(yylval.str, &@1); free(yylval.str); }
 ;
 
 %%
-MM::Machine mm;
+MM::Machine mm;       //TODO: create an instance and use its parser
+MM::Definition * def; //TODO: parser attribute
 
 extern FILE * yyin;
+extern int yy_scan_string ( const char *str );
+
 int main(int argc, const char * argv[])
 {
-  if(argc==2)
-  {
-    yyin = fopen(argv[1], "r");
-    if(!yyin)
-    {
-      fprintf(stderr, "error reading file %s\n", argv[1]);
-      return 1;
-    }
-    else
-    {
-      yyparse();
-    }
-  }
+  mm.eval((MM::CHAR const *)argv[1]);
   return 0;
+}
+
+MM::Definition * MM_parse(const MM::CHAR * input)
+{
+  yy_scan_string (input);
+  yyparse();
+  return def;
+}
+
+MM::Definition * MM_parseFile(const MM::CHAR * file)
+{
+  yyin = fopen(file, "r");
+  if(!yyin)
+  {
+    fprintf(stderr, "error reading file %s\n", file);
+  }
+  else
+  {
+    yyparse();
+  }
+
+  return def;
 }
 
 void yyerror(char * msg)
