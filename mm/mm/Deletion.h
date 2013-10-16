@@ -11,21 +11,21 @@
 
 namespace MM
 {
-  class Delete : public MM::Element
+  class Deletion : public MM::Element
   {
   public:
     static const MM::CHAR * DELETE_STR;
     static const MM::UINT32 DELETE_LEN;
-    //private:
-    //MM::Name     * name;
-    //MM::Location * loc;
+  private:
+    MM::Location * loc; /**> delete source location*/
   public:
-    Delete(MM::Name * name);
-    ~Delete();
+    Deletion(MM::Name * name);
+    Deletion(MM::Location * loc, MM::Name * name);
+    ~Deletion();
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
-    //MM::Location * getLocation();
+    MM::Location * getLocation();
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };
