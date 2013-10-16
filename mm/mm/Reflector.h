@@ -37,7 +37,7 @@ namespace  MM
 
     
     //transform the current state based on a delta definition
-    MM::VOID merge(MM::Definition * delta);
+    MM::VOID merge(MM::Modification * modification);
   
     
   private:
@@ -87,8 +87,8 @@ namespace  MM
     MM::VOID init(MM::Definition * def, MM::Declaration * decl);
     MM::VOID init(MM::Definition * def, MM::FlowEdge * edge);
     MM::VOID init(MM::Definition * def, MM::StateEdge * edge);
-    MM::VOID init(MM::Definition * def, MM::Assert * assert);
-    MM::VOID init(MM::Definition * def, MM::Delete * del);
+    MM::VOID init(MM::Definition * def, MM::Assertion * assert);
+    MM::VOID init(MM::Definition * def, MM::Deletion * del);
     
    /**************************************************************************
     * Deinit
@@ -107,8 +107,8 @@ namespace  MM
     MM::VOID deinit(MM::Definition * def, MM::Declaration * decl);
     MM::VOID deinit(MM::Definition * def, MM::FlowEdge * edge);
     MM::VOID deinit(MM::Definition * def, MM::StateEdge * edge);
-    MM::VOID deinit(MM::Definition * def, MM::Assert * assert);
-    MM::VOID deinit(MM::Definition * def, MM::Delete * del);
+    MM::VOID deinit(MM::Definition * def, MM::Assertion * assert);
+    MM::VOID deinit(MM::Definition * def, MM::Deletion * del);
     
     /**************************************************************************
     * Replace
@@ -164,11 +164,11 @@ namespace  MM
                      MM::Element * element);
     
     MM::VOID replace(MM::Definition * def,
-                     MM::Assert * assert,
+                     MM::Assertion * assert,
                      MM::Element * element);
     
     MM::VOID replace(MM::Definition * def,
-                     MM::Delete * del,
+                     MM::Deletion * del,
                      MM::Element * element);
     
     MM::VOID replace(MM::Definition * def,

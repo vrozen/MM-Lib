@@ -22,16 +22,18 @@
 #include "Element.h"
 #include "Operator.h"
 #include "Exp.h"
-#include "Assert.h"
-#include "Delete.h"
+#include "Assertion.h"
+#include "Deletion.h"
+#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
 #include "NodeBehavior.h"
 #include "Node.h"
-#include "Event.h"
-#include "FlowEvent.h"
+#include "Transformation.h"
+#include "Modification.h"
 #include "Transition.h"
+#include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
 #include "DrainNodeBehavior.h"
@@ -66,8 +68,11 @@ MM::Reflector::Reflector(MM::Machine * m)
 
 MM::Reflector::~Reflector()
 {
+  if(global != MM_NULL)
+  {
+    global->recycle(m);
+  }
   this->m = MM_NULL;
-  global->recycle(m);
 }
 
 MM::TID MM::Reflector::getTypeId()
@@ -93,7 +98,7 @@ MM::Definition * MM::Reflector::getDefinition()
 }
 
 //Merge a delta with the global type
-MM::VOID MM::Reflector::merge(MM::Definition * delta)
+MM::VOID MM::Reflector::merge(MM::Modification * modification)
 {
   if(global == MM_NULL)
   {
@@ -106,7 +111,7 @@ MM::VOID MM::Reflector::merge(MM::Definition * delta)
   }
   //merge the global scope type with the delta
   
-  MM::Vector<Element *> * elements = delta->getElements();
+  MM::Vector<Element *> * elements = modification->getElements();
   MM::Vector<Element *>::Iterator i = elements->getIterator();
   while(i.hasNext() == MM_TRUE)
   {
@@ -117,8 +122,8 @@ MM::VOID MM::Reflector::merge(MM::Definition * delta)
     printf(".\n");    
     merge(global, e);
   }
-  delta->clearElements();  
-  delta->recycle(m);
+  modification->clearElements();
+  //modification->recycle(m);
 }
 
 MM::VOID MM::Reflector::addElement(MM::Definition * def,
@@ -393,9 +398,9 @@ MM::VOID MM::Reflector::init(MM::Definition * def)
   for(i.reset(); i.hasNext() == MM_TRUE; )
   {
     MM::Element * e = i.getNext();
-    if(e->getTypeId() == MM::T_Assert)
+    if(e->getTypeId() == MM::T_Assertion)
     {
-      init(def, (MM::Assert *) e);
+      init(def, (MM::Assertion *) e);
     }
   }
   
@@ -403,9 +408,9 @@ MM::VOID MM::Reflector::init(MM::Definition * def)
   for(i.reset(); i.hasNext() == MM_TRUE; )
   {
     MM::Element * e = i.getNext();
-    if(e->getTypeId() == MM::T_Delete)
+    if(e->getTypeId() == MM::T_Deletion)
     {
-      init(def, (MM::Delete *) e);
+      init(def, (MM::Deletion *) e);
     }
   }
 }
@@ -424,11 +429,11 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Element * element)
   {
     switch(element->getTypeId())
     {
-      case MM::T_Assert:
-        init(def, (MM::Assert *) element);
+      case MM::T_Assertion:
+        init(def, (MM::Assertion *) element);
         break;
-      case MM::T_Delete:
-        init(def, (MM::Delete *) element);
+      case MM::T_Deletion:
+        init(def, (MM::Deletion *) element);
         break;
       case MM::T_Declaration:
         init(def, (MM::Declaration *) element);
@@ -670,12 +675,12 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Declaration * decl)
   def->notifyObservers(def, m, MSG_NEW_DECL, decl);
 }
 
-MM::VOID MM::Reflector::init(MM::Definition * def, MM::Assert * assert)
+MM::VOID MM::Reflector::init(MM::Definition * def, MM::Assertion * assert)
 {
   //TODO
 }
 
-MM::VOID MM::Reflector::init(MM::Definition * def, MM::Delete * del)
+MM::VOID MM::Reflector::init(MM::Definition * def, MM::Deletion * del)
 {
   //name is a simple name (name->getName() == MM_NULL)
   MM::Name * name = del->getName();
@@ -705,11 +710,11 @@ MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Element * element)
   {
     switch(element->getTypeId())
     {
-      case MM::T_Assert:
-        deinit(def, (MM::Assert *) element);
+      case MM::T_Assertion:
+        deinit(def, (MM::Assertion *) element);
         break;
-      case MM::T_Delete:
-        deinit(def, (MM::Delete *) element);
+      case MM::T_Deletion:
+        deinit(def, (MM::Deletion *) element);
         break;
       case MM::T_Declaration:
         deinit(def, (MM::Declaration *) element);
@@ -922,12 +927,12 @@ MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Declaration * decl)
   def->notifyObservers(def, m, MSG_DEL_DECL, decl);
 }
 
-MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Assert * assert)
+MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Assertion * assert)
 {
   //TODO: tell the evaluator that this assertion does not apply anymore
 }
 
-MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Delete * del)
+MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Deletion * del)
 {
   //do nothing
 }
@@ -955,11 +960,11 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
   {
     switch(e1->getTypeId())
     {
-      case MM::T_Assert:
-        replace(def, (MM::Assert *) e1, e2);
+      case MM::T_Assertion:
+        replace(def, (MM::Assertion *) e1, e2);
         break;
-      case MM::T_Delete:
-        replace(def, (MM::Delete *) e1, e2);
+      case MM::T_Deletion:
+        replace(def, (MM::Deletion *) e1, e2);
         break;
       case MM::T_Declaration:
         replace(def, (MM::Declaration *) e1,  e2);
@@ -1167,7 +1172,7 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
 }
 
 MM::VOID MM::Reflector::replace(MM::Definition * def,
-                                MM::Assert * assert,
+                                MM::Assertion * assert,
                                 MM::Element * element)
 {
   removeElement(def, assert);
@@ -1175,7 +1180,7 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
 }
 
 MM::VOID MM::Reflector::replace(MM::Definition * def,
-                                MM::Delete * del,
+                                MM::Deletion * del,
                                 MM::Element * element)
 {
   removeElement(def, del);
