@@ -12,17 +12,44 @@
 namespace MM
 {
   class Definition;
-  class Declaration : public MM::Element
+  class Declaration : public MM::Element, public MM::Observer
   {
   private:
-    MM::Name * type;
-    MM::Name * name;
-    MM::Definition * def;
+    MM::Name       * type;  /**> type name */
+    MM::Definition * def;   /**> type definition */
+    MM::UINT32       label; /**> declaration identifier */
+
+    //declarations observe definitions to spawn and delete interfaces
+    //for observable nodes
+    MM::Map<MM::Name *, //interface name
+            MM::Node *, //interface node
+            MM::Name::Compare> * interfaces;
+    
   public:
-    Declaration(MM::Name * type, MM::Name * name);
+    Declaration(MM::Name * type,
+                MM::Name * name,
+                MM::Map<MM::Name *, MM::Node *, MM::Name::Compare> * interfaces);
     ~Declaration();
+    MM::VOID recycle(MM::Recycler * r);
+    
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
+    
+    MM::VOID update(MM::Observable * observable,
+                    MM::VOID * aux,
+                    MM::UINT32 message,
+                    MM::VOID * object);
+    
+    MM::Name * getTypeName();
+    
+    MM::VOID setDefinition(MM::Definition * def);
     MM::Definition * getDefinition();
+
+    MM::Node * getInterface(MM::Name * name);
+    MM::VOID addInterface(MM::Machine * m, MM::Node * node);
+    MM::VOID removeInterface(MM::Machine * m, MM::Node * node);
     MM::VOID toString(MM::String * buf);
+    MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };
 }
 
