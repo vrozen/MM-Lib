@@ -1,3 +1,22 @@
-a { pool B  ref C}
-a A
-assert hello false : "hello world"
+A {}
+pool A.a at 4
+auto pool A.b at 0
+
+A
+{
+  auto pool c at 0
+  pool a at 6
+}
+
+A.e1: a --> b
+
+A.c1: b . >=3 .> b
+
+A.B { pool d  E { } }
+
+A.c1: b . == 1 .>b
+
+A
+{
+  B bla
+}
