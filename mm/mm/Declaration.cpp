@@ -30,8 +30,9 @@
 #include "DrainNodeBehavior.h"
 #include "SourceNodeBehavior.h"
 #include "RefNodeBehavior.h"
-#include "Assert.h"
-#include "Delete.h"
+#include "Assertion.h"
+#include "Deletion.h"
+#include "Signal.h"
 #include "Declaration.h"
 #include "Definition.h"
 #include "InterfaceNode.h"
@@ -112,7 +113,7 @@ MM::VOID MM::Declaration::update(MM::Observable * observable,
 
 MM::Name * MM::Declaration::getTypeName()
 {
-  return name;
+  return type;
 }
 
 MM::VOID MM::Declaration::setDefinition(MM::Definition * def)
