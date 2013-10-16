@@ -6,34 +6,54 @@
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "Types.h"
+#include "Recyclable.h"
+#include "Vector.h"
+#include "Recycler.h"
 #include "String.h"
 
-const MM::CHAR * MM::String::SPACE_STR      = " ";
-const MM::CHAR * MM::String::LINEBREAK_STR  = "\n";
-const MM::UINT32 MM::String::SPACE_LEN      = 1;
-const MM::UINT32 MM::String::LINEBREAK_LEN  = 1;
-const MM::UINT32 MM::String::RESIZE_FACTOR  = 2;
+const MM::CHAR MM::String::SPACE_CHAR      = ' ';
+const MM::CHAR MM::String::LINEBREAK_CHAR  = '\n';
+const MM::UINT32 MM::String::RESIZE_FACTOR = 2;
 
-MM::String::String(MM::UINT32 size)
+MM::String::String(MM::CHAR * buf, MM::UINT32 size) : MM::Recyclable()
 {
   this->size = size;
   this->used = 0;
-  this->buf = new MM::CHAR[size];
-  memset(this->buf, 0, size);
+  this->buf = buf;
 }
 
 MM::String::~String()
 {
-  delete buf;
+  size = 0;
+  used = 0;
+  buf = MM_NULL;
 }
 
-MM::String * MM::String::clone()
+MM::VOID MM::String::recycle(MM::Recycler * r)
 {
-  MM::String * r = new MM::String(size);
-  r->append(this);
-  return r;
+  r->uncreate(buf);
+  this->MM::Recyclable::recycle(r);
+}
+
+MM::TID MM::String::getTypeId()
+{
+  return MM::T_String;
+}
+
+MM::BOOLEAN MM::String::instanceof(TID tid)
+{
+  if(tid == MM::T_String)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM::Recyclable::instanceof(tid);
+  }
 }
 
 MM::UINT32 MM::String::getSize()
@@ -73,14 +93,17 @@ MM::VOID MM::String::append(MM::CHAR * buf, MM::UINT32 len)
 MM::VOID MM::String::resize(MM::UINT32 size)
 {
   this->size = size;
-  char* pcNew = new char[size];
-  memset(this->buf, 0, size);
-  snprintf(pcNew, size-1, "%s", buf);
-  delete buf;
-  buf = pcNew;
+  //MM::CHAR * newBuf = new char[size];
+  MM::CHAR * newBuf = MM::Recycler::createBuffer(size);
+  //memset(newBuf, 0, size);
+  snprintf(newBuf, size-1, "%s", buf);
+  MM::Recycler::uncreate(buf);
+  //delete buf;
+  //r->uncreate(buf);
+  buf = newBuf;
 }
 
-MM::VOID MM::String::append(MM::INT32 val)
+MM::VOID MM::String::appendInt(MM::INT32 val)
 {
   MM::UINT32 ulDigits = digits(val);
   
@@ -92,18 +115,35 @@ MM::VOID MM::String::append(MM::INT32 val)
   else
   {
     resize(this->size * MM::String::RESIZE_FACTOR);
-    append(val);
+    appendInt(val);
+  }
+}
+
+MM::VOID MM::String::append(MM::CHAR c)
+{
+  if(this->used < this->size)
+  {
+    snprintf(this->buf + this->used, this->size - this->used, "%c", c);
+    this->used++;
   }
 }
 
 MM::VOID MM::String::space()
 {
-  append((MM::CHAR*)MM::String::SPACE_STR, MM::String::SPACE_LEN);
+  append(MM::String::SPACE_CHAR);
+}
+
+MM::VOID MM::String::space(MM::UINT32 amount)
+{
+  for(MM::UINT32 i = 0; i < amount; i++)
+  {
+    space();
+  }
 }
 
 MM::VOID MM::String::linebreak()
 {
-  append((MM::CHAR*)MM::String::LINEBREAK_STR, MM::String::LINEBREAK_LEN);
+  append(MM::String::LINEBREAK_CHAR);
 }
 
 MM::VOID MM::String::clear()
@@ -131,4 +171,9 @@ MM::UINT32 MM::String::digits(MM::INT32 val)
     digits++;
   }
   return digits;
+}
+
+MM::VOID MM::String::toString(MM::String * buf)
+{ 
+  buf->append(this);
 }
