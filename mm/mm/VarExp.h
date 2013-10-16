@@ -1,27 +1,36 @@
-//
-//  VarValExp.h
-//  mm
-//
-//  Created by Riemer van Rozen on 7/19/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
-//
-
-#ifndef __mm__VarValExp__
-#define __mm__VarValExp__
+/******************************************************************************
+ * Copyright (c) 2013 Riemer van Rozen. All rights reserved.
+ ******************************************************************************/
+/*!
+ * The VarExp abstraction defines expressions referencing pools.
+ * @package MM
+ * @file    VarExp.h
+ * @author  Riemer van Rozen
+ * @date    July 19th 2013
+ */
+/******************************************************************************/
+#ifndef __mm__VarExp__
+#define __mm__VarExp__
 
 namespace MM
 {
+  /**
+   * @class VarExp
+   * @brief Defines the VarExp class
+   */
   class VarExp : public MM::Exp
   {
   private:
-    MM::Name * name;
-    MM::PoolNode * ref;
+    MM::Name * name; /**> variable name */
+    //MM::Node * ref;
   public:
     VarExp(MM::Name * name);
     ~VarExp();
-    MM::ValExp * eval();
+    MM::VOID recycle(MM::Recycler * r);
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
     MM::VOID toString(MM::String * buf);
   };
 }
 
-#endif /* defined(__mm__VarValExp__) */
+#endif /* defined(__mm__VarExp__) */
