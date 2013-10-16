@@ -15,96 +15,62 @@ namespace MM
   
   class Node : public MM::Element
   {
-  public:
-    typedef enum __IO
-    {
-      IO_ERROR,
-      IO_PRIVATE,
-      IO_IN,
-      IO_OUT,
-      IO_INOUT
-    } IO;
-    
-    typedef enum __When
-    {
-      WHEN_ERROR,
-      WHEN_PASSIVE,
-      WHEN_AUTO,
-      WHEN_USER,
-      WHEN_START
-    } When;
-    
-    typedef enum __Act
-    {
-      ACT_ERROR,
-      ACT_PULL,
-      ACT_PUSH
-    } Act;
-    
-    typedef enum __How
-    {
-      HOW_ERROR,
-      HOW_ANY,
-      HOW_ALL
-    } How;
-    
-    static const MM::CHAR * IO_STR[];
-    static const MM::CHAR * WHEN_STR[];
-    static const MM::CHAR * ACT_STR[];
-    static const MM::CHAR * HOW_STR[];
-    
-    static const MM::UINT32 IO_LEN[];
-    static const MM::UINT32 WHEN_LEN[];
-    static const MM::UINT32 ACT_LEN[];
-    static const MM::UINT32 HOW_LEN[];
-    
   private:
-    std::vector<MM::Edge*> * input;
-    std::vector<MM::Edge*> * output;
-    std::vector<MM::Edge*> * cond;
-    MM::Name * name;
-    MM::Node::IO io;
-    MM::Node::When when;
-    MM::Node::Act act;
-    MM::Node::How how;
-    //MM::BOOLEAN active;
-  protected:
-    Node(MM::Node::IO io,
-         MM::Node::When when,
-         MM::Node::Act act,
-         MM::Node::How how,
-         MM::Name * name);
+    MM::Vector<MM::Edge *> * input;      //tgt = this node
+    MM::Vector<MM::Edge *> * output;     //src = this node
+    MM::Vector<MM::Edge *> * conditions; //tgt = this node
+    MM::Vector<MM::Edge *> * triggers;   //src = this node
+    MM::Vector<MM::Edge *> * aliases;    //tgt = this node
+    
+    MM::NodeBehavior * behavior;
+
   public:
-    virtual ~Node();
-    MM::Name * getName();
+    Node(MM::Name * name,
+         MM::NodeBehavior * behavior);
+    ~Node();
+    MM::VOID recycle(MM::Recycler * r);
+    
+    virtual MM::TID getTypeId();
+    virtual MM::BOOLEAN instanceof(MM::TID tid);
+    
+    class Compare
+    {
+    public:
+      bool operator()(Node const * n1, Node const * n2) const
+      {
+        MM::BOOLEAN lt = (n1 < n2);
+        return lt;
+      }
+    };
+
+    MM::NodeBehavior * getBehavior();
+    MM::VOID setBehavior(MM::NodeBehavior * behavior);
+    
     MM::VOID addInput(MM::Edge * edge);
     MM::VOID addOutput(MM::Edge * edge);
     MM::VOID addCondition(MM::Edge * edge);
+    MM::VOID addTrigger(MM::Edge * edge);
+    MM::VOID addAlias(MM::Edge * edge);
+    
     MM::VOID removeInput(MM::Edge * edge);
     MM::VOID removeOutput(MM::Edge * edge);
     MM::VOID removeCondition(MM::Edge * edge);
-    MM::Node::When getWhen();
-    MM::Node::Act getAct();
-    MM::Node::How getHow();
-    std::vector<Edge*> * getInput();
-    std::vector<Edge*> * getOutput();
-    std::vector<Edge*> * getCond();
-    MM::VOID setWhen(MM::Node::When when);
-    MM::VOID setAct(MM::Node::Act act);
-    MM::VOID setHow(MM::Node::How how);
-    MM::BOOLEAN isActive();
-    virtual MM::BOOLEAN hasCapacity() = 0;
-    virtual MM::BOOLEAN hasResources() = 0;
-    virtual MM::BOOLEAN hasCapacity(MM::UINT32 amount) = 0;
-    virtual MM::BOOLEAN hasResources(MM::UINT32 amount) = 0;
-    virtual MM::VOID sub(MM::UINT32 amount) = 0;
-    virtual MM::VOID add(MM::UINT32 amount) = 0;
-    MM::Transition * step();
-  private:
-    MM::Transition * stepAll(std::vector<Edge*> * work);
-    MM::Transition * stepAny(std::vector<Edge*> * work);
-  public:
+    MM::VOID removeTrigger(MM::Edge * edge);
+    MM::VOID removeAlias(MM::Edge * alias);
+    
+    MM::Vector<Edge *> * getInput();
+    MM::Vector<Edge *> * getOutput();
+    MM::Vector<Edge *> * getConditions();
+    MM::Vector<Edge *> * getTriggers();
+    MM::Vector<Edge *> * getAliases();
+    
+    MM::VOID setInput(MM::Vector<MM::Edge *> * input);
+    MM::VOID setOutput(MM::Vector<MM::Edge *> * output);
+    MM::VOID setConditions(MM::Vector<MM::Edge *> * conditions);
+    MM::VOID setTriggers(MM::Vector<MM::Edge *> * triggers);
+    MM::VOID setAliases(MM::Vector<MM::Edge *> * aliases);
     MM::VOID toString(MM::String * buf);
+    MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };
 }
 #endif /* defined(__mm__Node__) */

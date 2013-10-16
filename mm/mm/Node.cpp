@@ -6,191 +6,215 @@
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 
+#include <stdio.h>
+#include <stdlib.h>
+#include "YYLTYPE.h"
 #include "Types.h"
+#include "Recyclable.h"
+#include "Vector.h"
+#include "Map.h"
+#include "Recycler.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Element.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
-#include <vector>
+#include "NodeBehavior.h"
 #include "Node.h"
-#include "Event.h"
-#include "FlowEvent.h"
-#include "Transition.h"
-#include "PoolNode.h"
 
-const MM::CHAR * MM::Node::IO_STR[] =
+MM::Node::Node(MM::Name * name,
+               MM::NodeBehavior * behavior): MM::Element(name)
 {
-  "error",
-  "", //epsilon = private
-  "in",
-  "out",
-  "inout"
-};
-
-const MM::CHAR * MM::Node::WHEN_STR[] =
-{
-  "error",
-  "", //epsilon = passive
-  "auto",
-  "user",
-  "start"
-};
-
-const MM::CHAR * MM::Node::ACT_STR[] =
-{
-  "error",
-  "", //epsilon = pull
-  "push"
-};
-
-const MM::CHAR * MM::Node::HOW_STR[] =
-{
-  "error",
-  "", //epsilon = any
-  "all"
-};
-
-const MM::UINT32 MM::Node::IO_LEN[] =
-{
-  5, //error
-  0, //epsilon (private)
-  2, //in
-  3, //out
-  5  //inout
-};
-
-const MM::UINT32 MM::Node::WHEN_LEN[] =
-{
-  5, //error
-  0, //epsilon (passive)
-  4, //auto
-  4, //user
-  5  //start
-};
-
-const MM::UINT32 MM::Node::ACT_LEN[] =
-{
-  5, //error
-  0, //epsilon (pull)
-  4  //push
-};
-
-const MM::UINT32 MM::Node::HOW_LEN[] =
-{
-  5, //error
-  0, //any
-  3  //all
-};
-
-MM::Node::Node(MM::Node::IO io,
-               MM::Node::When when,
-               MM::Node::Act act,
-               MM::Node::How how,
-               MM::Name * name): MM::Element()
-{
-  this->io = io;
-  this->when = when;
-  this->act = act;
-  this->how = how;
-  this->name = name;
-  this->input = new std::vector<Edge*>();
-  this->output = new std::vector<Edge*>();
-  this->cond = new std::vector<Edge*>();
+  this->behavior = behavior;
+  input = MM_NULL;
+  output = MM_NULL;
+  conditions = MM_NULL;
+  triggers = MM_NULL;
+  aliases = MM_NULL;
 }
 
 MM::Node::~Node()
 {
-  delete name;
-  delete input;
-  delete output;
-  delete cond;
+  behavior = MM_NULL;
+  input = MM_NULL;
+  output = MM_NULL;
+  conditions = MM_NULL;
+  triggers = MM_NULL;
+  aliases = MM_NULL;
 }
 
-MM::Name * MM::Node::getName()
+MM::VOID MM::Node::recycle(MM::Recycler * r)
 {
-  return name;
+  if(input != MM_NULL)
+  {
+    delete input;  //FIXME
+  }
+  if(output != MM_NULL)
+  {
+    delete output; //FIXME
+  }
+  if(conditions != MM_NULL)
+  {
+    delete conditions;   //FIXME
+  }
+  if(triggers != MM_NULL)
+  {
+    delete triggers; //FIXME
+  }
+  if(aliases != MM_NULL)
+  {
+    delete aliases;
+  }
+  
+  behavior->recycle(r);
+  
+  MM::Element::recycle(r);
+}
+
+MM::TID MM::Node::getTypeId()
+{
+  return MM::T_Node;
+}
+
+MM::BOOLEAN MM::Node::instanceof(MM::TID tid)
+{
+  if(tid == MM::T_Node)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM::Element::instanceof(tid);
+  }
+}
+
+MM::NodeBehavior * MM::Node::getBehavior()
+{
+  return behavior;
+}
+
+MM::VOID MM::Node::setBehavior(MM::NodeBehavior * behavior)
+{
+  this->behavior = behavior;
 }
 
 MM::VOID MM::Node::addInput(MM::Edge * edge)
 {
-  this->input->push_back(edge);
+  input->add(edge);
 }
 
 MM::VOID MM::Node::addOutput(MM::Edge * edge)
 {
-  this->output->push_back(edge);
+  output->add(edge);
 }
 
 MM::VOID MM::Node::addCondition(MM::Edge * edge)
 {
-  this->cond->push_back(edge);
+  conditions->add(edge);
+}
+
+MM::VOID MM::Node::addTrigger(MM::Edge * edge)
+{
+  triggers->add(edge);
+}
+
+MM::VOID MM::Node::addAlias(MM::Edge * edge)
+{
+  aliases->add(edge);
 }
 
 MM::VOID MM::Node::removeInput(MM::Edge * edge)
 {
-  //todo
+  input->remove(edge);
 }
 
 MM::VOID MM::Node::removeOutput(MM::Edge * edge)
 {
-  //todo
+  output->remove(edge);
 }
-
 
 MM::VOID MM::Node::removeCondition(MM::Edge * edge)
 {
-  //todo
+  conditions->remove(edge);
 }
 
-MM::Node::When MM::Node::getWhen()
+MM::VOID MM::Node::removeTrigger(MM::Edge * edge)
 {
-  return when;
+  triggers->remove(edge);
 }
 
-MM::Node::Act MM::Node::getAct()
+MM::VOID MM::Node::removeAlias(MM::Edge * edge)
 {
-  return act;
+  aliases->remove(edge);
 }
 
-MM::Node::How MM::Node::getHow()
-{
-  return how;
-}
-
-std::vector<MM::Edge*> * MM::Node::getInput()
+MM::Vector<MM::Edge *> * MM::Node::getInput()
 {
   return input;
 }
 
-std::vector<MM::Edge*> * MM::Node::getOutput()
+MM::Vector<MM::Edge *> * MM::Node::getOutput()
 {
   return output;
 }
 
-std::vector<MM::Edge*> * MM::Node::getCond()
+MM::Vector<MM::Edge *> * MM::Node::getConditions()
 {
-  return cond;
+  return conditions;
 }
 
-MM::VOID MM::Node::setWhen(MM::Node::When when)
+MM::Vector<MM::Edge *> * MM::Node::getTriggers()
 {
-  this->when = when;
+  return triggers;
 }
 
-MM::VOID MM::Node::setAct(MM::Node::Act act)
+MM::Vector<MM::Edge *> * MM::Node::getAliases()
 {
-  this->act = act;
+  return aliases;
 }
 
-MM::VOID MM::Node::setHow(MM::Node::How how)
+MM::VOID MM::Node::setInput(MM::Vector<MM::Edge *> * input)
 {
-  this->how = how;
+  this->input = input;
 }
 
-MM::BOOLEAN MM::Node::isActive()
+MM::VOID MM::Node::setOutput(MM::Vector<MM::Edge *> * output)
+{
+  this->output = output;
+}
+
+MM::VOID MM::Node::setConditions(MM::Vector<MM::Edge *> * conditions)
+{
+  this->conditions = conditions;
+}
+
+MM::VOID MM::Node::setTriggers(MM::Vector<MM::Edge *> * triggers)
+{
+  this->triggers = triggers;
+}
+
+MM::VOID MM::Node::setAliases(MM::Vector<MM::Edge *> * aliases)
+{
+  this->aliases = aliases;
+}
+
+MM::VOID MM::Node::toString(MM::String * buf)
+{
+  toString(buf, 0);
+}
+
+MM::VOID MM::Node::toString(MM::String * buf, MM::UINT32 indent)
+{
+  buf->space(indent);
+  behavior->toString(buf, name);
+}
+
+/*
+MM::BOOLEAN MM::Node::isActive(MM::Instance * i)
 {
   //return active;
   //note this should be calculated based on instantiations,
@@ -198,10 +222,82 @@ MM::BOOLEAN MM::Node::isActive()
   return MM_TRUE;
 }
 
+MM::BOOLEAN MM::Node::isSatisfied(MM::Machine * m,
+                                  MM::Instance * i,
+                                  MM::Transition * t)
+{
+  //calculate which node's inputs are 'satisfied'
+  //this set is the set of node labels for which all flow edges they operate on are satisfied at the same time
+  //this semantics is a bit strange since we also have the 'all' and 'any' modifiers
+  //therefore we might expect any nodes to trigger when any flow is satisfied, but this is not true!
+
+  //satisfied nodes are
+  //1. pulling nodes
+  //either each inflow is satisfied and it has inflow
+  //or the node has no inflow and it is active (auto or activated)
+  //2. pushing nodes
+  //either each outflow is satisfied and it has outflow
+  //or the node has no outflow and it is active (auto or activated)
+  
+  MM::BOOLEAN satisfied = MM_TRUE;
+  
+  if(act == MM::Node::ACT_PULL)
+  {
+    if(input->isEmpty() == MM_TRUE)
+    {
+      satisfied = this->isActive(i);
+    }
+    else
+    {
+      MM::Vector<Edge *>::Iterator fIter = input->getIterator();
+      while(fIter.hasNext())
+      {
+        Edge * edge = fIter.getNext();
+        Node * src = edge->getSource();
+        Node * tgt = edge->getTarget();
+        ValExp * val = 0; //FIXME: edge->getExp()->eval(m, i, edge);
+        //FlowEvent * flow = t->getFlow(i, src, tgt);
+        //UINT32 amount = flow->getAmount();
+        
+        //if(flow != MM_NULL)
+        //{
+          //satisfied = val->greaterEquals(amount);
+          //}
+          //else
+          //{
+          // satisfied = MM_FALSE;
+          // }
+      }
+    }
+  }
+  else if(act == ACT_PUSH)
+  {
+    MM::Vector<Edge *>::Iterator iter = input->getIterator();
+    
+    while(iter.hasNext())
+    {
+      Edge * edge = iter.getNext();
+      
+      //if(!edge->isSatisfied(instance, transition))
+      //{
+      // satisified = MM_FALSE;
+      //}
+    }
+  }
+  else
+  {
+    //error
+  }
+  
+  return satisfied;
+}
+
+
+
 MM::Transition * MM::Node::step()
 {
   MM::Transition * tr = NULL;
-  std::vector<Edge*> * work = NULL;
+  MM::Vector<Edge *> * work = NULL;
   
   if(this->getAct() == ACT_PULL)
   {
@@ -224,15 +320,15 @@ MM::Transition * MM::Node::step()
   return tr;
 }
 
-MM::Transition * MM::Node::stepAll(std::vector<Edge*> * work)
+MM::Transition * MM::Node::stepAll(MM::Vector<Edge *> * work)
 {
-  std::vector<Edge*>::iterator i;
+  MM::Vector<Edge *>::Iterator i = work->getIterator();
   bool success = true;
   Transition * tr = new Transition();
   
-  for(i = work->begin(); i != work->end(); i++)
+  while(i.hasNext() == MM_TRUE)
   {
-    Edge* edge = *i;
+    Edge* edge = i.getNext();
     MM::INT32 flow = 0;
     Node * src = edge->getSource();
     Node * tgt = edge->getTarget();
@@ -254,25 +350,26 @@ MM::Transition * MM::Node::stepAll(std::vector<Edge*> * work)
   
   if(!success)
   {
-    tr->back();
-    tr->clear();
+    //FIXME
+    //tr->back();
+    //tr->clear();
   }
   
   return tr;
 }
 
-MM::Transition * MM::Node::stepAny(std::vector<Edge*> * work)
+MM::Transition * MM::Node::stepAny(MM::Vector<Edge *> * work)
 {
-  std::vector<Edge*>::iterator i;
-  std::vector<Edge*> rnd(work->size());
-  rnd = *work;
+  //MM::Vector<Edge *>::Iterator * i = work->getIterator();
+  //MM::Vector<Edge *> rnd(work->size());
+  //rnd = *work;
   
-  Transition * tr = new Transition();
-  std::random_shuffle ( rnd.begin(), rnd.end() );
-  
-  for(i = rnd.begin(); i != rnd.end(); i++)
+  //FIXME random
+
+  Transition * tr = MM_NULL;
+  while(i->hasNext() == MM_TRUE)
   {
-    Edge* edge = *i;
+    Edge * edge = i->getNext();s
     MM::INT32 flow = 0;
     Node * src = edge->getSource();
     Node * tgt = edge->getTarget();
@@ -316,30 +413,8 @@ MM::Transition * MM::Node::stepAny(std::vector<Edge*> * work)
       }
     }
   }
-  
   return tr;
 }
+*/
 
-MM::VOID MM::Node::toString(MM::String * buf)
-{
-  if(io != MM::Node::IO_PRIVATE)
-  {
-    buf->append((MM::CHAR*)MM::Node::IO_STR[io], MM::Node::IO_LEN[io]);
-    buf->space();
-  }
-  if(when != MM::Node::WHEN_PASSIVE)
-  {
-    buf->append((MM::CHAR*)MM::Node::WHEN_STR[when], MM::Node::WHEN_LEN[when]);
-    buf->space();
-  }
-  if(act != MM::Node::ACT_PULL)
-  {
-    buf->append((MM::CHAR*)MM::Node::ACT_STR[act], MM::Node::ACT_LEN[act]);
-    buf->space();
-  }
-  if(how != MM::Node::HOW_ANY)
-  {
-    buf->append((MM::CHAR*)MM::Node::HOW_STR[how], MM::Node::HOW_LEN[how]);
-    buf->space();
-  }
-}
+
