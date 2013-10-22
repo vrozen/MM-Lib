@@ -22,6 +22,7 @@ namespace MM
     MM::VOID recycle(MM::Recycler *r);
     MM::TID getTypeId() = 0;
     MM::BOOLEAN instanceof(MM::TID tid);
+    MM::VOID addElement(MM::Element * element);
     MM::Vector<MM::Element *> * getElements();
     MM::VOID clearElements();
     MM::VOID toString(MM::String * buf);

@@ -11,45 +11,56 @@
 
 namespace MM
 {
-  class Definition;
-  class Declaration;
+  //class Definition;
+  //class Declaration;
   class Instance : public MM::Recyclable, public MM::Observer
   {
+  public:
+    static const MM::UINT32 INDENT;
   private:
-    //type definition
-    MM::Definition * type;
+    MM::Instance * parent; /**> parent instance. @note: bad design? */
+    MM::Definition * type; /**> declared type. */
+    MM::Name * name;       /**> declared name. @note: necessary? */
 
-    //pool values: pool id --> value
-    MM::Map<MM::UINT32 /*id*/, MM::UINT32 /*value*/ > * values;
+    //NOTE: these maps can become arrays
+    //      when nodes and declarations in types have unique sequential labels
+    //      pool values: pool --> value
+    MM::Map<MM::Node *, MM::UINT32> * values;
+    MM::Map<MM::Node *, MM::UINT32> * oldValues;
+    MM::Map<MM::Node *, MM::UINT32> * newValues;
     
-    //declaration instances: declaration id --> instance
-    MM::Map<MM::UINT32 /*id*/, MM::Instance * /*instance*/> * instances;
+    //declaration instances: declaration --> instance
+    MM::Map<MM::Declaration *, MM::Instance *> * instances;
     
-    //node id --> boolean
-    MM::Vector<MM::UINT32 /*id*/> * activeNodes;
+    //node --> boolean
+    MM::Vector<MM::Node *> * activeNodes; /**> TODO: bitvector */
     
   public:
-    Instance(MM::Definition * type);
+    Instance(MM::Instance * parent,
+             MM::Definition * def,
+             MM::Name * name);
     ~Instance();
     MM::VOID recycle(MM::Recycler * r);
 
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
     
+    MM::Map<MM::Declaration *, MM::Instance *> * getInstances();
+    
     MM::Definition * getDefinition();
+    MM::Instance * getParent();
+    MM::Name * getName();
     
     //Pool:
-    MM::VOID store(MM::UINT32 pool, MM::UINT32 val); //stores a value of a pool
-    MM::INT32 retrieve(MM::UINT32 pool);             //retrieves value of a pool
-
-    MM::VOID commit();
+    MM::VOID store(MM::Node * pool, MM::UINT32 val); //stores a value of a pool
+    MM::INT32 retrieve(MM::Node * pool);             //retrieves value of a pool
     
     //Instances:
-    MM::Instance * retrieveInstance(MM::UINT32 decl);
+    MM::Instance * retrieveInstance(MM::Declaration * decl);
     
     //Activity:
-    MM::BOOLEAN isActive(MM::UINT32 node);
-    MM::VOID setActive(MM::UINT32 node, MM::BOOLEAN active);
+    MM::BOOLEAN isActive(MM::Node * node);
+    MM::VOID setActive(MM::Node * node, MM::BOOLEAN active);
 
     //Type updates that require dynamic fixes
     MM::VOID update(MM::Observable * observable,
@@ -64,7 +75,18 @@ namespace MM
     MM::VOID removeInstance(MM::Declaration * decl, MM::Recycler * r);
     MM::VOID removePool(MM::Node * pool);
     
-    //MM::VOID toString(MM::String * buf);
+  public:
+    MM::VOID begin();
+    MM::UINT32 getCapacity(MM::Node * node);
+    MM::UINT32 getResources(MM::Node * node);
+    MM::BOOLEAN hasResources(MM::Node * node, MM::UINT32 amount);
+    MM::BOOLEAN hasCapacity(MM::Node * node, MM::UINT32 amount);
+    MM::VOID sub(MM::Node * node, MM::UINT32 amount);
+    MM::VOID add(MM::Node * node, MM::UINT32 amount);
+    MM::VOID commit();
+  public:
+    MM::VOID toString(MM::String * buf);
+    MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };
 }
 

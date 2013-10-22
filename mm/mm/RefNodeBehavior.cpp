@@ -98,6 +98,21 @@ MM::Node * MM::RefNodeBehavior::getReference()
   }
 }
 
+MM::UINT32 MM::RefNodeBehavior::getCreateMessage()
+{
+  return MM::MSG_NEW_REF;
+}
+
+MM::UINT32 MM::RefNodeBehavior::getUpdateMessage()
+{
+  return MM::MSG_UPD_REF;
+}
+
+MM::UINT32 MM::RefNodeBehavior::getDeleteMessage()
+{
+  return MM::MSG_DEL_REF;
+}
+
 MM::VOID MM::RefNodeBehavior::toString(MM::String * buf)
 {
   buf->append((MM::CHAR*)MM::RefNodeBehavior::REF_STR,

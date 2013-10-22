@@ -24,6 +24,9 @@ namespace MM
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
+    MM::UINT32 getCreateMessage();
+    MM::UINT32 getUpdateMessage();
+    MM::UINT32 getDeleteMessage();
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::Name * name);
 

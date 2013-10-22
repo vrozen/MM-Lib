@@ -17,10 +17,8 @@ namespace MM
   public:
     Observer();
     ~Observer();
-    //MM::VOID recylce(MM::Recycler * r);
     virtual MM::TID getTypeId();
     virtual MM::BOOLEAN instanceof(MM::TID tid);
-
     virtual MM::VOID update(MM::Observable * observable,
                             MM::VOID * aux,
                             MM::UINT32 message,

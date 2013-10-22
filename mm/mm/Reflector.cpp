@@ -42,6 +42,7 @@
 #include "Observable.h"
 #include "Declaration.h"
 #include "Definition.h"
+#include "Instance.h"
 #include "Operator.h"
 #include "ValExp.h"
 #include "UnExp.h"
@@ -58,20 +59,16 @@
 #include "VarExp.h"
 #include "Instance.h"
 #include "Reflector.h"
+#include "Evaluator.h"
 #include "Machine.h"
 
 MM::Reflector::Reflector(MM::Machine * m)
 {
   this->m = m;
-  this->global = MM_NULL;
 }
 
 MM::Reflector::~Reflector()
 {
-  if(global != MM_NULL)
-  {
-    global->recycle(m);
-  }
   this->m = MM_NULL;
 }
 
@@ -94,21 +91,18 @@ MM::BOOLEAN MM::Reflector::instanceof(MM::TID tid)
 
 MM::Definition * MM::Reflector::getDefinition()
 {
-  return global;
+  return m->getDefinition();
+}
+
+MM::Instance * MM::Reflector::getInstance()
+{
+  return m->getInstance();
 }
 
 //Merge a delta with the global type
 MM::VOID MM::Reflector::merge(MM::Modification * modification)
 {
-  if(global == MM_NULL)
-  {
-    //there is no global scope type yet
-    //set the global scope type to the first parsed definition
-    MM::Vector<MM::Element*> * elements = m->createElementVector();
-    MM::Definition * def = m->createDefinition(MM_NULL, elements);
-    init(def);
-    this->global = def;
-  }
+
   //merge the global scope type with the delta
   
   MM::Vector<Element *> * elements = modification->getElements();
@@ -120,10 +114,11 @@ MM::VOID MM::Reflector::merge(MM::Modification * modification)
     printf("Merge: merging ");
     e->getName()->print();
     printf(".\n");    
-    merge(global, e);
+    merge(m->getDefinition(), e);
   }
+  
   modification->clearElements();
-  //modification->recycle(m);
+  
 }
 
 MM::VOID MM::Reflector::addElement(MM::Definition * def,
@@ -172,32 +167,28 @@ MM::VOID MM::Reflector::merge(MM::Definition * root,
   
   if(element->getTypeId() == MM::T_Definition)
   {
-    printf("Merge: Merge definition ");
-    element->getName()->print();
-    printf(" into parent type definition\n");
+    printf("Merge: Merge definition %s into parent type definition\n",
+           element->getName()->getBuffer());
     merge(root, (MM::Definition *) element);
   }
   else
   {
-    printf("Merge: Merge element ");
-    element->getName()->print();
-    printf(" into parent type definition\n");
+    printf("Merge: Merge element %s into parent type definition\n",
+           element->getName()->getBuffer());
     if(navigate(root, element, &def, &found) == MM_TRUE)
     {
       if(found == MM_NULL)
       {
-        printf("Merge: Element ");
-        element->getName()->print();
-        printf(" is new in type: add and initialize\n");
+        printf("Merge: Element %s is new in type: add and initialize\n",
+               element->getName()->getBuffer());
         
         def->addElement(element);
         init(def, element);
       }
       else
       {
-        printf("Merge: Element ");
-        element->getName()->print();
-        printf(" exists in type: replace it\n");
+        printf("Merge: Element %s exists in type: replace it\n",
+               element->getName()->getBuffer());
         replace(def, found, element);
       }
     }
@@ -216,17 +207,15 @@ MM::VOID MM::Reflector::merge(MM::Definition * root,
     printf("Merge: Navigated to type definition.\n");
     if(found == MM_NULL)
     {
-      printf("Merge: Adding new type definition ");
-      type->getName()->print();
-      printf(" to parent definition.\n");
+      printf("Merge: Adding new type definition %s to parent definition.\n",
+             type->getName()->getBuffer());
       def->addElement(type);
       init(root,type);
     }
     else
     {
-      printf("Merge: Merging type definitions ");
-      found->getName()->print();
-      printf(".\n");
+      printf("Merge: Merging type definitions %s\n",
+             found->getName()->getBuffer());
       
       //2b. definition is not new update elements and add elements
       MM::Vector<Element *> * elements = type->getElements();
@@ -261,17 +250,13 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
     
     while(curName != MM_NULL)
     {
-      printf("Navigate: Navigating to ");
-      curName->print();
-      printf(".\n");
-      
+      printf("Navigate: Navigating to %s\n", curName->getBuffer());      
       curElement = type->getElement(curName);
       
       if(curElement != MM_NULL && curElement->getTypeId() == MM::T_Definition)
       {
-        printf("Navigate: Navigating into type ");
-        curName->print();
-        printf(".\n");
+        printf("Navigate: Navigating into type %s\n",
+               curElement->getName()->getBuffer());
         
         //parent is a definition, keep searching
         type = (MM::Definition *) curElement;
@@ -279,9 +264,7 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
         if(curName->getName() == MM_NULL)
         {
           //we found a definitions
-          printf("Navigate: Found definition ");
-          curName->print();
-          printf(".\n");
+          printf("Navigate: Found definition %s\n", curName->getBuffer());
           success = MM_TRUE;
           break;
         }
@@ -291,9 +274,7 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
         //element is not a definition
         if(curName->getName() == MM_NULL)
         {
-          printf("Navigate: Found element ");
-          curName->print();
-          printf(".\n");
+          printf("Navigate: Found element %s\n", curName->getBuffer());
           
           //e1 == MM_NULL --> name denotes a new element
           //e1 != MM_NULL --> element will be replaced
@@ -360,7 +341,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def)
     MM::Element * e = i.getNext();
     if(e->getTypeId() == MM::T_Definition)
     {
-      init((MM::Definition *) e);
+      init(def, (MM::Definition *) e);
     }
   }
   
@@ -665,6 +646,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Declaration * decl)
   if(def != MM_NULL)
   {
     decl->setDefinition(def2);
+    def2->addObserver(decl);
   }
   else
   {
@@ -989,26 +971,33 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
   
   if(element->getTypeId() == MM::T_Node)
   {
-    //common code for replacing nodes by nodes goes here...
-  
-    MM::NodeBehavior * behavior = node->getBehavior();
-    switch(behavior->getTypeId())
+    MM::Node * node2 = (MM::Node *) element;
+    MM::NodeBehavior * b1 = node->getBehavior();
+    MM::NodeBehavior * b2 = node2->getBehavior();
+    
+    //swap behaviors
+    node->setBehavior(b2);
+    node2->setBehavior(b1);
+
+    //reprioritize
+    def->prioritize(node);
+    
+    //notify observers
+    if(b1->getTypeId() == b2->getTypeId())
     {
-      case MM::T_PoolNodeBehavior:
-        replace(def, node, (MM::PoolNodeBehavior *) behavior, (MM::Node*) element);
-        break;
-      case MM::T_SourceNodeBehavior:
-        replace(def, node, (MM::SourceNodeBehavior *) behavior, (MM::Node*) element);
-        break;
-      case MM::T_DrainNodeBehavior:
-        replace(def, node, (MM::DrainNodeBehavior *) behavior, (MM::Node*) element);
-        break;
-      case MM::T_RefNodeBehavior:
-        replace(def, node, (MM::RefNodeBehavior *) behavior, (MM::Node*) element);
-        break;
-      default:
-        break;
+      MM::UINT32 updateMessage = b1->getUpdateMessage();
+      def->notifyObservers(def, m, updateMessage, node);
     }
+    else
+    {
+      MM::UINT32 deleteMessage = b1->getDeleteMessage();
+      MM::UINT32 createMessage = b2->getCreateMessage();
+      def->notifyObservers(def, m, deleteMessage, node);
+      def->notifyObservers(def, m, createMessage, node);
+    }
+    
+    //clean up
+    node2->recycle(m);
   }
   else
   {
@@ -1017,63 +1006,6 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
     addElement(def, element);
   }
 }
-
-
-MM::VOID MM::Reflector::replace(MM::Definition * def,
-                                MM::Node * node,
-                                MM::PoolNodeBehavior * behavior,
-                                MM::Node * node2)
-{
-  
-  MM::NodeBehavior * behavior2 = node2->getBehavior();
-  MM::TID tid = behavior2->getTypeId();
-  
-  def->prioritize(node2);
-  node->setBehavior(behavior2);
-  node2->setBehavior(behavior);
-  def->prioritize(node);
-  node2->recycle(m);
-
-  
-  if(tid == MM::T_PoolNodeBehavior)
-  {
-    def->notifyObservers(def, m, MM::MSG_UPD_POOL, node);
-  }
-  else
-  {
-    def->notifyObservers(def, m, MM::MSG_DEL_POOL, node);
-    MM::MSG message = MSG_ERROR;
-    def->notifyObservers(def, m, message, node);    
-  }
-}
-
-MM::VOID  MM::Reflector::replace(MM::Definition * def,
-                 MM::Node * node,
-                 MM::SourceNodeBehavior * behavior,
-                 MM::Node * node2)
-{
-  
-}
-
-
-MM::VOID  MM::Reflector::replace(MM::Definition * def,
-                 MM::Node * node,
-                 MM::DrainNodeBehavior * behavior,
-                 MM::Node * node2)
-{
-  
-}
-
-
-MM::VOID  MM::Reflector::replace(MM::Definition * def,
-                 MM::Node * node,
-                 MM::RefNodeBehavior * behavior,
-                 MM::Node * node2)
-{
-  
-}
-
-
 
 MM::VOID MM::Reflector::replace(MM::Definition * def,
                                 MM::Edge * edge,

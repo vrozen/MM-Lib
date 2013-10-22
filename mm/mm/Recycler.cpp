@@ -56,9 +56,9 @@ MM::Recycler::~Recycler()
     str->space();
     MM::CHAR * description = (MM::CHAR*)typeid(*r).name();
     str->append(description, strlen(description));
+    //str->linebreak();
+    //r->toString(str);
     str->linebreak();
-    r->toString(str);
-    str->linebreak();    
   }
 
   str->print();

@@ -60,6 +60,11 @@ MM::BOOLEAN MM::Program::instanceof(MM::TID tid)
   }
 }
 
+MM::VOID MM::Program::addTransformation(MM::Transformation * tr)
+{
+  transformations->add(tr);
+}
+
 MM::Vector<MM::Transformation *> * MM::Program::getTransformations()
 {
   return this->transformations;
@@ -67,7 +72,8 @@ MM::Vector<MM::Transformation *> * MM::Program::getTransformations()
 
 MM::VOID MM::Program::toString(MM::String * buf)
 {
-  MM::Vector<MM::Transformation *>::Iterator i = transformations->getIterator();
+  MM::Vector<MM::Transformation *>::Iterator i =
+    transformations->getIterator();
   while(i.hasNext() == MM_TRUE)
   {
     MM::Transformation * t = i.getNext();

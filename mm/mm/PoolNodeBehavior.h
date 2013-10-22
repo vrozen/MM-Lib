@@ -48,6 +48,10 @@ namespace MM
     MM::VOID setMax(MM::UINT32 max);
     MM::VOID setAdd(MM::Exp * exp);
     
+    MM::UINT32 getCreateMessage();
+    MM::UINT32 getUpdateMessage();
+    MM::UINT32 getDeleteMessage();
+    
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::Name * name);
 

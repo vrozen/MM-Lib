@@ -11,18 +11,71 @@
 
 namespace  MM
 {
-  class Evaluator
+  class Evaluator : public Recyclable
   {
   private:
     MM::Machine * m;
-  public:
+
+    class NodeInstance
+    {
+    private:
+      MM::Instance * instance;
+      MM::Node * node;
+    public:
+      NodeInstance(MM::Instance * instance, MM::Node * node);
+      ~NodeInstance();
+      MM::Instance * getInstance();
+      MM::Node * getNode();
+    };
     
+    MM::Vector<MM::Evaluator::NodeInstance *> * pullAllWork;
+    MM::Vector<MM::Evaluator::NodeInstance *> * pullAnyWork;
+    MM::Vector<MM::Evaluator::NodeInstance *> * pushAllWork;
+    MM::Vector<MM::Evaluator::NodeInstance *> * pushAnyWork;
+  public:    
     Evaluator(MM::Machine * m);
     
-    ~Evaluator();    
+    ~Evaluator();
+    
+    MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
+    MM::Transition * step();
     
+  private:
+    //phase 1
+    MM::VOID prepare(MM::Instance * instance);
+    
+    //phase 2: step
+    MM::VOID stepLevel(MM::Transition * transition,
+                       MM::Vector<MM::Evaluator::NodeInstance *> * work);
+    
+    MM::VOID stepNode(MM::Transition * transition,
+                      MM::Instance * instance,
+                      MM::Node * node);
+    
+    MM::VOID stepNodeAll(MM::Transition * transition,
+                         MM::Instance * instance,
+                         MM::Node * node,
+                         MM::Vector<Edge *> * work);
+
+    MM::VOID stepNodeAny(MM::Transition * transition,
+                         MM::Instance * instance,
+                         MM::Node * node,
+                         MM::Vector<Edge *> * work);
+
+    //pase 3
+    MM::VOID finalize(MM::Instance * instance);
+    
+    MM::FlowEdge * synthesizeFlowEdge(MM::Instance * i,
+                                      MM::Node * src,
+                                      MM::UINT32 flow,
+                                      MM::Node * tgt);
+      
+    MM::BOOLEAN isSatisfied(MM::Instance * i,
+                            MM::Node *,
+                            MM::Transition * t);
+
     //------------------------------------------------------------
     //Visitor
     //------------------------------------------------------------

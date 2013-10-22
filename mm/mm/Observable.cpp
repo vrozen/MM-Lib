@@ -47,6 +47,17 @@ MM::BOOLEAN MM::Observable::instanceof(MM::TID tid)
   }
 }
 
+
+MM::VOID MM::Observable::addObserver(MM::Observer * observer)
+{
+  observers->add(observer);
+}
+
+MM::VOID MM::Observable::removeObserver(MM::Observer * observer)
+{
+  observers->remove(observer);
+}
+
 MM::VOID MM::Observable::notifyObservers(MM::Observable * observable,
                                          MM::VOID * aux,
                                          MM::UINT32 message,

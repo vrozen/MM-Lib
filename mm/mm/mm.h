@@ -34,6 +34,7 @@
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
 #include "DrainNodeBehavior.h"
+#include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
@@ -44,10 +45,12 @@
 #include "Observable.h"
 #include "Declaration.h"
 #include "Definition.h"
+#include "Instance.h"
 #include "Operator.h"
 #include "ValExp.h"
 #include "UnExp.h"
 #include "BinExp.h"
+#include "DieExp.h"
 #include "RangeValExp.h"
 #include "BooleanValExp.h"
 #include "NumberValExp.h"
@@ -58,6 +61,7 @@
 #include "OneExp.h"
 #include "VarExp.h"
 #include "Reflector.h"
+#include "Evaluator.h"
 #include "Machine.h"
 
 #endif

@@ -21,6 +21,7 @@ namespace MM
     MM::VOID recycle(MM::Recycler *r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
+    MM::VOID addTransformation(MM::Transformation * tr);
     MM::Vector<MM::Transformation *> * getTransformations();
     MM::VOID toString(MM::String * buf);
   };

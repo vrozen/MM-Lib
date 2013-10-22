@@ -14,15 +14,14 @@
 
 namespace MM
 {
-  class Definition;
-  
   class Machine : public MM::Recycler
   {
   private:
-    //MM::Definition * def;
-    //MM::Map<Name *, Definition *> * types;
-    //MM::Vector<Instance *> * instances;
-    MM::Reflector * reflector;
+    MM::Reflector  * reflector;
+    MM::Evaluator  * evaluator;
+    MM::Program    * log;  //global log
+    MM::Definition * type; //global type
+    MM::Instance   * inst; //global instance    
     
   public:
     Machine();
@@ -32,9 +31,13 @@ namespace MM
     MM::BOOLEAN instanceof(MM::TID tid);
     
     MM::Reflector * getReflector();
+    MM::Evaluator * getEvaluator();
+    MM::Program * getProgram();
+    MM::Definition * getDefinition();
+    MM::Instance * getInstance();
     
     MM::VOID setDefinition(MM::Definition * def);
-    MM::Definition * getDefinition();
+    MM::VOID setInstance(MM::Instance * inst);
     
     //evaluates input and adds elements to the model
     MM::VOID eval (const MM::CHAR * input);
@@ -161,16 +164,23 @@ namespace MM
     MM::Name * createName(MM::CHAR * str,
                           YYLTYPE  * strLoc);
     
+    MM::Name * createName(MM::Name * name);
+    
+    MM::Program * createProgram();
+    
     MM::Program * createProgram(MM::Vector<MM::Transformation *> *
                                 transformations);
 
-    
+    MM::Modification * createModification();
+ 
     MM::Modification * createModification(MM::Vector<MM::Element *> *
                                           transformations);
     
     MM::Modification * createModification(MM::Vector<MM::Element *> *
                                           transformations,
                                           YYLTYPE * modifyLoc);
+
+    MM::Transition * createTransition();
     
     MM::Transition * createTransition(MM::Vector<MM::Element *> * elements);
     
@@ -189,6 +199,12 @@ namespace MM
                                MM::NodeBehavior::Act   act,
                                MM::NodeBehavior::How   how,
                                MM::Name      * name);
+    
+    MM::Node * createGateNode(MM::NodeBehavior::IO    io,
+                              MM::NodeBehavior::When  when,
+                              MM::NodeBehavior::Act   act,
+                              MM::NodeBehavior::How   how,
+                              MM::Name      * name);
     
     MM::Node * createPoolNode(MM::NodeBehavior::IO    io,
                               MM::NodeBehavior::When  when,
@@ -211,6 +227,8 @@ namespace MM
                                   MM::Exp  * exp,
                                   MM::Name * tgt);
 
+    MM::Definition * createDefinition();
+    
     MM::Definition * createDefinition(MM::Name * name,
                                       MM::Vector<Element*> * elements);
     
@@ -293,58 +311,9 @@ namespace MM
     
     MM::VarExp * createVarExp(MM::Name * name);
 
-    
-    //------------------------------------------------------------
-    // Recycle
-    //------------------------------------------------------------
-    MM::VOID recycle(MM::Location * loc);
-    
-    MM::VOID recycle(MM::Name * name);
-    
-    MM::VOID recycle(MM::SourceNodeBehavior * node);
-    
-    MM::VOID recycle(MM::DrainNodeBehavior * node);
-    
-    MM::VOID recycle(MM::PoolNodeBehavior * node);
-    
-    MM::VOID recycle(MM::RefNodeBehavior * node);
-    
-    MM::VOID recycle(MM::StateEdge * edge);
-    
-    MM::VOID recycle(MM::FlowEdge * edge);
-    
-    MM::VOID recycle(MM::Definition * def);
-    
-    MM::VOID recycle(MM::Declaration * decl);
-    
-    MM::VOID recycle(MM::Assertion * assert);
-    
-    MM::VOID recycle(MM::Deletion * deletion);
-
-    MM::VOID recycle(MM::Signal * singal);
-    
-    MM::VOID recycle(MM::UnExp * exp);
-    
-    MM::VOID recycle(MM::BinExp * exp);
-    
-    MM::VOID recycle(MM::OverrideExp * exp);
-    
-    MM::VOID recycle(MM::RangeValExp * exp);
-    
-    MM::VOID recycle(MM::NumberValExp * exp);
-    
-    MM::VOID recycle(MM::BooleanValExp * exp);
-    
-    MM::VOID recycle(MM::AllExp * exp);
-    
-    MM::VOID recycle(MM::ActiveExp * exp);
-    
-    MM::VOID recycle(MM::AliasExp * exp);
-    
-    MM::VOID recycle(MM::OneExp * exp);
-    
-    MM::VOID recycle(MM::VarExp * exp);    
-    
+    MM::Instance * createInstance(MM::Instance * parent,
+                                  MM::Definition * def,
+                                  MM::Name * name);
   };
 }
 #endif /* defined(__mm__Machine__) */

@@ -12,31 +12,29 @@
 namespace MM
 {
   class Declaration;
-  class Definition : public MM::Element, public MM::Observable
+  class Definition : public MM::Element,
+                     public MM::Observable /* observed by Declarations */
   {
   public:
-    static const MM::CHAR LPAREN_CHAR; /**> left parenthesis */
-    static const MM::CHAR RPAREN_CHAR; /**> right parenthesis */
-    static const MM::CHAR LBRACE_CHAR; /**> left brace */
-    static const MM::CHAR RBRACE_CHAR; /**> right brace */
-    static const MM::CHAR COMMA_CHAR;  /**> comma */    
+    static const MM::CHAR LPAREN_CHAR;     /**> left parenthesis */
+    static const MM::CHAR RPAREN_CHAR;     /**> right parenthesis */
+    static const MM::CHAR LBRACE_CHAR;     /**> left brace */
+    static const MM::CHAR RBRACE_CHAR;     /**> right brace */
+    static const MM::CHAR COMMA_CHAR;      /**> comma */
   private:
-    //MM::Name * name;
-    MM::Vector<MM::Element *> * elements;
+    MM::Vector<MM::Element *> * elements;  /**> elements in this definition */
     
-    //definition which is one level higher in lexical scoping
-    MM::Definition * parent;
+    MM::Definition * parent; /**> definition one level up in lexical scoping */
     
-    MM::Vector<MM::Node *> * pullAllNodes;
-    MM::Vector<MM::Node *> * pullAnyNodes;
-    MM::Vector<MM::Node *> * pushAllNodes;
-    MM::Vector<MM::Node *> * pushAnyNodes;
+    MM::Vector<MM::Node *> * pullAllNodes; /**> nodes with pull all modifiers */
+    MM::Vector<MM::Node *> * pullAnyNodes; /**> nodes with pull any modifiers */
+    MM::Vector<MM::Node *> * pushAllNodes; /**> nodes with push all modifiers */
+    MM::Vector<MM::Node *> * pushAnyNodes; /**> nodes with push any modifiers */
     
     //tell declarations nodes were added / removed to update their interfaces
-    MM::Vector<MM::Declaration *> * declarations;
+    //MM::Vector<MM::Declaration *> * declarations;
     
-    //name --> element
-    MM::Map<MM::Name *, MM::Element *, MM::Name::Compare> * n2e;
+    MM::Map<MM::Name *, MM::Element *, MM::Name::Compare> * n2e; /**> name --> element */
     
     //maps contains nodes and type defs for searching the name space
     //reason for adding id: quick lookups and indirection on changing nodes

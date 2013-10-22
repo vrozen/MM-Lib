@@ -54,6 +54,7 @@
 \n                 { inID = false; yycolumn = 1;      }
 "&&"               { inID = false; return AND;        }
 "||"               { inID = false; return OR;         }
+".."               { inID = false; return RANGE;      }
 ".>"               { inID = false; return DOT_GT;     }
 "->"               { inID = false; return SUB_GT;     }
 "=="               { inID = false; return EQ;         }
@@ -77,7 +78,6 @@
 "}"                { inID = false; return RCURLY;     }
 ","                { inID = false; return COMMA;      }
 ":"                { inID = false; return COLON;      }
-"#"                { inID = false; return RANGE;      }
 "%"                { inID = false; return PERCENT;    }
 "source"/[^a-z]    { inID = false; return SOURCE;     }
 "drain"/[^a-z]     { inID = false; return DRAIN;      }

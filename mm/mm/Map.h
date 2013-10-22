@@ -26,6 +26,11 @@ namespace MM
       map = new std::map<MAP_KEY, MAP_VALUE, COMPARE>();
     }
     
+    Map(MM::Map<MAP_KEY,MAP_VALUE,COMPARE> * map)
+    {
+      this->map = new std::map<MAP_KEY,MAP_VALUE,COMPARE>(*map->map);
+    }
+    
     ~Map()
     {
       delete map;
@@ -49,7 +54,7 @@ namespace MM
         return MM_FALSE;
       }
     }
-
+  
     /*static const MM::UINT32 typeId()
     {
       return reinterpret_cast<MM::UINT32>(&typeId);
@@ -142,6 +147,22 @@ namespace MM
         
         return next;
       }
+      
+      MAP_VALUE getNext(MAP_KEY * key)
+      {
+        MAP_VALUE next = MM_NULL;
+        
+        next = (*(this->cur)).second;
+        * key = (*(this->cur)).first;
+        
+        if (this->cur != this->end)
+        {
+          (this->cur)++;
+        }
+        
+        return next;
+      }
+      
       
       MM::VOID reset()
       {

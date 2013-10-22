@@ -32,6 +32,7 @@ namespace MM
     MSG_NEW_POOL,
     MSG_NEW_SOURCE,
     MSG_NEW_DRAIN,
+    MSG_NEW_GATE,
     MSG_NEW_REF,
   
     //type deletion messages
@@ -40,6 +41,7 @@ namespace MM
     MSG_DEL_POOL,
     MSG_DEL_SOURCE,
     MSG_DEL_DRAIN,
+    MSG_DEL_GATE,
     MSG_DEL_REF,
     
     //type update messages
@@ -48,6 +50,7 @@ namespace MM
     MSG_UPD_POOL,
     MSG_UPD_SOURCE,
     MSG_UPD_DRAIN,
+    MSG_UPD_GATE,
     MSG_UPD_REF,
     
     //instance messages
@@ -109,6 +112,7 @@ namespace MM
     T_NodeBehavior,
     T_PoolNodeBehavior,
     T_DrainNodeBehavior,
+    T_GateNodeBehavior,
     T_SourceNodeBehavior,
     T_RefNodeBehavior,
     //expressions

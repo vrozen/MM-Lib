@@ -39,7 +39,8 @@
 
 MM::Declaration::Declaration(MM::Name * type,
                              MM::Name * name,
-  MM::Map<MM::Name *, Node *, MM::Name::Compare> * interfaces): MM::Element(name)
+  MM::Map<MM::Name *, Node *, MM::Name::Compare> * interfaces):
+  MM::Observer(), MM::Element(name)
 {
   this->type = type;
   this->interfaces = interfaces;
@@ -55,7 +56,8 @@ MM::Declaration::~Declaration()
 
 MM::VOID MM::Declaration::recycle(MM::Recycler * r)
 {
-  MM::Map<MM::Name *, MM::Node *, MM::Name::Compare>::Iterator i = interfaces->getIterator();
+  MM::Map<MM::Name *, MM::Node *, MM::Name::Compare>::Iterator i =
+    interfaces->getIterator();
   while(i.hasNext() == MM_TRUE)
   {
     MM::Node * n = i.getNext();

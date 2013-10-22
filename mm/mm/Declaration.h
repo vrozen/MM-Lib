@@ -6,8 +6,8 @@
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 
-#ifndef __mm__Instance__
-#define __mm__Instance__
+#ifndef __mm__Declaration__
+#define __mm__Declaration__
 
 namespace MM
 {

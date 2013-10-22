@@ -28,15 +28,18 @@
   #include "PoolNodeBehavior.h"
   #include "SourceNodeBehavior.h"
   #include "DrainNodeBehavior.h"
+  #include "GateNodeBehavior.h"
   #include "RefNodeBehavior.h"
   #include "Observer.h"
   #include "Observable.h"
   #include "Declaration.h"
   #include "Definition.h"
+  #include "Instance.h"
   #include "Operator.h"
   #include "ValExp.h"
   #include "UnExp.h"
   #include "BinExp.h"
+  #include "DieExp.h"
   #include "RangeValExp.h"
   #include "BooleanValExp.h"
   #include "NumberValExp.h"
@@ -47,6 +50,7 @@
   #include "OneExp.h"
   #include "VarExp.h"
   #include "Reflector.h"
+  #include "Evaluator.h"
   #include "Machine.h"
   
   //FIXME: globals should be instance data
@@ -84,7 +88,7 @@
 %token <str> PASSIVE AUTO USER START
 %token <str> PUSH PULL
 %token <str> ALL ANY
-%token <str> FROM TO
+%token <str> FROM TO OF
 %token <str> EQ PRINT NE LT GT LE GE AND OR NOT TRUE FALSE ACTIVE
 %token <str> ASSERT DELETE MODIFY STEP SIGNAL
 %token <str> AT MAX DICE
@@ -95,8 +99,6 @@
 %token <str> STRING
 %token <str> ADDITION
 %token <str> SUBSUB
-%token <str> DOTDOT
-
 
 %left AND OR
 %left LT GT LE GE NE EQ
@@ -115,9 +117,12 @@
 %type <when>    when
 %type <act>     act
 %type <how>     how
+%type <name>    of
 %type <val>     at
 %type <val>     max
 %type <exp>     add
+%type <name>    from
+%type <name>    to
 %type <name>    name
 %%
 
@@ -140,23 +145,24 @@ elementList
 ;
 
 element
-: io when act how SOURCE name            { $$ = mm.createSourceNode($1,$2,$3,$4,$6); }
-| io when act how DRAIN name             { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  }
-| io when act how GATE name              { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  /*FIXME*/ }
-| io when act how POOL name at max add   { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$7,$8,$9); }
-| io when act how CONVERTER name from to { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  /*FIXME*/ }
-| REF name                               { $$ = mm.createRefNode($2); }
-| name name                              { $$ = mm.createDeclaration($1,$2); }
-| name DOT exp DOT_GT name               { MM::Name * preName = $1->getPreName();
-                                           $1->setPreName(MM_NULL); //prevent double free
-                                           $$ = mm.createStateEdge(preName,$1,$3,$5); }
-| name SUB exp SUB_GT name               { MM::Name * preName = $1->getPreName();
-                                           $1->setPreName(MM_NULL); //prevent double free
-                                           $$ = mm.createFlowEdge(preName,$1,$3,$5);  }
-| name LCURLY elementList RCURLY         { $$ = mm.createDefinition($1,$3); }
-| ASSERT name COLON exp STRING           { $$ = mm.createAssertion(&@1,$2,$4,$5); }
-| DELETE name                            { $$ = mm.createDeletion(&@1,$2); }
-| SIGNAL name                            { $$ = mm.createSignal(&@1,$2); }
+: io when act how SOURCE name of { $$ = mm.createSourceNode($1,$2,$3,$4,$6); }
+| io when act how DRAIN name of  { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  }
+| io when act how GATE name of   { $$ = mm.createGateNode($1,$2,$3,$4,$6); }
+| io when act how POOL name of
+  at max add                     { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$8,$9,$10);
+/*TODO: io when act how CONVERTER name from to*/ }
+| REF name                       { $$ = mm.createRefNode($2); }
+| name name                      { $$ = mm.createDeclaration($1,$2); }
+| name DOT exp DOT_GT name       { MM::Name * preName = $1->getPreName();
+                                   $1->setPreName(MM_NULL); //prevent double free
+                                   $$ = mm.createStateEdge(preName,$1,$3,$5); }
+| name SUB exp SUB_GT name       { MM::Name * preName = $1->getPreName();
+                                   $1->setPreName(MM_NULL); //prevent double free
+                                   $$ = mm.createFlowEdge(preName,$1,$3,$5);  }
+| name LCURLY elementList RCURLY { $$ = mm.createDefinition($1,$3); }
+| ASSERT name COLON exp STRING   { $$ = mm.createAssertion(&@1,$2,$4,$5); }
+| DELETE name                    { $$ = mm.createDeletion(&@1,$2); }
+| SIGNAL name                    { $$ = mm.createSignal(&@1,$2); }
 ;
 
 io
@@ -200,14 +206,22 @@ max
 add
 : ADDITION LPAREN exp RPAREN { $$ = mm.createOverrideExp(&@2,$3,&@4);}
 | /*epsilon*/                { $$ = MM_NULL; }
+;
+
+of
+: OF name     { $$ = $2;      }
+| /*epsilon*/ { $$ = MM_NULL; }
+;
 
 from
-: FROM name   {}
-| /*epsilon*/ {};
+: FROM name   { $$ = $2;      }
+| /*epsilon*/ { $$ = MM_NULL; }
+;
 
 to
-: TO name     {}
-| /*epsilon*/ {};
+: TO name     { $$ = $2;      }
+| /*epsilon*/ { $$ = MM_NULL; }
+;
 
 exp
 :	exp AND exp       { $$ = mm.createBinExp($1,MM::Operator::OP_AND,&@2,$3); }
@@ -225,7 +239,7 @@ exp
 | UNM exp           { $$ = mm.createUnExp(MM::Operator::OP_UNM,&@1,$2);     }
 | NOT exp           { $$ = mm.createUnExp(MM::Operator::OP_NOT,&@1,$2);     }
 | exp PERCENT       { $$ = mm.createUnExp(MM::Operator::OP_PERCENT,&@1,$1); }
-//| FPVAL PER FPVAL   { $$ = mm.createUnExp(MM::Operator::OP_PER,&@1,$2);     }
+| FPVAL PER FPVAL   { $$ = MM_NULL;                             /* FIXME */ }
 |	LPAREN exp RPAREN { $$ = mm.createOverrideExp(&@1,$2,&@3);                }
 | FPVAL RANGE FPVAL { $$ = mm.createRangeValExp($1,&@1,&@2,$3,&@3);         }
 | FPVAL             { $$ = mm.createNumberValExp($1,&@1);                   }

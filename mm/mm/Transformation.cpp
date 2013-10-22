@@ -55,6 +55,11 @@ MM::BOOLEAN MM::Transformation::instanceof(MM::TID tid)
   }
 }
 
+MM::VOID MM::Transformation::addElement(MM::Element * element)
+{
+  elements->add(element);
+}
+
 MM::Vector<MM::Element *> * MM::Transformation::getElements()
 {
   return elements;

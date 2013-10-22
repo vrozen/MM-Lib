@@ -15,7 +15,6 @@ namespace  MM
   {
   private:
     MM::Machine * m;
-    MM::Definition * global; //program state (global scope type)
   public:
     Reflector(MM::Machine * m);
     ~Reflector();
@@ -24,6 +23,7 @@ namespace  MM
     MM::BOOLEAN instanceof(MM::TID tid);
     
     MM::Definition * getDefinition();
+    MM::Instance * getInstance();
   
     //add an element to a definition
     //performs the necessary initialization
@@ -39,6 +39,7 @@ namespace  MM
     //transform the current state based on a delta definition
     MM::VOID merge(MM::Modification * modification);
   
+    MM::VOID init(MM::Definition * def);
     
   private:
     MM::BOOLEAN navigate(MM::Definition  * root,
@@ -72,7 +73,7 @@ namespace  MM
      * Visitor that deinitializes an element inside a definition.
      * The elements must have "simple" names (nesting is removed).
      **************************************************************************/    
-    MM::VOID init(MM::Definition * def);
+
     MM::VOID init(MM::Definition * def, MM::Element * element);
     MM::VOID init(MM::Definition * def, MM::Node * node);
     MM::VOID init(MM::Definition * def, MM::Edge * edge);

@@ -57,6 +57,21 @@ MM::BOOLEAN MM::DrainNodeBehavior::instanceof(MM::TID tid)
   }
 }
 
+MM::UINT32 MM::DrainNodeBehavior::getCreateMessage()
+{
+  return MM::MSG_NEW_DRAIN;
+}
+
+MM::UINT32 MM::DrainNodeBehavior::getUpdateMessage()
+{
+  return MM::MSG_UPD_DRAIN;
+}
+
+MM::UINT32 MM::DrainNodeBehavior::getDeleteMessage()
+{
+  return MM::MSG_DEL_DRAIN;
+}
+
 MM::VOID MM::DrainNodeBehavior::toString(MM::String * buf)
 {
   buf->append((MM::CHAR*)MM::DrainNodeBehavior::DRAIN_STR,

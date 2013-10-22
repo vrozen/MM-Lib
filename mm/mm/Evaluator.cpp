@@ -40,9 +40,9 @@
 #include "RefNodeBehavior.h"
 #include "Observer.h"
 #include "Observable.h"
-#include "Instance.h"
 #include "Declaration.h"
 #include "Definition.h"
+#include "Instance.h"
 #include "Operator.h"
 #include "ValExp.h"
 #include "UnExp.h"
@@ -58,9 +58,25 @@
 #include "OneExp.h"
 #include "VarExp.h"
 #include "Reflector.h"
-#include "Machine.h"
 #include "Evaluator.h"
+#include "Machine.h"
 
+MM::Evaluator::Evaluator(MM::Machine * m) : MM::Recyclable()
+{
+  this->m = m;
+  pullAllWork = new MM::Vector<MM::Evaluator::NodeInstance *>();
+  pullAnyWork = new MM::Vector<MM::Evaluator::NodeInstance *>();
+  pushAllWork = new MM::Vector<MM::Evaluator::NodeInstance *>();
+  pushAnyWork = new MM::Vector<MM::Evaluator::NodeInstance *>();
+}
+
+MM::Evaluator::~Evaluator()
+{
+  delete pullAllWork;
+  delete pullAnyWork;
+  delete pushAllWork;
+  delete pushAnyWork;
+}
 
 MM::TID MM::Evaluator::getTypeId()
 {
@@ -78,6 +94,427 @@ MM::BOOLEAN MM::Evaluator::instanceof(MM::TID tid)
     return MM_FALSE;
   }
 }
+
+
+MM::Evaluator::NodeInstance::NodeInstance(MM::Instance * instance,
+                                          MM::Node * node)
+{
+  this->instance = instance;
+  this->node = node;
+}
+
+MM::Evaluator::NodeInstance::~NodeInstance()
+{
+}
+
+MM::Instance * MM::Evaluator::NodeInstance::getInstance()
+{
+  return instance;
+}
+
+MM::Node * MM::Evaluator::NodeInstance::getNode()
+{
+  return node;
+}
+
+MM::Transition * MM::Evaluator::step()
+{
+  MM::Reflector * r = m->getReflector();
+  MM::Instance * i = r->getInstance();
+  MM::Transition * t = m->createTransition();
+  prepare(i);
+  stepLevel(t, pullAllWork);
+  stepLevel(t, pullAnyWork);
+  stepLevel(t, pushAllWork);
+  stepLevel(t, pushAnyWork);
+  finalize(i);
+  return t;
+}
+
+MM::VOID MM::Evaluator::prepare(MM::Instance * instance)
+{
+  MM::Definition * def = instance->getDefinition();
+  MM::Vector<Node *> * pullAllNodes = def->getPullAllNodes();
+  MM::Vector<Node *> * pullAnyNodes = def->getPullAnyNodes();
+  MM::Vector<Node *> * pushAllNodes = def->getPushAllNodes();
+  MM::Vector<Node *> * pushAnyNodes = def->getPushAnyNodes();
+    
+  instance->begin();
+
+  MM::Vector<Node *>::Iterator pullAllIter = pullAllNodes->getIterator();
+  while(pullAllIter.hasNext() == MM_TRUE)
+  {
+    MM::Node * node = pullAllIter.getNext();
+    if(instance->isActive(node) == MM_TRUE)
+    {
+      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+      pullAllWork->add(ni);
+    }
+  }
+
+  MM::Vector<Node *>::Iterator pullAnyIter = pullAnyNodes->getIterator();
+  while(pullAnyIter.hasNext() == MM_TRUE)
+  {
+    MM::Node * node = pullAnyIter.getNext();
+    if(instance->isActive(node) == MM_TRUE)
+    {
+      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+      pullAnyWork->add(ni);
+    }
+  }
+  
+  MM::Vector<Node *>::Iterator pushAllIter = pushAllNodes->getIterator();
+  while(pushAllIter.hasNext() == MM_TRUE)
+  {
+    MM::Node * node = pushAllIter.getNext();
+    if(instance->isActive(node) == MM_TRUE)
+    {
+      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+      pushAllWork->add(ni);
+    }
+  }
+  
+  MM::Vector<Node *>::Iterator pushAnyIter = pushAnyNodes->getIterator();
+  while(pushAnyIter.hasNext() == MM_TRUE)
+  {
+    MM::Node * node = pushAnyIter.getNext();
+    if(instance->isActive(node) == MM_TRUE)
+    {
+      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+      pushAnyWork->add(ni);
+    }
+  }
+  
+  MM::Map<MM::Declaration *, MM::Instance *> * instances =
+    instance->getInstances();
+  MM::Map<MM::Declaration *, MM::Instance *>::Iterator instanceIter =
+    instances->getIterator();
+
+  while(instanceIter.hasNext() == MM_TRUE)
+  {
+    MM::Instance * iChild = instanceIter.getNext();
+    prepare(iChild);
+  }
+}
+
+MM::VOID MM::Evaluator::finalize(MM::Instance * instance)
+{
+  MM::Map<MM::Declaration *, MM::Instance *> * instances =
+  instance->getInstances();
+  MM::Map<MM::Declaration *, MM::Instance *>::Iterator instanceIter =
+  instances->getIterator();
+
+  instance->commit();
+  
+  while(instanceIter.hasNext() == MM_TRUE)
+  {
+    MM::Instance * iChild = instanceIter.getNext();
+    finalize(iChild);
+  }
+}
+
+//process a set of instance nodes
+MM::VOID MM::Evaluator::stepLevel(MM::Transition * t,
+                                  MM::Vector<MM::Evaluator::NodeInstance*> * work)
+{
+  printf("STEP LEVEL (%ld nodes)\n", work->size());
+
+  MM::UINT32 size = work->size();
+  while(size != 0)
+  {
+    MM::UINT32 randomPos = rand() % size;
+    MM::Evaluator::NodeInstance * ni = work->elementAt(randomPos);
+    work->remove(ni);
+    MM::Instance * instance = ni->getInstance();
+    MM::Node * node = ni->getNode();
+    stepNode(t, instance, node);
+    size = work->size();
+  }
+}
+
+//process an instance node
+MM::VOID MM::Evaluator::stepNode(MM::Transition * t,
+                                 MM::Instance * i,
+                                 MM::Node * node)
+{
+  MM::Vector<MM::Edge *> * work = MM_NULL;
+  MM::NodeBehavior * behavior = node->getBehavior();
+  printf("STEP NODE %ld %s\n", (MM::UINT32)i, node->getName()->getBuffer());
+  
+  if(behavior->getAct() == MM::NodeBehavior::ACT_PULL)
+  {
+    work = node->getInput();
+  }
+  else
+  {
+    work = node->getOutput();
+  }
+  
+  if(behavior->getHow() == MM::NodeBehavior::HOW_ANY)
+  {
+    stepNodeAny(t, i, node, work);
+  }
+  else
+  {
+    stepNodeAll(t, i, node, work);
+  }
+}
+
+//process an all instance node
+MM::VOID MM::Evaluator::stepNodeAll(MM::Transition * tr,
+                                    MM::Instance * i,
+                                    MM::Node * node,
+                                    MM::Vector<Edge *> * work)
+{
+  MM::Vector<Edge *>::Iterator edgeIter = work->getIterator();
+  bool success = true;
+  printf("STEP ALL NODE %s (%ld edges)\n",
+         node->getName()->getBuffer(),
+         work->size());
+  
+  
+  while(edgeIter.hasNext() == MM_TRUE)
+  {
+    Edge * edge = edgeIter.getNext();
+    MM::Exp * exp = edge->getExp();
+    MM::ValExp * valExp = eval(exp, i, edge);
+    MM::INT32 flow = 0;
+    if(valExp->getTypeId() == MM::T_NumberValExp)
+    {
+      flow = ((NumberValExp *) valExp)->getIntValue();
+    }
+    else if(valExp->getTypeId() == MM::T_RangeValExp)
+    {
+      flow = ((RangeValExp *) valExp)->getIntValue();
+    }
+    
+    Node * src = edge->getSource();
+    Node * tgt = edge->getTarget();
+    
+    //TODO: evaluate flow amount
+    
+    if(flow > 0 &&
+       i->hasResources(src,flow) &&
+       i->hasCapacity(tgt,flow))
+    {
+      i->sub(src, flow);
+      i->add(tgt, flow);
+      MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
+      tr->addElement(edge);
+      
+      //tr->addElement(element);
+      //tr->add(new FlowEvent(src,flow,tgt));
+    }
+    else
+    {
+      success = false;
+      break;
+    }
+  }
+  
+  if(!success)
+  {
+    //FIXME
+    //tr->back();
+    //tr->clear();
+  }
+  
+  //return tr;
+}
+
+MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * i,
+                                                 MM::Node * src,
+                                                 MM::UINT32 flow,
+                                                 MM::Node * tgt)
+{
+  MM::Name * srcName = src->getName();
+  MM::Name * tgtName = tgt->getName();
+  
+  MM::Name * edgeName = MM_NULL;
+  MM::Name * curName = MM_NULL;
+  MM::Instance * curInstance = i;
+  
+  while(curInstance != MM_NULL)
+  {
+    if(curInstance->getParent() != MM_NULL)
+    {
+      curName = curInstance->getName();
+      MM::Name * name = m->createName(curName);
+      name->setName(edgeName);
+      edgeName = name;
+    }    
+    curInstance = curInstance->getParent();
+  }
+  
+  MM::Name * srcName2 = m->createName(srcName);
+  MM::Name * tgtName2 = m->createName(tgtName);
+  MM::Exp * exp = m->createNumberValExp(flow * 100);
+  MM::FlowEdge * edge = m->createFlowEdge(edgeName, srcName2, exp, tgtName2);
+  return edge;
+}
+
+//process an any instance node
+MM::VOID MM::Evaluator::stepNodeAny(MM::Transition * tr,
+                                    MM::Instance * i,
+                                    MM::Node * node,
+                                    MM::Vector<Edge *> * work)
+{
+  MM::Vector<Edge *>::Iterator edgeIter = work->getIterator();
+  //FIXME random
+  printf("STEP ANY NODE %s (%ld edges)\n",
+         node->getName()->getBuffer(),
+         work->size());
+
+  while(edgeIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = edgeIter.getNext();
+    MM::Exp * exp = edge->getExp();
+    MM::ValExp * valExp = eval(exp, i, edge);
+    
+    MM::INT32 flow = 0;
+    
+    if(valExp->getTypeId() == MM::T_NumberValExp)
+    {
+      flow = ((NumberValExp *) valExp)->getIntValue();
+    }
+    else if(valExp->getTypeId() == MM::T_RangeValExp)
+    {
+      flow = ((RangeValExp *) valExp)->getIntValue();
+    }
+    
+    valExp->recycle(m);
+    
+    Node * src = edge->getSource();
+    Node * tgt = edge->getTarget();
+    
+    //TODO: evaluate flow amount
+    
+    if(flow > 0 &&
+       i->hasResources(src,1) == MM_TRUE &&
+       i->hasCapacity(tgt,1) == MM_TRUE)
+    {
+      if(i->hasResources(src, flow) == MM_TRUE)
+      {
+        if(i->hasCapacity(tgt, flow) == MM_TRUE)
+        {
+          printf("Full flow %ld\n", flow);
+          i->sub(src,flow);
+          i->add(tgt,flow);
+          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
+          tr->addElement(edge);
+        }
+        else
+        {
+          flow = i->getCapacity(tgt);
+          printf("Flow up to capacity %ld\n", flow);
+          i->sub(src, flow);
+          i->add(tgt, flow);
+          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
+          tr->addElement(edge);
+        }
+      }
+      else
+      {
+        flow = i->getResources(src);
+        if(i->hasCapacity(tgt,flow) == MM_TRUE)
+        {
+          printf("Flow up to availability %ld\n", flow);
+          i->sub(src, flow);
+          i->add(tgt, flow);
+          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
+          tr->addElement(edge);
+
+        }
+        else
+        {
+          flow = i->getCapacity(tgt);
+          printf("Flow up to capacity %ld\n", flow);
+          i->sub(src,flow);
+          i->add(tgt,flow);
+          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
+          tr->addElement(edge);
+        }
+      }
+    }
+  }
+}
+
+
+
+
+MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
+                                       MM::Node *,
+                                       MM::Transition * t)
+{
+  //calculate which node's inputs are 'satisfied'
+  //this set is the set of node labels for which all flow edges they operate on are satisfied at the same time
+  //this semantics is a bit strange since we also have the 'all' and 'any' modifiers
+  //therefore we might expect any nodes to trigger when any flow is satisfied, but this is not true!
+  
+  //satisfied nodes are
+  //1. pulling nodes
+  //either each inflow is satisfied and it has inflow
+  //or the node has no inflow and it is active (auto or activated)
+  //2. pushing nodes
+  //either each outflow is satisfied and it has outflow
+  //or the node has no outflow and it is active (auto or activated)
+
+    MM::BOOLEAN satisfied = MM_TRUE;
+  /*
+  
+  if(act == MM::Node::ACT_PULL)
+  {
+    if(input->isEmpty() == MM_TRUE)
+    {
+      satisfied = this->isActive(i);
+    }
+    else
+    {
+      MM::Vector<Edge *>::Iterator fIter = input->getIterator();
+      while(fIter.hasNext())
+      {
+        Edge * edge = fIter.getNext();
+        Node * src = edge->getSource();
+        Node * tgt = edge->getTarget();
+        ValExp * val = 0; //FIXME: edge->getExp()->eval(m, i, edge);
+        //FlowEvent * flow = t->getFlow(i, src, tgt);
+        //UINT32 amount = flow->getAmount();
+        
+        //if(flow != MM_NULL)
+        //{
+        //satisfied = val->greaterEquals(amount);
+        //}
+        //else
+        //{
+        // satisfied = MM_FALSE;
+        // }
+      }
+    }
+  }
+  else if(act == ACT_PUSH)
+  {
+    MM::Vector<Edge *>::Iterator iter = input->getIterator();
+    
+    while(iter.hasNext())
+    {
+      Edge * edge = iter.getNext();
+      
+      //if(!edge->isSatisfied(instance, transition))
+      //{
+      // satisified = MM_FALSE;
+      //}
+    }
+  }
+  else
+  {
+    //error
+  }
+  */
+  return satisfied;
+}
+
+
+
 
 //C++ does not support runtime type matching
 //I am helping it by doing it manually...
@@ -146,7 +583,7 @@ MM::ValExp * MM::Evaluator::eval(MM::OneExp * exp,
                                  MM::Instance * i,
                                  MM::Edge * e)
 {
-  return m->createNumberValExp(1, MM_NULL);
+  return m->createNumberValExp(100);
 }
 
 
@@ -164,7 +601,7 @@ MM::ValExp * MM::Evaluator::eval(MM::DieExp * exp,
                                  MM::Instance * i,
                                  MM::Edge * e)
 {
-  return m->createRangeValExp(1, MM_NULL, MM_NULL, exp->getMax(), MM_NULL);
+  return m->createRangeValExp(1, exp->getMax());
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::OverrideExp * exp,
@@ -228,22 +665,21 @@ MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * exp,
                                  MM::Instance * i,
                                  MM::Edge * e)
 {
-  return m->createBooleanValExp(exp->getValue(), MM_NULL);
+  return m->createBooleanValExp(exp->getValue());
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * exp,
                                  MM::Instance * i,
                                  MM::Edge * e)
 {
-  return m->createNumberValExp(exp->getValue(), MM_NULL);
+  return m->createNumberValExp(exp->getValue());
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::RangeValExp * exp,
                                  MM::Instance * i,
                                  MM::Edge * e)
 {
-  return m->createRangeValExp(exp->getMin(),
-                              MM_NULL, MM_NULL, exp->getMax(), MM_NULL);
+  return m->createRangeValExp(exp->getMin(), exp->getMax());
 }
 
 
@@ -407,7 +843,7 @@ MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
     }
   }
   
-  return m->createBooleanValExp(valr, MM_NULL);
+  return m->createBooleanValExp(valr);
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
@@ -438,7 +874,7 @@ MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
     }
   }
   
-  return m->createBooleanValExp(valr, MM_NULL);
+  return m->createBooleanValExp(valr);
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
@@ -469,7 +905,7 @@ MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
     }
   }
   
-  return m->createBooleanValExp(valr, MM_NULL);
+  return m->createBooleanValExp(valr);
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * e1,
@@ -500,7 +936,7 @@ MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * e1,
     }
   }
   
-  return m->createBooleanValExp(valr, MM_NULL);
+  return m->createBooleanValExp(valr);
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * e1,
@@ -630,10 +1066,10 @@ MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * e1,
   switch(rtype)
   {
     case MM::T_BooleanValExp:
-      r = m->createBooleanValExp(rbval, MM_NULL);
+      r = m->createBooleanValExp(rbval);
       break;
     case MM::T_NumberValExp:
-      r = m->createNumberValExp(rnval, MM_NULL);
+      r = m->createNumberValExp(rnval);
       break;
     default:
       break;
@@ -763,12 +1199,12 @@ MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * e1,
     case MM::T_BooleanValExp:
     {
       //r = new MM::BooleanValExp(rbval);
-      r = m->createBooleanValExp(rbval, MM_NULL);
+      r = m->createBooleanValExp(rbval);
       break;
     }
     case MM::T_RangeValExp:
     {
-      r = m->createRangeValExp(rrmin, MM_NULL, MM_NULL, rrmax, MM_NULL);
+      r = m->createRangeValExp(rrmin, rrmax);
       break;
     }
     default:
@@ -809,7 +1245,7 @@ MM::ValExp *  MM::Evaluator::eval(MM::RangeValExp * e1,
     }
   }
   
-  return m->createBooleanValExp(valr, MM_NULL);
+  return m->createBooleanValExp(valr);
 }
 
 
@@ -933,12 +1369,12 @@ MM::ValExp * MM::Evaluator::eval(MM::RangeValExp * e1,
   {
     case MM::T_BooleanValExp:
     {
-      r = m->createBooleanValExp(rbval, MM_NULL);
+      r = m->createBooleanValExp(rbval);
       break;
     }
     case MM::T_RangeValExp:
     {
-      r = m->createRangeValExp(rrmin, MM_NULL, MM_NULL, rrmax, MM_NULL);
+      r = m->createRangeValExp(rrmin, rrmax);
       break;
     }
     default:
@@ -979,7 +1415,7 @@ MM::ValExp *  MM::Evaluator::eval(MM::RangeValExp * e1,
     }
   }
   
-  return m->createBooleanValExp(valr, MM_NULL);
+  return m->createBooleanValExp(valr);
 }
 
 //------------------------------------------------------------
@@ -1042,7 +1478,7 @@ MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,
     }
   }
   
-  return m->createBooleanValExp(valr, MM_NULL);
+  return m->createBooleanValExp(valr);
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,
@@ -1068,7 +1504,7 @@ MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,
     }
   }
   
-  return m->createNumberValExp(nvalr, MM_NULL);
+  return m->createNumberValExp(nvalr);
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,

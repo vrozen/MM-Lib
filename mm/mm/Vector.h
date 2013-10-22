@@ -72,6 +72,11 @@ namespace MM
       return empty;
     }
     
+    T elementAt(MM::UINT32 pos)
+    {
+      return v->at(pos);
+    }
+    
     MM::VOID remove(T element)
     {
       typename std::vector<T>::iterator i = v->begin();

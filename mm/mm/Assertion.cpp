@@ -22,7 +22,7 @@
 
 const MM::CHAR * MM::Assertion::ASSERT_STR = "assert";
 const MM::UINT32 MM::Assertion::ASSERT_LEN = strlen(MM::Assertion::ASSERT_STR);
-const MM::CHAR   MM::Assertion::COLON_CHAR  = ':';
+const MM::CHAR   MM::Assertion::COLON_CHAR = ':';
 
 MM::Assertion::Assertion(MM::Name     * name,
                          MM::Exp      * exp,

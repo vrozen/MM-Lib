@@ -57,6 +57,21 @@ MM::BOOLEAN MM::SourceNodeBehavior::instanceof(MM::TID tid)
   }
 }
 
+MM::UINT32 MM::SourceNodeBehavior::getCreateMessage()
+{
+  return MM::MSG_NEW_SOURCE;
+}
+
+MM::UINT32 MM::SourceNodeBehavior::getUpdateMessage()
+{
+  return MM::MSG_UPD_SOURCE;
+}
+
+MM::UINT32 MM::SourceNodeBehavior::getDeleteMessage()
+{
+  return MM::MSG_DEL_SOURCE;
+}
+
 MM::VOID MM::SourceNodeBehavior::toString(MM::String * buf)
 {
   buf->append((MM::CHAR*)MM::SourceNodeBehavior::SOURCE_STR,

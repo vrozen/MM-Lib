@@ -27,7 +27,9 @@ namespace MM
     MM::Edge * getAlias();
     MM::VOID setAlias(MM::Edge * edge);
     MM::Node * getReference();
-    
+    MM::UINT32 getCreateMessage();
+    MM::UINT32 getUpdateMessage();
+    MM::UINT32 getDeleteMessage();    
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::Name * name);
   };

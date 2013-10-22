@@ -80,6 +80,10 @@ namespace MM
     MM::NodeBehavior::Act getAct();
     MM::NodeBehavior::How getHow();
     
+    virtual MM::UINT32 getCreateMessage() = 0;
+    virtual MM::UINT32 getUpdateMessage() = 0;
+    virtual MM::UINT32 getDeleteMessage() = 0;
+    
     MM::VOID setIO(MM::NodeBehavior::IO io);
     MM::VOID setWhen(MM::NodeBehavior::When when);
     MM::VOID setAct(MM::NodeBehavior::Act act);

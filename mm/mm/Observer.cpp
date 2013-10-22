@@ -13,17 +13,13 @@
 #include "Observer.h"
 #include "Observable.h"
 
-MM::Observer::Observer() //: MM::Recyclable()
+MM::Observer::Observer()
 {
 }
 
 MM::Observer::~Observer()
 {
 }
-
-//MM::VOID MM::Observer::recylce(MM::Recycler * r)
-//{
-//}
 
 MM::TID MM::Observer::getTypeId()
 {

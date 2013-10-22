@@ -35,15 +35,18 @@
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
 #include "DrainNodeBehavior.h"
+#include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
 #include "Definition.h"
+#include "Instance.h"
 #include "Operator.h"
 #include "ValExp.h"
 #include "UnExp.h"
 #include "BinExp.h"
+#include "DieExp.h"
 #include "RangeValExp.h"
 #include "BooleanValExp.h"
 #include "NumberValExp.h"
@@ -54,21 +57,38 @@
 #include "OneExp.h"
 #include "VarExp.h"
 #include "Reflector.h"
+#include "Evaluator.h"
 #include "Machine.h"
 
 MM::Machine::Machine() : MM::Recycler()
 {
-  reflector = new Reflector(this);
-  //def = MM_NULL;
-  //types = new Map<MM::Name *, MM::Definition *>();
-  //instances = new Vector<Instance *>();
+  reflector = new MM::Reflector(this);
+  evaluator = new MM::Evaluator(this);
+  log = createProgram();
+  MM::Vector<MM::Element*> * elements = createElementVector();
+  type = createDefinition(MM_NULL, elements);
+  
+  
+  inst = createInstance(MM_NULL, type, MM_NULL);
+  type->addObserver(inst);
+  reflector->init(type);
+  
+  //trick to get the model out
+  MM::Modification * mod = createModification();
+  mod->addElement(type);
+  log->addTransformation(mod);
+  
+  
 }
 
 MM::Machine::~Machine()
 {
   delete reflector;
-  //delete types;
-  //delete instances;
+  delete evaluator;
+  
+  //type->recycle(this); //is in the program!
+  inst->recycle(this);
+  log->recycle(this);
 }
 
 MM::TID MM::Machine::getTypeId()
@@ -148,6 +168,21 @@ MM::Reflector * MM::Machine::getReflector()
   return reflector;
 }
 
+MM::Evaluator * MM::Machine::getEvaluator()
+{
+  return evaluator;
+}
+
+MM::Definition * MM::Machine::getDefinition()
+{
+  return type;
+}
+
+MM::Instance * MM::Machine::getInstance()
+{
+  return inst;
+}
+
 MM::VOID MM::Machine::eval (const MM::CHAR * input)
 {
   MM::Program * program = MM_parseFile(input);
@@ -167,8 +202,31 @@ MM::VOID MM::Machine::eval (const MM::CHAR * input)
       buf->clear();
       def->toString(buf);
       buf->print();
+      
     }
   }
+  
+  MM::Instance * inst = reflector->getInstance();
+
+  buf->clear();
+  inst->toString(buf);
+  buf->print();
+  
+  
+  for(int i = 0; i < 10; i ++)
+  {
+    MM::Transition * tr = evaluator->step();
+    program->addTransformation(tr);
+    buf->clear();
+    inst->toString(buf);
+    buf->print();
+  }
+  
+  
+  printf("\n\nRESULTS\n\n");
+  buf->clear();
+  program->toString(buf);
+  buf->print();
   
   buf->recycle(this);
   program->recycle(this);
@@ -255,9 +313,6 @@ MM::Location * MM::Machine::createLocation(YYLTYPE * loc)
   MM::Recycler::create(r);
   return r;
 }
-
-
-
 
 MM::Name * MM::Machine::createName(MM::CHAR   * str,
                                    MM::UINT32 * len,
@@ -355,10 +410,42 @@ MM::Name * MM::Machine::createName(MM::CHAR * str, YYLTYPE  * strLoc)
   return dotRoot;
 }
 
+MM::Name * MM::Machine::createName(MM::Name * name)
+{
+  MM::CHAR * buf = name->getBuffer();
+  MM::UINT32 len = name->getLength();
+  
+  MM::CHAR * buf2 = createBuffer(len);
+  strncpy(buf2, buf, len);
+  
+  MM::Name * r = new MM::Name(buf2, len);
+  
+  MM::Recycler::create(r);
+  
+  return r;
+}
+
+MM::Program * MM::Machine::createProgram()
+{
+  MM::Vector<MM::Transformation *> *
+  transformations = createTransformationVector();
+  MM::Program * r = new MM::Program(transformations);
+  MM::Recycler::create(r);
+  return r;  
+}
+
 MM::Program * MM::Machine::createProgram(MM::Vector<MM::Transformation *> *
                                          transformations)
 {
   MM::Program * r = new MM::Program(transformations);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Modification * MM::Machine::createModification()
+{
+  MM::Vector<MM::Element *> * elements = createElementVector();
+  MM::Modification * r = new MM::Modification(elements);
   MM::Recycler::create(r);
   return r;
 }
@@ -377,6 +464,15 @@ MM::Modification * MM::Machine::createModification(MM::Vector<MM::Element *> *
 {
   MM::Location * loc = createLocation(modifyLoc);
   MM::Modification * r = new MM::Modification(elements, loc);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Transition * MM::Machine::createTransition()
+{
+  MM::Vector<MM::Element *> * elements = createElementVector();
+  
+  MM::Transition * r = new MM::Transition(elements);
   MM::Recycler::create(r);
   return r;
 }
@@ -427,6 +523,21 @@ MM::Node * MM::Machine::createDrainNode(MM::NodeBehavior::IO    io,
   return r;
 }
 
+MM::Node * MM::Machine::createGateNode(MM::NodeBehavior::IO    io,
+                                       MM::NodeBehavior::When  when,
+                                       MM::NodeBehavior::Act   act,
+                                       MM::NodeBehavior::How   how,
+                                       MM::Name      * name)
+{
+  MM::GateNodeBehavior * behavior =
+    new MM::GateNodeBehavior(io,when,act,how);
+  MM::Recycler::create(behavior);
+  
+  MM::Node * r = new MM::Node(name, behavior);
+  MM::Recycler::create(r);
+  return r;
+}
+
 MM::Node * MM::Machine::createPoolNode(MM::NodeBehavior::IO    io,
                                            MM::NodeBehavior::When  when,
                                            MM::NodeBehavior::Act   act,
@@ -470,6 +581,14 @@ MM::FlowEdge * MM::Machine::createFlowEdge(MM::Name * name,
                                            MM::Name * tgt)
 {
   MM::FlowEdge * r = new MM::FlowEdge(name,src,exp,tgt);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Definition * MM::Machine::createDefinition()
+{
+  MM::Vector<Element*> * elements = createElementVector();  
+  MM::Definition * r = new MM::Definition(MM_NULL, elements);
   MM::Recycler::create(r);
   return r;
 }
@@ -642,11 +761,26 @@ MM::NumberValExp * MM::Machine::createNumberValExp(MM::INT32  val,
   return r;
 }
 
+MM::NumberValExp * MM::Machine::createNumberValExp(MM::INT32 val)
+{
+  MM::NumberValExp * r = new MM::NumberValExp(val/100, val%100, MM_NULL);
+  MM::Recycler::create(r);
+  return r;
+}
+
+
 MM::BooleanValExp * MM::Machine::createBooleanValExp(MM::BOOLEAN val,
                                                      YYLTYPE * valLoc)
 {
   MM::Location * loc = MM::Machine::createLocation(valLoc);
   MM::BooleanValExp * r = new MM::BooleanValExp(val, loc);
+  MM::Recycler::create(r);
+  return r;
+};
+
+MM::BooleanValExp * MM::Machine::createBooleanValExp(MM::BOOLEAN val)
+{
+  MM::BooleanValExp * r = new MM::BooleanValExp(val, MM_NULL);
   MM::Recycler::create(r);
   return r;
 };
@@ -689,4 +823,13 @@ MM::VarExp * MM::Machine::createVarExp(MM::Name * name)
   MM::VarExp * r = new MM::VarExp(name);
   MM::Recycler::create(r);
   return r;
+}
+
+MM::Instance * MM::Machine::createInstance(MM::Instance * parent,
+                                           MM::Definition * def,
+                                           MM::Name * name)
+{
+  MM::Instance * instance = new MM::Instance(parent, def, name);
+  MM::Recycler::create(instance);
+  return instance;
 }

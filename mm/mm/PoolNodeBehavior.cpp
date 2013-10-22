@@ -112,6 +112,21 @@ MM::VOID MM::PoolNodeBehavior::setAdd(MM::Exp * exp)
 }
 
 
+MM::UINT32 MM::PoolNodeBehavior::getCreateMessage()
+{
+  return MM::MSG_NEW_POOL;
+}
+
+MM::UINT32 MM::PoolNodeBehavior::getUpdateMessage()
+{
+  return MM::MSG_UPD_POOL;
+}
+
+MM::UINT32 MM::PoolNodeBehavior::getDeleteMessage()
+{
+  return MM::MSG_DEL_POOL;
+}
+
 MM::VOID MM::PoolNodeBehavior::toString(MM::String * buf)
 {
   buf->append((MM::CHAR*)MM::PoolNodeBehavior::POOL_STR,
