@@ -27,6 +27,7 @@ namespace MM
     MM::VOID recycle(MM::Recycler * r);
     virtual MM::TID getTypeId();
     virtual MM::BOOLEAN instanceof(MM::TID tid);
+    virtual MM::BOOLEAN greaterEquals(MM::UINT32 val) = 0;
     virtual MM::VOID toString(MM::String * buf) = 0;
   };
 }
