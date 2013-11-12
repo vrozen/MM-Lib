@@ -32,7 +32,7 @@ namespace MM
     virtual MM::TID getTypeId();
     virtual MM::BOOLEAN instanceof(MM::TID tid);
     virtual MM::VOID toString(MM::String * buf) = 0;
-     
+    
     //NOTE: state edges that are not triggers are conditions
     
     //TODO: transformation: one() * one() --> TriggerExp()
