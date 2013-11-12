@@ -106,7 +106,9 @@ MM::Instance::Instance(MM::Instance * parent,
   oldValues = MM_NULL;
   newValues = MM_NULL;
   instances = new MM::Map<MM::Declaration*, MM::Instance *>();
+  disabledNodes = new MM::Vector<MM::Node *>();
   activeNodes = new MM::Vector<MM::Node *>();
+  
   this->type = def;
   this->name = name;
 }
@@ -226,49 +228,29 @@ MM::Instance * MM::Instance::retrieveInstance(MM::Declaration * decl)
   return instances->get(decl);
 }
 
-/**
- * @fn MM::BOOLEAN MM::Instance::isActive(MM::UINT32 id)
- * @brief Retrieves an Instance object for a declaration id
- * @param decl declaration id
- * @return Instance object
- */
 MM::BOOLEAN MM::Instance::isActive(MM::Node * node)
 {
-  MM::BOOLEAN r = MM_FALSE;
-  
-  if(node->getBehavior()->getWhen() == MM::NodeBehavior::WHEN_AUTO ||
-     activeNodes->contains(node) == MM_TRUE)
-  {
-      r = MM_TRUE;
-  }
-  
-  return r;
+  return activeNodes->contains(node);
 }
 
-/**
- * @fn MM::VOID MM::Instance::setActive(MM::UINT32 node, MM::BOOLEAN active)
- * @brief Activates and deactivates a node in an instance.
- * @param node node id
- * @param active activity status
- */
-MM::VOID MM::Instance::setActive(MM::Node * node,
-                                 MM::BOOLEAN active)
+MM::VOID MM::Instance::setActive(MM::Node * node)
 {
-  MM::BOOLEAN contains = activeNodes->contains(node);  
-  if(active == MM_TRUE)
-  {
-    if(contains == MM_FALSE)
-    {
-      activeNodes->add(node);
-    }
-  }
-  else
-  {
-    if(contains == MM_TRUE)
-    {
-      activeNodes->remove(node);
-    }
-  }
+  activeNodes->add(node);
+}
+
+MM::BOOLEAN MM::Instance::isDisabled(MM::Node * node)
+{
+  return disabledNodes->contains(node);
+}
+
+MM::VOID MM::Instance::setDisabled(MM::Node * node)
+{
+  disabledNodes->add(node);
+}
+
+MM::UINT32 MM::Instance::getValue(MM::Node * node)
+{
+  return values->get(node);
 }
 
 /**
@@ -362,13 +344,20 @@ MM::VOID MM::Instance::createPool(MM::Node * pool)
     MM::PoolNodeBehavior * poolBehavior = (MM::PoolNodeBehavior*) behavior;
     MM::UINT32 at = poolBehavior->getAt();
     values->put(pool, at);
-  }  
+  }
+  
+  //TODO: for all new nodes add it to the active nodes when auto
+  if(pool->getBehavior()->getWhen() == MM::NodeBehavior::WHEN_AUTO)
+  {
+    activeNodes->add(pool);
+  }
 }
 
 MM::VOID MM::Instance::removeInstance(MM::Declaration * decl,
                                       MM::Recycler * r)
 {
   MM::Instance * instance = instances->get(decl);
+  //TODO: inform user of killed instance
   instances->remove(decl);
   instance->recycle(r);
 }
@@ -378,14 +367,14 @@ MM::VOID MM::Instance::removePool(MM::Node * pool)
   values->remove(pool);
 }
 
-
 MM::VOID MM::Instance::begin()
 {
   //copy values to old and new
   oldValues = new MM::Map<MM::Node*, MM::UINT32>(values);
   newValues = new MM::Map<MM::Node*, MM::UINT32>(values);
+  disabledNodes->clear();
+  activeNodes->clear();
 }
-
 
 MM::UINT32 MM::Instance::getResources(MM::Node * node)
 {
@@ -397,7 +386,7 @@ MM::BOOLEAN MM::Instance::hasResources(MM::Node * node,
                                        MM::UINT32 amount)
 {
   //old has resources
-  if(oldValues->get(node) > amount)
+  if(oldValues->get(node) >= amount)
   {
     return MM_TRUE;
   }
@@ -472,6 +461,19 @@ MM::VOID MM::Instance::commit()
   newValues = MM_NULL;  //reset pointers
 }
 
+/**
+ * @fn MM::VOID MM::Instance::rollback()
+ * @brief Purges old and new values and keeps the current ones.
+ */
+MM::VOID MM::Instance::rollback()
+{
+  delete newValues;     //delete new values
+  delete oldValues;     //delete old values
+  oldValues = MM_NULL;  //reset pointers
+  newValues = MM_NULL;  //reset pointers
+}
+
+
 MM::VOID MM::Instance::toString(MM::String * buf)
 {
   toString(buf, 0);
@@ -521,6 +523,43 @@ MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
       buf->linebreak();
     }
   }
+  
+  
+  buf->space(indent+MM::Instance::INDENT);
+  buf->append("active : [", strlen("active : ["));
+  
+  MM::Vector<MM::Node *>::Iterator activeIter =
+  activeNodes->getIterator();
+  while(activeIter.hasNext() == MM_TRUE)
+  {
+    MM::Node * node = activeIter.getNext();
+    node->getName()->toString(buf);
+    if(activeIter.hasNext() == MM_TRUE)
+    {
+      buf->append(',');
+    }
+  }
+  buf->append(']');
+  buf->linebreak();
+  
+  
+  buf->space(indent+MM::Instance::INDENT);
+  buf->append("disabled : [", strlen("disabled : ["));
+  
+  MM::Vector<MM::Node *>::Iterator disabledIter =
+  disabledNodes->getIterator();
+  while(activeIter.hasNext() == MM_TRUE)
+  {
+    MM::Node * node = disabledIter.getNext();
+    node->getName()->toString(buf);
+    if(disabledIter.hasNext() == MM_TRUE)
+    {
+      buf->append(',');
+    }
+  }
+  buf->append(']');
+  buf->linebreak();
+  
   
   buf->space(indent);
   buf->append('}');

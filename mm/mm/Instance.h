@@ -35,6 +35,9 @@ namespace MM
     //node --> boolean
     MM::Vector<MM::Node *> * activeNodes; /**> TODO: bitvector */
     
+    //node --> boolean
+    MM::Vector<MM::Node *> * disabledNodes; /**> TODO: bitvector */
+    
   public:
     Instance(MM::Instance * parent,
              MM::Definition * def,
@@ -58,10 +61,16 @@ namespace MM
     //Instances:
     MM::Instance * retrieveInstance(MM::Declaration * decl);
     
+    MM::UINT32 getValue(MM::Node * node);
+    
     //Activity:
     MM::BOOLEAN isActive(MM::Node * node);
-    MM::VOID setActive(MM::Node * node, MM::BOOLEAN active);
+    MM::VOID setActive(MM::Node * node);
 
+    //Disabed:
+    MM::BOOLEAN isDisabled(MM::Node * node);
+    MM::VOID setDisabled(MM::Node * node);
+    
     //Type updates that require dynamic fixes
     MM::VOID update(MM::Observable * observable,
                     MM::VOID * aux,
@@ -84,6 +93,7 @@ namespace MM
     MM::VOID sub(MM::Node * node, MM::UINT32 amount);
     MM::VOID add(MM::Node * node, MM::UINT32 amount);
     MM::VOID commit();
+    MM::VOID rollback();
   public:
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
