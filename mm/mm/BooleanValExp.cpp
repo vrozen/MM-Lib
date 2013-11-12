@@ -85,6 +85,11 @@ MM::Location *  MM::BooleanValExp::getLocation()
   return loc;
 }
 
+MM::BOOLEAN MM::BooleanValExp::greaterEquals(MM::UINT32 val)
+{
+  return MM_FALSE;
+}
+
 MM::VOID MM::BooleanValExp::toString(MM::String * buf)
 {
   if(val == MM_FALSE)

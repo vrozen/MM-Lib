@@ -36,6 +36,7 @@ namespace MM
     MM::VOID recycle(MM::Recycler * r);
     MM::BOOLEAN getValue();
     MM::Location * getLocation();
+    MM::BOOLEAN greaterEquals(MM::UINT32 val);
     MM::VOID toString(MM::String * buf);
   };
 }
