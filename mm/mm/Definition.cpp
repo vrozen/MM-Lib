@@ -81,7 +81,7 @@ MM::Definition::~Definition()
 {
   this->name = MM_NULL;
   this->parent = MM_NULL;  
-  this->elements = MM_NULL;
+  this->elements = MM_NULL; 
   this->pullAllNodes = MM_NULL;
   this->pullAnyNodes = MM_NULL;
   this->pushAllNodes = MM_NULL;
@@ -201,7 +201,7 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
         printf("Definition Error: incorrectly defined name, prefix is not a type\n");
       }
     }
-  } 
+  }
   return node;
 }
 
@@ -331,48 +331,6 @@ MM::Vector<MM::Node *> * MM::Definition::getPushAnyNodes()
 {
   return pushAnyNodes;
 }
-
-/*
-MM::VOID MM::Definition::addPullAllNode(MM::Node * node)
-{
-  pullAllNodes->add(node);
-}
-
-MM::VOID MM::Definition::addPullAnyNode(MM::Node * node)
-{
-  pullAnyNodes->add(node);
-}
-
-MM::VOID MM::Definition::addPushAllNode(MM::Node * node)
-{
-  pushAllNodes->add(node);
-}
-
-MM::VOID MM::Definition::addPushAnyNode(MM::Node * node)
-{
-  pushAnyNodes->add(node);
-}
-
-MM::VOID MM::Definition::removePullAllNode(MM::Node * node)
-{
-  pullAllNodes->remove(node);
-}
-
-MM::VOID MM::Definition::removePullAnyNode(MM::Node * node)
-{
-  pullAnyNodes->remove(node);
-}
-
-MM::VOID MM::Definition::removePushAllNode(MM::Node * node)
-{
-  pushAllNodes->remove(node);
-}
-
-MM::VOID MM::Definition::removePushAnyNode(MM::Node * node)
-{
-  pushAnyNodes->remove(node);
-}
-*/
 
 MM::VOID MM::Definition::setPullAllNodes(MM::Vector<MM::Node *> * pullAllNodes)
 {

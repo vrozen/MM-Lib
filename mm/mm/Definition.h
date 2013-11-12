@@ -31,6 +31,7 @@ namespace MM
     MM::Vector<MM::Node *> * pushAllNodes; /**> nodes with push all modifiers */
     MM::Vector<MM::Node *> * pushAnyNodes; /**> nodes with push any modifiers */
     
+    
     //tell declarations nodes were added / removed to update their interfaces
     //MM::Vector<MM::Declaration *> * declarations;
     
