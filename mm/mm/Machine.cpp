@@ -60,35 +60,37 @@
 #include "Evaluator.h"
 #include "Machine.h"
 
+const MM::UINT32 MM::Machine::LOG_SIZE = 1024 * 32 * 8;
+
 MM::Machine::Machine() : MM::Recycler()
 {
   reflector = new MM::Reflector(this);
   evaluator = new MM::Evaluator(this);
-  log = createProgram();
+  log = createString(MM::Machine::LOG_SIZE);
+  
   MM::Vector<MM::Element*> * elements = createElementVector();
   type = createDefinition(MM_NULL, elements);
   
-  
+  //create the initial state
   inst = createInstance(MM_NULL, type, MM_NULL);
+
+  //let the state observe the global scope type
   type->addObserver(inst);
+  
+  //initialize the global scope type
   reflector->init(type);
   
-  //trick to get the model out
-  MM::Modification * mod = createModification();
-  mod->addElement(type);
-  log->addTransformation(mod);
-  
-  
+  //initialize the start state (set active nodes)
+  evaluator->initStartState(inst);
 }
 
 MM::Machine::~Machine()
 {
   delete reflector;
-  delete evaluator;
-  
-  //type->recycle(this); //is in the program!
+  evaluator->recycle(this);
   inst->recycle(this);
   log->recycle(this);
+  type->recycle(this);
 }
 
 MM::TID MM::Machine::getTypeId()
@@ -183,12 +185,16 @@ MM::Instance * MM::Machine::getInstance()
   return inst;
 }
 
+MM::String * MM::Machine::getLog()
+{
+  return log;
+}
+
 MM::VOID MM::Machine::eval (const MM::CHAR * input)
 {
   MM::Program * program = MM_parseFile(input);
   MM::String * buf = createString(1024 * 100 * 32);
-  program->toString(buf);
-  buf->print();
+  program->toString(log); //store history
   
   MM::Vector<Transformation *> * ts = program->getTransformations();
   MM::Vector<Transformation *>::Iterator i = ts->getIterator();
@@ -202,7 +208,6 @@ MM::VOID MM::Machine::eval (const MM::CHAR * input)
       buf->clear();
       def->toString(buf);
       buf->print();
-      
     }
   }
   
@@ -212,21 +217,19 @@ MM::VOID MM::Machine::eval (const MM::CHAR * input)
   inst->toString(buf);
   buf->print();
   
-  
   for(int i = 0; i < 10; i ++)
   {
-    MM::Transition * tr = evaluator->step();
-    program->addTransformation(tr);
-    buf->clear();
-    inst->toString(buf);
-    buf->print();
+    MM::Transition * tr = createTransition();
+    evaluator->step(tr);
+    tr->toString(log);
+    
+    inst->toString(log); //debug
+    
+    tr->recycle(this);
   }
   
-  
-  printf("\n\nRESULTS\n\n");
-  buf->clear();
-  program->toString(buf);
-  buf->print();
+  printf("\n\nHistory\n\n");
+  log->print();
   
   buf->recycle(this);
   program->recycle(this);
@@ -763,7 +766,7 @@ MM::NumberValExp * MM::Machine::createNumberValExp(MM::INT32  val,
 
 MM::NumberValExp * MM::Machine::createNumberValExp(MM::INT32 val)
 {
-  MM::NumberValExp * r = new MM::NumberValExp(val/100, val%100, MM_NULL);
+  MM::NumberValExp * r = new MM::NumberValExp(val/100, val%100);
   MM::Recycler::create(r);
   return r;
 }

@@ -16,12 +16,15 @@ namespace MM
 {
   class Machine : public MM::Recycler
   {
+  public:
+    static const MM::UINT32 LOG_SIZE;
+
   private:
     MM::Reflector  * reflector;
     MM::Evaluator  * evaluator;
-    MM::Program    * log;  //global log
-    MM::Definition * type; //global type
-    MM::Instance   * inst; //global instance    
+    MM::Definition * type;    //global current types
+    MM::String     * log;     //global log of what happened
+    MM::Instance   * inst;    //global instance
     
   public:
     Machine();
@@ -32,9 +35,9 @@ namespace MM
     
     MM::Reflector * getReflector();
     MM::Evaluator * getEvaluator();
-    MM::Program * getProgram();
     MM::Definition * getDefinition();
     MM::Instance * getInstance();
+    MM::String * getLog();
     
     MM::VOID setDefinition(MM::Definition * def);
     MM::VOID setInstance(MM::Instance * inst);
