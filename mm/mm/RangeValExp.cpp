@@ -108,6 +108,19 @@ MM::INT32 MM::RangeValExp::getIntValue()
   return (rand() % (max-min+1) + min); //random number between min and max
 }
 
+//NOTE: if the flow is at least min then this value "satisfies"
+MM::BOOLEAN MM::RangeValExp::greaterEquals(MM::UINT32 val)
+{
+  if(val > this->min)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM_FALSE;
+  }
+}
+
 MM::VOID MM::RangeValExp::toString(MM::String * buf)
 {
   buf->appendInt(min);

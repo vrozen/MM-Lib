@@ -40,7 +40,8 @@ namespace MM
     MM::UINT32 getMin();
     MM::UINT32 getMax();
     MM::INT32 getIntValue();
-
+    MM::BOOLEAN greaterEquals(MM::UINT32 val);
+    
     MM::VOID toString(MM::String * buf);
   };
 }
