@@ -29,6 +29,7 @@ namespace MM
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
+    MM::Name * getName();
     MM::VOID toString(MM::String * buf);
   };
 }

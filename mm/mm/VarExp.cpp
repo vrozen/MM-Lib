@@ -86,6 +86,12 @@ MM::BOOLEAN MM::VarExp::instanceof(MM::TID tid)
   }
 }
 
+MM::Name * MM::VarExp::getName()
+{
+  return name;
+}
+
+
 /**
  * @fn MM::VOID MM::VarExp::toString(MM::String * buf)
  * @brief Serializes an VarExp object into a String buffer.
