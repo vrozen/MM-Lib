@@ -28,11 +28,13 @@ namespace  MM
       MM::Node * getNode();
     };
     
-    MM::Vector<MM::Evaluator::NodeInstance *> * pullAllWork;
-    MM::Vector<MM::Evaluator::NodeInstance *> * pullAnyWork;
-    MM::Vector<MM::Evaluator::NodeInstance *> * pushAllWork;
-    MM::Vector<MM::Evaluator::NodeInstance *> * pushAnyWork;
-  public:    
+  private:
+    MM::Vector<MM::Evaluator::NodeInstance *> * pullAllWork; //pull all work set
+    MM::Vector<MM::Evaluator::NodeInstance *> * pullAnyWork; //pull any work set
+    MM::Vector<MM::Evaluator::NodeInstance *> * pushAllWork; //push all work set
+    MM::Vector<MM::Evaluator::NodeInstance *> * pushAnyWork; //push any work set
+    
+  public:
     Evaluator(MM::Machine * m);
     
     ~Evaluator();
@@ -40,7 +42,13 @@ namespace  MM
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
-    MM::Transition * step();
+
+    MM::VOID toString(MM::String * buf);
+    
+    
+    MM::Instance * getInitialState(MM::Definition * def);
+    
+    MM::VOID step(MM::Transition * buf);
     
   private:
     //phase 1
@@ -63,19 +71,34 @@ namespace  MM
                          MM::Instance * instance,
                          MM::Node * node,
                          MM::Vector<Edge *> * work);
-
-    //pase 3
-    MM::VOID finalize(MM::Instance * instance);
     
+    //pase 3
+    MM::VOID finalize(MM::Instance * instance, MM::Transition * tr);
+    
+    MM::VOID storeFlow(MM::String * tr,
+                       MM::Node * src,
+                       MM::UINT32 flow,
+                       MM::Node * tgt);
+    
+
     MM::FlowEdge * synthesizeFlowEdge(MM::Instance * i,
                                       MM::Node * src,
                                       MM::UINT32 flow,
                                       MM::Node * tgt);
-      
+
+    //phase 3
+    MM::VOID setDisabledNodes(MM::Instance * i);
+    MM::BOOLEAN isDisabled(MM::Node * node,
+                           MM::Instance * i);
+  public:
+    MM::VOID initStartState(MM::Instance * i);
+    MM::VOID setActiveNodes(MM::Instance * i,
+                            MM::Transition * t);
+  private:
     MM::BOOLEAN isSatisfied(MM::Instance * i,
                             MM::Node *,
                             MM::Transition * t);
-
+    
     //------------------------------------------------------------
     //Visitor
     //------------------------------------------------------------
