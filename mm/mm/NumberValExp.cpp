@@ -100,6 +100,18 @@ MM::Location *  MM::NumberValExp::getLocation()
   return loc;
 }
 
+MM::BOOLEAN MM::NumberValExp::greaterEquals(MM::UINT32 val)
+{
+  if(val >= this->val)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM_FALSE;
+  }
+}
+
 MM::VOID MM::NumberValExp::toString(MM::String * buf)
 {
   buf->appendInt(val / 100);

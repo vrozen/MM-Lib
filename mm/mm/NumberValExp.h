@@ -38,6 +38,7 @@ namespace MM
     MM::INT32 getValue();
     MM::INT32 getIntValue();
     MM::Location * getLocation();
+    MM::BOOLEAN greaterEquals(MM::UINT32 val);
     MM::VOID toString(MM::String * buf);
   };
 }
