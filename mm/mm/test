@@ -1,24 +1,13 @@
 A {}
-pool A.a at 4
-auto pool A.b at 0
 
-A
-{
-  auto pool c at 0
-  pool a at 6
-}
+A a
 
-A.e1: a --> b
+auto pool A.a at 7
+auto pool A.b at 3
 
-A.c1: b . >=3 .> b
+A.e1: b -1-> a
+A.e2: a -5-> b
 
-A.B { pool d  E { } }
-
-A.c1: b . == 1 .>b
-
-A
-{
-  B bla
-}
+A.c: a . a>7 .> b
 
 modify
