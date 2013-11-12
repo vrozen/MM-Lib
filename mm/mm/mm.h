@@ -20,7 +20,6 @@
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
-#include "Pair.h"
 #include "Element.h"
 #include "Operator.h"
 #include "Exp.h"
