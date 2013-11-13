@@ -71,7 +71,7 @@ MM::BOOLEAN MM::StateEdge::isTrigger()
   {
     if(exp->getTypeId() == MM::T_BinExp)
     {
-      MM::BinExp * binExp = (MM::BinExp *) this;
+      MM::BinExp * binExp = (MM::BinExp *) exp;
       r = binExp->isTriggerExp();
     }
   }
