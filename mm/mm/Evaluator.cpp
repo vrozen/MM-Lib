@@ -372,13 +372,10 @@ MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * i,
   
   while(curInstance != MM_NULL)
   {
-    if(curInstance->getParent() != MM_NULL)
-    {
-      curName = curInstance->getName();
-      MM::Name * name = m->createName(curName);
-      name->setName(edgeName);
-      edgeName = name;
-    }    
+    curName = curInstance->getName();
+    MM::Name * name = m->createName(curName);
+    name->setName(edgeName);
+    edgeName = name;
     curInstance = curInstance->getParent();
   }
   
@@ -386,6 +383,9 @@ MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * i,
   MM::Name * tgtName2 = m->createName(tgtName);
   MM::Exp * exp = m->createNumberValExp(flow * 100);
   MM::FlowEdge * edge = m->createFlowEdge(edgeName, srcName2, exp, tgtName2);
+  
+  edge->setInstance(i); //TODO: do this in a cleaner way
+  
   return edge;
 }
 
@@ -669,6 +669,7 @@ MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
   MM::NodeBehavior::Act act = behavior->getAct();
 
   MM::Vector<MM::Edge *> * edges = MM_NULL;
+
   
   if(act == MM::NodeBehavior::ACT_PULL)
   {
@@ -698,8 +699,8 @@ MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
     while(iIter.hasNext() == MM_TRUE)
     {
       MM::Edge * iEdge = iIter.getNext();
-      MM::Node * iSrc = iEdge->getSource();
-      MM::Node * iTgt = iEdge->getTarget();
+      MM::Name * iSrc = iEdge->getSourceName();
+      MM::Name * iTgt = iEdge->getTargetName();
       MM::ValExp * iValExp = (MM::ValExp *) iEdge->getExp();
       MM::BOOLEAN found = MM_FALSE;
       
@@ -711,18 +712,35 @@ MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
         if(tElement->instanceof(MM::T_FlowEdge) == MM_TRUE)
         {
           MM::FlowEdge * tEdge = (MM::FlowEdge *) tElement;
-          MM::Node * tSrc = tEdge->getSource();
-          MM::Node * tTgt = tEdge->getTarget();
-          MM::NumberValExp * tExp = (MM::NumberValExp *) iEdge->getExp();
-          MM::UINT32 tVal = tExp->getValue();
-            
-          if(iSrc == tSrc && iTgt == tTgt)
+          if(tEdge->getInstance() == i) //added for fast search instead of qualified name
           {
-            found = MM_TRUE;
-            if(iValExp->greaterEquals(tVal) == MM_FALSE)
+            MM::Name * tSrc = tEdge->getSourceName();
+            MM::Name * tTgt = tEdge->getTargetName();
+            
+            while(tSrc->getName() != MM_NULL)
             {
-              satisfied = MM_FALSE;
-              break;
+              tSrc = tSrc->getName();
+            }
+            
+            while(tTgt->getName() != MM_NULL)
+            {
+              tTgt = tTgt->getName();
+            }
+            
+            
+            MM::NumberValExp * tExp = (MM::NumberValExp *) iEdge->getExp();
+            MM::UINT32 tVal = tExp->getValue();
+          
+            //the final name of the transition must match the name of the node??
+          
+            if(iSrc->equals(tSrc) == MM_TRUE && iTgt->equals(tTgt) == MM_TRUE)
+            {
+              found = MM_TRUE;
+              if(iValExp->greaterEquals(tVal) == MM_FALSE)
+              {
+                satisfied = MM_FALSE;
+                break;
+              }
             }
           }
         }
@@ -735,6 +753,7 @@ MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
     }
   }
   
+  printf("SATISFIED %s %d\n", n->getName()->getBuffer(), satisfied);
   return satisfied;
 }
 
