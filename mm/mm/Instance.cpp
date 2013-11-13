@@ -385,15 +385,30 @@ MM::UINT32 MM::Instance::getResources(MM::Node * node)
 MM::BOOLEAN MM::Instance::hasResources(MM::Node * node,
                                        MM::UINT32 amount)
 {
-  //old has resources
-  if(oldValues->get(node) >= amount)
+  MM::BOOLEAN r = MM_FALSE;
+  MM::NodeBehavior * behavior = node->getBehavior();
+  switch(behavior->getTypeId())
   {
-    return MM_TRUE;
+    case MM::T_PoolNodeBehavior:
+      //old has resources
+      if(oldValues->get(node) >= amount)
+      {
+        r = MM_TRUE;
+      }
+      break;
+    case MM::T_GateNodeBehavior:
+      break;
+    case MM::T_SourceNodeBehavior:
+      r = MM_TRUE;
+      break;
+    case MM::T_DrainNodeBehavior:
+      r = MM_FALSE;
+      break;
+    default:
+      break;
   }
-  else
-  {
-    return MM_FALSE;
-  }
+  
+  return r;
 }
 
 MM::UINT32 MM::Instance::getCapacity(MM::Node * node)
@@ -401,12 +416,27 @@ MM::UINT32 MM::Instance::getCapacity(MM::Node * node)
   MM::UINT32 capacity = 0;  
   MM::NodeBehavior * behavior = node->getBehavior();
   MM::UINT32 max = 0;
-  if(behavior->getTypeId() == MM::T_PoolNodeBehavior)
+  
+  switch(behavior->getTypeId())
   {
-    max = ((MM::PoolNodeBehavior*) behavior)->getMax();
-    capacity = max - newValues->get(node);
+    case MM::T_PoolNodeBehavior:
+      max = ((MM::PoolNodeBehavior*) behavior)->getMax();
+      capacity = max - newValues->get(node);
+      break;
+    case MM::T_GateNodeBehavior:
+      max = INT_MAX; //not strictly correct
+      break;
+    case MM::T_SourceNodeBehavior:
+      max = 0;
+      break;
+    case MM::T_DrainNodeBehavior:
+      max = INT_MAX;
+      break;
+    default:
+      break;
   }
-  return capacity; //FIXME: drain, source, gate
+  
+  return capacity;
 }
 
 MM::BOOLEAN MM::Instance::hasCapacity(MM::Node * node,
@@ -414,38 +444,64 @@ MM::BOOLEAN MM::Instance::hasCapacity(MM::Node * node,
 {
   MM::NodeBehavior * behavior = node->getBehavior();
   MM::UINT32 max = 0;
-  if(behavior->getTypeId() == MM::T_PoolNodeBehavior)
+  MM::BOOLEAN r = MM_FALSE;
+  
+  switch(behavior->getTypeId())
   {
-    max = ((MM::PoolNodeBehavior*) behavior)->getMax();
-    if(max - newValues->get(node) >= amount  || max == 0)
-    {
-      return MM_TRUE;
-    }
+    case MM::T_PoolNodeBehavior:
+      max = ((MM::PoolNodeBehavior*) behavior)->getMax();
+      if(max - newValues->get(node) >= amount  || max == 0)
+      {
+        r = MM_TRUE;
+      }
+      break;
+    case MM::T_DrainNodeBehavior:
+      r = MM_TRUE;
+      break;
+    case MM::T_SourceNodeBehavior:
+      r = MM_FALSE;
+      break;
+    case MM::T_GateNodeBehavior:
+      r = MM_TRUE; //not strictly correct
+      break;
+    default:
+      break;
   }
-  return MM_FALSE; //FIXME: drain, source, gate
+  
+  return r;
 }
 
 MM::VOID MM::Instance::sub(MM::Node * node,
                            MM::UINT32 amount)
 {
-  //subtract from old value
-  MM::UINT32 oldValue = oldValues->get(node);
-  oldValue = oldValue - amount;
-  oldValues->put(node, oldValue);
+  MM::NodeBehavior * behavior = node->getBehavior();
   
-  //subtract from new value
-  MM::UINT32 newValue = newValues->get(node);
-  newValue = newValue - amount;
-  newValues->put(node, newValue);
+  if(behavior->getTypeId() == MM::T_PoolNodeBehavior) //FIXME: gates
+  {
+    //subtract from old value
+    MM::UINT32 oldValue = oldValues->get(node);
+    oldValue = oldValue - amount;
+    oldValues->put(node, oldValue);
+  
+    //subtract from new value
+    MM::UINT32 newValue = newValues->get(node);
+    newValue = newValue - amount;
+    newValues->put(node, newValue);
+  }
 }
 
 MM::VOID MM::Instance::add(MM::Node * node,
                            MM::UINT32 amount)
 {
-  //add to new value
-  MM::UINT32 newValue = newValues->get(node);
-  newValue = newValue + amount;
-  newValues->put(node, newValue);
+  MM::NodeBehavior * behavior = node->getBehavior();
+  
+  if(behavior->getTypeId() == MM::T_PoolNodeBehavior) //FIXME: gates
+  {
+    //add to new value
+    MM::UINT32 newValue = newValues->get(node);
+    newValue = newValue + amount;
+    newValues->put(node, newValue);
+  }
 }
 
 /**

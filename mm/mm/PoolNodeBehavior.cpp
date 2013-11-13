@@ -111,7 +111,6 @@ MM::VOID MM::PoolNodeBehavior::setAdd(MM::Exp * exp)
   this->exp = exp;
 }
 
-
 MM::UINT32 MM::PoolNodeBehavior::getCreateMessage()
 {
   return MM::MSG_NEW_POOL;
