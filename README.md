@@ -4,7 +4,7 @@ MM-Lib
 Micro-Machinations Library
 
 Status:
-* Evaluator: pool, flow edge and condition are working
+* Evaluator: pool, flow edge, trigger and condition are working
 * Reflector: working, transforms types
 * Instances: observes definitions
 * Machine: tracks objects it owns
@@ -19,7 +19,8 @@ Next steps:
   * regression test setup
   * reuse examples used to test MM-AiR
 * Evaluator: add features
-  * source, drain, gate, triggers
+  * source, drain, gate
+  * aliases
 * InterfaceNodes: perform binding
 * Machine: manage all instances
   * maps and vectors 
