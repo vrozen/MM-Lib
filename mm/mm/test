@@ -4,7 +4,7 @@ A a
 
 auto pool A.a at 7
 auto pool A.b at 3
-pool A.c
+drain A.c
 
 A.e1: b -1-> a
 A.e2: a -1-> b
