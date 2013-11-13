@@ -84,8 +84,8 @@ MM::BOOLEAN MM::BinExp::isTriggerExp()
 {
   MM::BOOLEAN r = MM_FALSE;
   if(op == Operator::OP_MUL &&
-     e1->getTypeId() == MM::T_OneExp &&
-     e2->getTypeId() == MM::T_OneExp)
+    e1->getTypeId() == MM::T_OneExp &&
+    e2->getTypeId() == MM::T_OneExp)
   {
     r = MM_TRUE;
   }
