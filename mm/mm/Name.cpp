@@ -102,6 +102,23 @@ MM::BOOLEAN MM::Name::instanceof(MM::TID tid)
   }
 }
 
+MM::BOOLEAN MM::Name::equals(MM::Name * name)
+{
+  MM::BOOLEAN equal = MM_FALSE;
+  MM::CHAR * str = name->getBuffer();  
+  MM::UINT32 len = name->getLength();
+  
+  if(len == this->len)
+  {
+    if(strncmp(str, this->str, len) == 0)
+    {
+      equal = MM_TRUE;
+    }
+  }
+  
+  return equal;
+}
+
 /**
  * @fn MM::UINT32 MM::Name::getLength()
  * @brief Retrieves the length of a Name object.

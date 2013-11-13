@@ -34,6 +34,8 @@ namespace MM
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
+    
+    MM::BOOLEAN equals(MM::Name * name);
 
     friend MM::BOOLEAN operator < (const Name & n1, const Name & n2)
     {
