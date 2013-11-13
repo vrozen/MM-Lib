@@ -12,6 +12,7 @@
 namespace MM
 {
   class Node;
+  class Instance;
   class Edge : public MM::Element
   {
   private:
@@ -22,6 +23,7 @@ namespace MM
     MM::Node * srcNode;
     MM::Exp  * exp;
     MM::Node * tgtNode;
+    MM::Instance * instance; //used for MMT data events ...
   protected:
     Edge(MM::Name * name, MM::Name * src, MM::Exp * exp, MM::Name * tgt);
     virtual ~Edge();
@@ -31,10 +33,12 @@ namespace MM
     virtual MM::BOOLEAN instanceof(MM::TID tid);
     MM::Node * getSource();
     MM::Node * getTarget();
-    MM::Exp * getExp();
-    MM::VOID setExp(MM::Exp * exp);    
+    MM::Exp * getExp();    
+    MM::Instance * getInstance();
+    MM::VOID setExp(MM::Exp * exp);
     MM::VOID setSource(MM::Node * src);
     MM::VOID setTarget(MM::Node * tgt);
+    MM::VOID setInstance(MM::Instance * instance);
     MM::Name * getSourceName();
     MM::Name * getTargetName();
     virtual MM::VOID toString(MM::String * buf) = 0;

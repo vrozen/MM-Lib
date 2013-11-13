@@ -26,6 +26,7 @@
 #include "NodeBehavior.h"
 #include "Node.h"
 
+
 const MM::CHAR MM::Edge::COLON_CHAR = ':';
 
 MM::Edge::Edge(MM::Name * name,
@@ -38,6 +39,7 @@ MM::Edge::Edge(MM::Name * name,
   this->tgtName = tgt;
   this->srcNode = MM_NULL;
   this->tgtNode = MM_NULL;
+  this->instance = MM_NULL;
 }
 
 MM::Edge::~Edge()
@@ -47,6 +49,7 @@ MM::Edge::~Edge()
   srcNode = MM_NULL;
   tgtNode = MM_NULL;
   exp = MM_NULL;
+  instance = MM_NULL;
 }
 
 MM::VOID MM::Edge::recycle(MM::Recycler * r)
@@ -84,6 +87,11 @@ MM::Node * MM::Edge::getTarget()
   return this->tgtNode;
 }
 
+MM::Instance * MM::Edge::getInstance()
+{
+  return instance;
+}
+
 MM::Exp * MM::Edge::getExp()
 {
   return this->exp;
@@ -102,6 +110,12 @@ MM::VOID MM::Edge::setSource(MM::Node * src)
 MM::VOID MM::Edge::setTarget(MM::Node * tgt)
 {
   this->tgtNode = tgt;
+}
+
+//NOTE: only used for data flow events... not for normal flow edges
+MM::VOID MM::Edge::setInstance(MM::Instance * instance)
+{
+  this->instance = instance;
 }
 
 MM::Name * MM::Edge::getSourceName()
