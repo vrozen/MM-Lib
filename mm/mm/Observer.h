@@ -22,7 +22,7 @@ namespace MM
     virtual MM::VOID update(MM::Observable * observable,
                             MM::VOID * aux,
                             MM::UINT32 message,
-                            MM::VOID * object) = 0;
+                            MM::VOID * object) = 0;   
   };
 }
 
