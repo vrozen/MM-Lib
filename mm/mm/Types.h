@@ -56,20 +56,38 @@ namespace MM
     //instance messages
     MSG_NEW_INST,
     MSG_DEL_INST,
-    MSG_VAL_POOL,
-    MSG_SIGNAL    //inst: signal condition
+    
+    //instance flow message?
+    
+    //instance pool message
+    MSG_VALUE,     //a pool has a new value
+    
+    //instance trigger message
+    MSG_TRIGGER,   //a trigger happened
+
+    //instance activated message
+    MSG_ACTIVATED, //a node was activated
+    
+    //instance disabled message
+    MSG_DISABLED,  //a node was not activated because its conditions where false
+    
+    //instance signal condition message
+    MSG_SIGNAL     //an invariant was violated
   } MSG;
   
+  /*
+   //NOTE: use observers for now
   //callback type defintions
-  typedef MM::VOID (*CALLBACK)
+  typedef MM::VOID (* CALLBACK)
   (
     MM::VOID * caller,     //caller: Who're you gonna call?
     MM::MSG    message,    //what happened?
-    MM::UINT32 instance,   //instance
-    MM::UINT32 definition, //definition
-    MM::UINT32 pool,       //pool when MSG_VAL_POOL, signal when MSG_SIGNAL
-    MM::UINT32 val         //new value in case of MSG_VAL_POOL
+    MM::UINT32 instance,   //instance in which it happened
+                           //MM::UINT32 definition, //definition of the instance
+    MM::UINT32 element,    //element (node or assertion) which caused the event
+    MM::UINT32 val         //new value in case of MSG_VALUE
   );
+   */
   
   //The following enum is not OOP
   //Its reason is avoiding doublde dispatch
