@@ -50,9 +50,14 @@ namespace  MM
     
     MM::VOID step(MM::Transition * buf);
     
+    
+    MM::VOID initStartState(MM::Instance * i);
+
   private:
     //phase 1
     MM::VOID prepare(MM::Instance * instance);
+
+    
     
     //phase 2: step
     MM::VOID stepLevel(MM::Transition * transition,
@@ -72,41 +77,38 @@ namespace  MM
                          MM::Node * node,
                          MM::Vector<Edge *> * work);
     
-    //pase 3
+    //phase 3
     MM::VOID finalize(MM::Instance * instance, MM::Transition * tr);
     
-    MM::VOID storeFlow(MM::String * tr,
-                       MM::Node * src,
-                       MM::UINT32 flow,
-                       MM::Node * tgt);
-    
-
     MM::FlowEdge * synthesizeFlowEdge(MM::Instance * i,
                                       MM::Node * src,
                                       MM::UINT32 flow,
                                       MM::Node * tgt);
 
-    //phase 3
-    MM::VOID setDisabledNodes(MM::Instance * i);
+    MM::VOID setActiveNodes(MM::Instance * i,
+                            MM::Transition * tr);
+
     MM::BOOLEAN isDisabled(MM::Node * node,
                            MM::Instance * i);
-  public:
-    MM::VOID initStartState(MM::Instance * i);
-    MM::VOID setActiveNodes(MM::Instance * i,
-                            MM::Transition * t);
-  private:
+
     MM::BOOLEAN isSatisfied(MM::Instance * i,
                             MM::Node *,
-                            MM::Transition * t);
+                            MM::Transition * tr);
+    
+    MM::VOID propagateGates(MM::Instance * i,
+                            MM::Transition * tr);
     
     //------------------------------------------------------------
     //Visitor
     //------------------------------------------------------------
+    MM::ValExp * eval(MM::Instance * i, MM::Edge * e);
+    
+ 
+  private:
     MM::ValExp * eval(MM::Exp * exp,
                       MM::Instance * i,
                       MM::Edge * e);
 
-  private:
     MM::ValExp * eval(MM::OneExp * exp,
                       MM::Instance * i,
                       MM::Edge * e);

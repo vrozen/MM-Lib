@@ -337,27 +337,6 @@ MM::VOID MM::Evaluator::stepNodeAll(MM::Transition * tr,
   }
 }
 
-
-//FIXME: should actually be macro
-/*
-MM::VOID MM::Evaluator::storeFlow(MM::String * tr,
-                                  MM::Node * src,
-                                  MM::UINT32 flow,
-                                  MM::Node * tgt)
-{
-  MM::Name * srcName = src->getName();
-  MM::Name * tgtName = tgt->getName();
-
-  srcName->toString(tr);
-  tr->append('-');
-  tr->appendInt(flow);
-  tr->append('-');
-  tr->append('>');  
-  tgtName->toString(tr);
-  tr->linebreak();
-}*/
-
-
 MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * i,
                                                  MM::Node * src,
                                                  MM::UINT32 flow,
@@ -405,8 +384,7 @@ MM::VOID MM::Evaluator::stepNodeAny(MM::Transition * tr,
   while(edgeIter.hasNext() == MM_TRUE)
   {
     MM::Edge * edge = edgeIter.getNext();
-    MM::Exp * exp = edge->getExp();
-    MM::ValExp * valExp = eval(exp, i, edge);
+    MM::ValExp * valExp = eval(i, edge);
     
     MM::INT32 flow = 0;
     
@@ -417,6 +395,10 @@ MM::VOID MM::Evaluator::stepNodeAny(MM::Transition * tr,
     else if(valExp->getTypeId() == MM::T_RangeValExp)
     {
       flow = ((RangeValExp *) valExp)->getIntValue();
+    }
+    else
+    {
+      //TODO runtime exception
     }
     
     valExp->recycle(m);
@@ -437,6 +419,7 @@ MM::VOID MM::Evaluator::stepNodeAny(MM::Transition * tr,
           i->add(tgt, flow);
           MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
           tr->addElement(edge);
+          
         }
         else
         {
@@ -533,8 +516,6 @@ MM::VOID MM::Evaluator::initStartState(MM::Instance * i)
 }
 
 
-
-
 //set active nodes for an instance
 MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
                                        MM::Transition * tr)
@@ -578,6 +559,10 @@ MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
         {
           MM::Edge * trigger = tIter.getNext();
           MM::Node * n2 = trigger->getTarget();
+          
+          //notify observers a trigger happened
+          i->notifyObservers(i, MM_NULL, MM::MSG_TRIGGER, trigger);
+          
           if(isDisabled(n2, i) == MM_FALSE)
           {
             i->setActive(n2);
@@ -670,7 +655,6 @@ MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
 
   MM::Vector<MM::Edge *> * edges = MM_NULL;
 
-  
   if(act == MM::NodeBehavior::ACT_PULL)
   {
     edges = n->getInput();
@@ -758,8 +742,58 @@ MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
 }
 
 
+/*
+//recursively propagate all gates until no gate contains temp values
+//NOTE: run-time errors can emerge... hard to analyze statically
+MM::VOID MM::Evaluator::propagateGates(MM::Instance * i,
+                                       MM::Transition * tr)
+{
+  //for each gate g in instance i that has temporary values
+  //while(value(g) != 0) { getnext output(g); }
+  //eval (output)
+  //propagate
+  //remove g from temp map
+  
+  
+  MM::Map<MM::Node *, MM::UINT32> * gateValues = i->getGateValues();
+  MM::Map<MM::Node *, MM::UINT32>::Iterator gateIter = gateValues->getIterator();
+  
+  while(gateValues->isEmpty() == MM_FALSE)
+  {
+    MM::Node * gate = MM_NULL;
+    MM::UINT32 value = gateIter.getNext(&gate);
+   
+  
+    while(value != 0)
+    {
+      MM::FlowEdge * edge = i->getNextOutput(gate);
+      MM::ValExp * valExp = eval(i, edge);
+    
+      //call push any behavior
+      
+      
 
+    }
+      
+  }
+  
+  MM::Map<MM::Declaration *, MM::Instance *> * instances = i->getInstances();
+  MM::Map<MM::Declaration *, MM::Instance *>::Iterator iter =
+    instances->getIterator();
+  
+  //recurse over child instances
+  while(iter.hasNext() == MM_TRUE)
+  {
+    MM::Instance * iChild = iter.getNext();
+    propagateGates(iChild, tr);
+  }
+}
+*/
 
+MM::ValExp * MM::Evaluator::eval(MM::Instance * i, MM::Edge * e)
+{
+  return eval(e->getExp(), i, e);
+}
 
 //C++ does not support runtime type matching
 //I am helping it by doing it manually...
