@@ -13,10 +13,14 @@ namespace MM
 {
   //class Definition;
   //class Declaration;
-  class Instance : public MM::Recyclable, public MM::Observer
+  class Instance : public MM::Recyclable, //managed
+                   public MM::Observer,   //observes its definition
+                   public MM::Observable  //observed by the outside world
   {
   public:
-    static const MM::UINT32 INDENT;
+    static const MM::CHAR * ACTIVE_STR;   /**> active string */
+    static const MM::CHAR * DISABLED_STR; /**> disabled string */
+    static const MM::UINT32 INDENT;       /**> serialization indentation amount*/
   private:
     MM::Instance * parent; /**> parent instance. @note: bad design? */
     MM::Definition * type; /**> declared type. */
@@ -26,17 +30,20 @@ namespace MM
     //      when nodes and declarations in types have unique sequential labels
     //      pool values: pool --> value
     MM::Map<MM::Node *, MM::UINT32> * values;
-    MM::Map<MM::Node *, MM::UINT32> * oldValues;
-    MM::Map<MM::Node *, MM::UINT32> * newValues;
+    MM::Map<MM::Node *, MM::Vector<Edge *>::Iterator *> * gates;
+    MM::Map<MM::Node *, MM::UINT32> * curGateValues;
+    
+    //temporary values
+    MM::Map<MM::Node *, MM::UINT32> * oldValues;  /**> old temporary pool values*/
+    MM::Map<MM::Node *, MM::UINT32> * newValues;  /**> new temporary pool values*/
+    MM::Map<MM::Node *, MM::UINT32> * gateValues; /**> new temporary gate values*/
     
     //declaration instances: declaration --> instance
-    MM::Map<MM::Declaration *, MM::Instance *> * instances;
-    
-    //node --> boolean
-    MM::Vector<MM::Node *> * activeNodes; /**> TODO: bitvector */
-    
-    //node --> boolean
-    MM::Vector<MM::Node *> * disabledNodes; /**> TODO: bitvector */
+    MM::Map<MM::Declaration *, MM::Instance *> * instances; /**> sub-instances*/
+    MM::Vector<MM::Node *> * activeNodes;   /**> active nodes */
+    MM::Vector<MM::Node *> * disabledNodes; /**> disabled nodes are
+                                                 nodes that are not active
+                                                 because a conditions is false*/
     
   public:
     Instance(MM::Instance * parent,
@@ -57,6 +64,7 @@ namespace MM
     //Pool:
     MM::VOID store(MM::Node * pool, MM::UINT32 val); //stores a value of a pool
     MM::INT32 retrieve(MM::Node * pool);             //retrieves value of a pool
+    
     
     //Instances:
     MM::Instance * retrieveInstance(MM::Declaration * decl);
@@ -80,10 +88,12 @@ namespace MM
   private:
     MM::VOID createInstance(MM::Declaration * decl, MM::Machine * m);
     MM::VOID createPool(MM::Node * pool);
-
+    MM::VOID createGate(MM::Node * gate);
+    
     MM::VOID removeInstance(MM::Declaration * decl, MM::Recycler * r);
     MM::VOID removePool(MM::Node * pool);
-    
+    MM::VOID removeGate(MM::Node * gate);
+        
   public:
     MM::VOID begin();
     MM::UINT32 getCapacity(MM::Node * node);

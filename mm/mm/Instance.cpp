@@ -9,31 +9,6 @@
  * @date    September 11 2013
  */
 /******************************************************************************/
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "YYLTYPE.h"
-#include "Types.h"
-#include "Recyclable.h"
-#include "Vector.h"
-#include "Map.h"
-#include "Recycler.h"
-#include "Location.h"
-#include "Name.h"
-#include "Observer.h"
-#include "Observable.h"
-#include "Element.h"
-#include "Exp.h"
-#include "Edge.h"
-#include "NodeBehavior.h"
-#include "Node.h"
-#include "Definition.h"
-#include "Declaration.h"
-#include "Instance.h"
-*/
-
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -90,6 +65,8 @@
 #include "Machine.h"
 
 const MM::UINT32 MM::Instance::INDENT = 2;
+const MM::CHAR * MM::Instance::ACTIVE_STR = "active";
+const MM::CHAR * MM::Instance::DISABLED_STR = "disabled";
 
 /**
  * @fn MM::Instance::Instance(MM::Definition * type) : MM::Recyclable()
@@ -99,15 +76,20 @@ const MM::UINT32 MM::Instance::INDENT = 2;
  */
 MM::Instance::Instance(MM::Instance * parent,
                        MM::Definition * def,
-                       MM::Name * name) : MM::Recyclable()
+                       MM::Name * name): MM::Recyclable(),
+                                         MM::Observer(),
+                                         MM::Observable()
 {
   //TODO, make Machine create this
   values = new MM::Map<MM::Node*, MM::UINT32>();
-  oldValues = MM_NULL;
-  newValues = MM_NULL;
+  oldValues = new MM::Map<MM::Node*, MM::UINT32>();
+  newValues = new MM::Map<MM::Node*, MM::UINT32>();
   instances = new MM::Map<MM::Declaration*, MM::Instance *>();
   disabledNodes = new MM::Vector<MM::Node *>();
-  activeNodes = new MM::Vector<MM::Node *>();
+  activeNodes = new MM::Vector<MM::Node *>();  
+  gates = new MM::Map<MM::Node *, MM::Vector<Edge*>::Iterator *>();
+  curGateValues = new MM::Map<MM::Node *, MM::UINT32>();
+  gateValues = new MM::Map<MM::Node*, MM::UINT32>();
   
   this->type = def;
   this->name = name;
@@ -118,9 +100,21 @@ MM::Instance::Instance(MM::Instance * parent,
  * @brief Destructs an Instance object
  */
 MM::Instance::~Instance()
-{  
+{
+  //clean up values
   delete values;
+  
+  //clean up instances
   delete instances;
+  
+  //clean up gates
+  delete gates;
+  delete curGateValues;
+
+  //clean up temporary data
+  delete oldValues;
+  delete newValues;
+  delete gateValues;
 }
 
 /**
@@ -236,6 +230,9 @@ MM::BOOLEAN MM::Instance::isActive(MM::Node * node)
 MM::VOID MM::Instance::setActive(MM::Node * node)
 {
   activeNodes->add(node);
+
+  //notify observers a node was activated
+  notifyObservers(this, MM_NULL, MM::MSG_ACTIVATED, node);
 }
 
 MM::BOOLEAN MM::Instance::isDisabled(MM::Node * node)
@@ -246,6 +243,9 @@ MM::BOOLEAN MM::Instance::isDisabled(MM::Node * node)
 MM::VOID MM::Instance::setDisabled(MM::Node * node)
 {
   disabledNodes->add(node);
+  
+  //notify observers a node was disabled
+  notifyObservers(this, MM_NULL, MM::MSG_DISABLED, node);
 }
 
 MM::UINT32 MM::Instance::getValue(MM::Node * node)
@@ -286,10 +286,46 @@ MM::VOID MM::Instance::update(MM::Observable * observable,
              ((MM::Node*)object)->getName()->getBuffer());
       removePool((MM::Node *) object);
       break;
+    case MM::MSG_NEW_GATE:
+      printf("Instance: Sees gate %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createGate((MM::Node *) object);
+      break;
+    case MM::MSG_UPD_GATE:
+      printf("Instance: Sees gate %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createGate((MM::Node *) object);
+      break;
+    case MM::MSG_DEL_GATE:
+      printf("Instance: Sees gate %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      removeGate((MM::Node *) object);
+      break;
+    case MM::MSG_NEW_REF:
+      break;
+    case MM::MSG_UPD_REF:
+      break;
+    case MM::MSG_DEL_REF:
+      break;
+    case MM::MSG_NEW_DRAIN:
+      break;
+    case MM::MSG_UPD_DRAIN:
+      break;
+    case MM::MSG_DEL_DRAIN:
+      break;
+    case MM::MSG_NEW_SOURCE:
+      break;
+    case MM::MSG_UPD_SOURCE:
+      break;
+    case MM::MSG_DEL_SOURCE:
+      break;
     case MM::MSG_NEW_DECL:
       printf("Instance: Sees declaration %s begin\n",
              ((MM::Declaration*)object)->getName()->getBuffer());
       createInstance((Declaration *) object, (MM::Machine *) aux );
+      break;
+      
+    case MM::MSG_UPD_DECL:
       break;
     case MM::MSG_DEL_DECL:
       printf("Instance: Sees declaration %s end\n",
@@ -334,6 +370,9 @@ MM::VOID MM::Instance::createInstance(MM::Declaration * decl,
   }
   def->addObserver(instance);
   instances->put(decl, instance);
+  
+  //notify observers a new instance has been created
+  notifyObservers(this, MM_NULL, MM::MSG_NEW_INST, instance);
 }
 
 MM::VOID MM::Instance::createPool(MM::Node * pool)
@@ -345,33 +384,76 @@ MM::VOID MM::Instance::createPool(MM::Node * pool)
     MM::UINT32 at = poolBehavior->getAt();
     values->put(pool, at);
   }
-  
+
   //TODO: for all new nodes add it to the active nodes when auto
   if(pool->getBehavior()->getWhen() == MM::NodeBehavior::WHEN_AUTO)
   {
+    //FIXME: remove when an edge is added that disables it again?
     activeNodes->add(pool);
   }
 }
+
+
+MM::VOID MM::Instance::createGate(MM::Node * gate)
+{
+  MM::NodeBehavior * behavior = gate->getBehavior();  
+  if(behavior->getTypeId() == MM::T_GateNodeBehavior)
+  {
+    MM::Vector<MM::Edge *> * output = gate->getOutput();
+    MM::Vector<Edge *>::Iterator * i = MM_NULL;
+    
+    if(gates->contains(gate) == MM_TRUE)
+    {
+      i = gates->get(gate);
+      delete i;
+    }
+
+    i = output->getNewIterator();
+    gates->put(gate, i);
+    curGateValues->put(gate, 0);    
+  }
+}
+
 
 MM::VOID MM::Instance::removeInstance(MM::Declaration * decl,
                                       MM::Recycler * r)
 {
   MM::Instance * instance = instances->get(decl);
-  //TODO: inform user of killed instance
   instances->remove(decl);
   instance->recycle(r);
+  
+  //notify observers an instance has been deleted
+  notifyObservers(this, MM_NULL, MM::MSG_DEL_INST, instance);  
 }
 
 MM::VOID MM::Instance::removePool(MM::Node * pool)
 {
+  //PRE: not during transition / no temp values
   values->remove(pool);
+}
+
+MM::VOID MM::Instance::removeGate(MM::Node * gate)
+{
+  //PRE: not during transition / no temp values
+  if(gates->contains(gate) == MM_TRUE)
+  {
+    gates->remove(gate);
+  }
+  if(curGateValues->contains(gate) == MM_TRUE)
+  {
+    curGateValues->remove(gate);
+  }
 }
 
 MM::VOID MM::Instance::begin()
 {
   //copy values to old and new
-  oldValues = new MM::Map<MM::Node*, MM::UINT32>(values);
-  newValues = new MM::Map<MM::Node*, MM::UINT32>(values);
+  oldValues->clear();
+  newValues->clear();  
+  oldValues->putAll(values);
+  newValues->putAll(values);
+  
+  gateValues->clear();
   disabledNodes->clear();
   activeNodes->clear();
 }
@@ -488,6 +570,32 @@ MM::VOID MM::Instance::sub(MM::Node * node,
     newValue = newValue - amount;
     newValues->put(node, newValue);
   }
+  
+  if(behavior->getTypeId() == MM::T_GateNodeBehavior)
+  {
+    MM::UINT32 tempValue = 0;
+    
+    if(gateValues->contains(node) == MM_TRUE)
+    {
+      tempValue = gateValues->get(node);
+
+      if(amount <= tempValue)
+      {
+        tempValue = tempValue - amount;
+        gateValues->put(node, tempValue);
+      }
+      else
+      {
+        //error
+      }
+    }
+    else
+    {
+      //error
+    }
+    
+  }
+  
 }
 
 MM::VOID MM::Instance::add(MM::Node * node,
@@ -495,13 +603,28 @@ MM::VOID MM::Instance::add(MM::Node * node,
 {
   MM::NodeBehavior * behavior = node->getBehavior();
   
-  if(behavior->getTypeId() == MM::T_PoolNodeBehavior) //FIXME: gates
+  if(behavior->getTypeId() == MM::T_PoolNodeBehavior)
   {
     //add to new value
     MM::UINT32 newValue = newValues->get(node);
     newValue = newValue + amount;
     newValues->put(node, newValue);
   }
+  
+  if(behavior->getTypeId() == MM::T_GateNodeBehavior)
+  {
+    MM::UINT32 tempValue = 0;
+    
+    if(gateValues->contains(node) == MM_TRUE)
+    {
+      tempValue = gateValues->get(node);
+    }
+    
+    tempValue = tempValue + amount;
+    
+    gateValues->put(node, tempValue);
+  }
+  
 }
 
 /**
@@ -510,11 +633,15 @@ MM::VOID MM::Instance::add(MM::Node * node,
  */
 MM::VOID MM::Instance::commit()
 {
-  delete values;        //delete old values
-  delete oldValues;     //delete old values
-  values = newValues;   //commit new values
-  oldValues = MM_NULL;  //reset pointers
-  newValues = MM_NULL;  //reset pointers
+  //TODO: forward gate values!
+  values->clear();    //clear current values
+  oldValues->clear(); //clear old values
+  gateValues->clear(); //clear gate values
+  
+  //commit new values
+  MM::Map<MM::Node *, MM::UINT32> * temp = values;
+  values = newValues;   
+  newValues = temp;
 }
 
 /**
@@ -523,18 +650,17 @@ MM::VOID MM::Instance::commit()
  */
 MM::VOID MM::Instance::rollback()
 {
-  delete newValues;     //delete new values
-  delete oldValues;     //delete old values
-  oldValues = MM_NULL;  //reset pointers
-  newValues = MM_NULL;  //reset pointers
+  newValues->clear();
+  oldValues->clear();
+  gateValues->clear();
 }
-
 
 MM::VOID MM::Instance::toString(MM::String * buf)
 {
   toString(buf, 0);
 }
 
+//serializes an instance to a JSON object
 MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
 {
   MM::Map<MM::Node *, MM::UINT32>::Iterator valueIter =
@@ -579,10 +705,14 @@ MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
       buf->linebreak();
     }
   }
-  
-  
+    
   buf->space(indent+MM::Instance::INDENT);
-  buf->append("active : [", strlen("active : ["));
+  buf->append((MM::CHAR*)MM::Instance::ACTIVE_STR,
+              strlen(MM::Instance::ACTIVE_STR));
+  buf->space();
+  buf->append(':');
+  buf->space();
+  buf->append('[');
   
   MM::Vector<MM::Node *>::Iterator activeIter =
   activeNodes->getIterator();
@@ -600,8 +730,13 @@ MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
   
   
   buf->space(indent+MM::Instance::INDENT);
-  buf->append("disabled : [", strlen("disabled : ["));
-  
+  buf->append((MM::CHAR*)MM::Instance::DISABLED_STR,
+              strlen(MM::Instance::DISABLED_STR));
+  buf->space();
+  buf->append(':');
+  buf->space();
+  buf->append('[');
+
   MM::Vector<MM::Node *>::Iterator disabledIter =
   disabledNodes->getIterator();
   while(activeIter.hasNext() == MM_TRUE)
