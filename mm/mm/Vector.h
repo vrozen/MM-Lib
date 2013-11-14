@@ -174,6 +174,11 @@ namespace MM
       return MM::Vector<T>::Iterator(v->begin(), v->end());
     }
     
+    MM::Vector<T>::Iterator * getNewIterator()
+    {
+      return new MM::Vector<T>::Iterator(v->begin(), v->end());
+    }
+    
   };
 }
 #endif

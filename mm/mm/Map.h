@@ -70,6 +70,18 @@ namespace MM
       (*map)[k] = v;
     }
     
+    MM::VOID putAll(MM::Map<MAP_KEY, MAP_VALUE, COMPARE> * other)
+    {
+      MM::Map<MAP_KEY, MAP_VALUE, COMPARE>::Iterator i = other->getIterator();
+      
+      while(i.hasNext())
+      {
+        MAP_KEY k;
+        MAP_VALUE v = i.getNext(&k);
+        put(k,v);
+      }
+    }
+    
     MAP_VALUE get(MAP_KEY k)
     {
       typename std::map<MAP_KEY, MAP_VALUE, COMPARE>::iterator i;
@@ -103,6 +115,23 @@ namespace MM
         r = MM_FALSE;
       }
       return r;
+    }
+    
+    MM::VOID clear()
+    {
+      map->clear();
+    }
+    
+    MM::BOOLEAN isEmpty()
+    {
+      if(map->empty() == true)
+      {
+        return MM_TRUE;
+      }
+      else
+      {
+        return MM_FALSE;
+      }
     }
     
     class Iterator
@@ -168,7 +197,6 @@ namespace MM
       {
         this->cur = this->begin;
       }
-      
     };
     
     MM::Map<MAP_KEY, MAP_VALUE, COMPARE>::Iterator getIterator()
