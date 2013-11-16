@@ -5,7 +5,7 @@
 //  Created by Riemer van Rozen on 7/23/13.
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
-
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include "YYLTYPE.h"
@@ -36,6 +36,62 @@
 #include "Declaration.h"
 #include "Definition.h"
 #include "InterfaceNode.h"
+*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "YYLTYPE.h"
+#include "Types.h"
+#include "Recyclable.h"
+#include "Vector.h"
+#include "Map.h"
+#include "Recycler.h"
+#include "Location.h"
+#include "String.h"
+#include "Name.h"
+#include "Element.h"
+#include "Transformation.h"
+#include "Program.h"
+#include "Modification.h"
+#include "Transition.h"
+#include "Operator.h"
+#include "Exp.h"
+#include "Assertion.h"
+#include "Deletion.h"
+#include "Signal.h"
+#include "Edge.h"
+#include "StateEdge.h"
+#include "FlowEdge.h"
+#include "NodeBehavior.h"
+#include "Node.h"
+#include "PoolNodeBehavior.h"
+#include "SourceNodeBehavior.h"
+#include "DrainNodeBehavior.h"
+#include "GateNodeBehavior.h"
+#include "RefNodeBehavior.h"
+#include "Observer.h"
+#include "Observable.h"
+#include "Declaration.h"
+#include "InterfaceNode.h"
+#include "Definition.h"
+#include "Instance.h"
+#include "Operator.h"
+#include "ValExp.h"
+#include "UnExp.h"
+#include "BinExp.h"
+#include "DieExp.h"
+#include "RangeValExp.h"
+#include "BooleanValExp.h"
+#include "NumberValExp.h"
+#include "OverrideExp.h"
+#include "ActiveExp.h"
+#include "AllExp.h"
+#include "AliasExp.h"
+#include "OneExp.h"
+#include "VarExp.h"
+#include "Reflector.h"
+#include "Evaluator.h"
+#include "Machine.h"
 
 MM::Declaration::Declaration(MM::Name * type,
                              MM::Name * name,
@@ -99,13 +155,15 @@ MM::VOID MM::Declaration::update(MM::Observable * observable,
     case MM::MSG_NEW_POOL:
     case MM::MSG_NEW_SOURCE:
     case MM::MSG_NEW_REF:
-      addInterface((MM::Machine*) aux,(MM::Node *) object);
+    case MM::MSG_NEW_GATE:
+      addInterface((MM::Machine *) aux,(MM::Node *) object);
       break;
     case MM::MSG_DEL_DRAIN:
     case MM::MSG_DEL_POOL:
     case MM::MSG_DEL_SOURCE:
     case MM::MSG_DEL_REF:
-      removeInterface((MM::Machine*) aux, (MM::Node *) object);
+    case MM::MSG_DEL_GATE:
+      removeInterface((MM::Machine *) aux, (MM::Node *) object);
       break;
     default:
       //message not understood
@@ -133,13 +191,19 @@ MM::Node * MM::Declaration::getInterface(MM::Name * name)
   return interfaces->get(name);
 }
 
-MM::VOID MM::Declaration::addInterface(MM::Machine * m, MM::Node * node)
+MM::VOID MM::Declaration::addInterface(MM::Machine * m,
+                                       MM::Node * node)
 {
   if(node->getBehavior()->getIO() != MM::NodeBehavior::IO_PRIVATE)
   {
-    //MM::InterfaceNode * i = m->createInterfaceNode(MM_NULL, this, node);
-    //MM::Name * name = node->getName();
-    //interfaces->put(name, i);
+    MM::Name * name = node->getName();
+    MM::CHAR * str = name->getBuffer();    
+    printf("Declaration: Sees interface %s begin\n", str);
+
+    MM::Name * clone = m->createName(name);
+    MM::InterfaceNode * iNode = m->createInterfaceNode(clone, this, node);
+    
+    interfaces->put(name, iNode);
   }
 }
 
@@ -148,9 +212,9 @@ MM::VOID MM::Declaration::removeInterface(MM::Machine * m, MM::Node * node)
   MM::Name * name = node->getName();  
   if(interfaces->contains(name) == MM_TRUE)
   {
-    //FIXME: recylce an interface
-    MM::InterfaceNode * i = (MM::InterfaceNode *) interfaces->get(name);
-    delete i;
+    printf("Declaration: Sees interface end\n");
+    MM::InterfaceNode * iNode = (MM::InterfaceNode *) interfaces->get(name);
+    iNode->recycle(m);
     interfaces->remove(name);
   }
 }
