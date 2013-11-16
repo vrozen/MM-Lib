@@ -40,6 +40,7 @@
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
+#include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
 #include "Operator.h"
@@ -111,8 +112,11 @@ MM::VOID MM::Reflector::merge(MM::Modification * modification)
     MM::Element * e = i.getNext();
     
     printf("Merge: merging ");
-    e->getName()->print();
-    printf(".\n");    
+    if(e->getName() != MM_NULL)
+    {
+      e->getName()->print();
+    }
+    printf(".\n");
     merge(m->getDefinition(), e);
   }
   
@@ -164,30 +168,33 @@ MM::VOID MM::Reflector::merge(MM::Definition * root,
   MM::Definition * def = MM_NULL;
   MM::Element * found = MM_NULL;
   
-  if(element->getTypeId() == MM::T_Definition)
+  MM::CHAR * buf = MM_NULL;
+  MM::Name * name = element->getName();
+  if(name != MM_NULL)
   {
-    printf("Merge: Merge definition %s into parent type definition\n",
-           element->getName()->getBuffer());
+    buf = name->getBuffer();
+  }
+  
+  if(element->getTypeId() == MM::T_Definition)
+  {    
+    printf("Merge: Merge definition %s into parent type definition\n", buf);
     merge(root, (MM::Definition *) element);
   }
   else
   {
-    printf("Merge: Merge element %s into parent type definition\n",
-           element->getName()->getBuffer());
+    printf("Merge: Merge element %s into parent type definition\n", buf);
     if(navigate(root, element, &def, &found) == MM_TRUE)
     {
       if(found == MM_NULL)
       {
-        printf("Merge: Element %s is new in type: add and initialize\n",
-               element->getName()->getBuffer());
+        printf("Merge: Element %s is new in type: add and initialize\n", buf);
         
         def->addElement(element);
         init(def, element);
       }
       else
       {
-        printf("Merge: Element %s exists in type: replace it\n",
-               element->getName()->getBuffer());
+        printf("Merge: Element %s exists in type: replace it\n", buf);
         replace(def, found, element);
       }
     }
@@ -246,6 +253,13 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
   {
     rootName = element->getName();
     curName = element->getName();
+    
+    //HACK
+    if(curName == MM_NULL)
+    {
+      success = MM_TRUE;
+    }
+    //END HACK
     
     while(curName != MM_NULL)
     {
@@ -522,7 +536,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
   else
   {
     //TODO: error
-    //printf("Error: source node of edge not found\n");
+    printf("Error: source node of edge not found\n");
   }
   
   if(tgtNode != MM_NULL)
@@ -532,7 +546,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
   else
   {
     //TODO: error
-    //printf("Error: target node of edge not found\n");
+    printf("Error: target node of edge not found\n");
   }
   
   switch(edge->getTypeId())
@@ -641,10 +655,30 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Declaration * decl)
 {
   //resolve type of declaration
   MM::Name * typeName = decl->getTypeName();
+  MM::Name * name = decl->getName();
+  def->putElement(name, decl);
+  
   MM::Definition * def2 = def->findDeclaredDefinition(typeName);
   if(def != MM_NULL)
   {
     decl->setDefinition(def2);
+    
+    
+    MM::Vector<MM::Element *> * elements = def2->getElements();
+    MM::Vector<MM::Element *>::Iterator eIter = elements->getIterator();
+    while(eIter.hasNext() == MM_TRUE)
+    {
+      MM::Element * element = eIter.getNext();
+      if(element->instanceof(MM::T_Node) == MM_TRUE)
+      {
+        MM::Node * node = (MM::Node *) element;
+        MM::NodeBehavior * behavior = node->getBehavior();
+        MM::UINT32 msg = behavior->getCreateMessage();
+        decl->update(def2, m, msg, node);
+      }
+    }
+    
+    
     def2->addObserver(decl);
   }
   else
