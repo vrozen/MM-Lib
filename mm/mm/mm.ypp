@@ -33,6 +33,7 @@
   #include "Observer.h"
   #include "Observable.h"
   #include "Declaration.h"
+  #include "InterfaceNode.h"
   #include "Definition.h"
   #include "Instance.h"
   #include "Operator.h"
@@ -151,7 +152,7 @@ element
 | io when act how POOL name of
   at max add                     { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$8,$9,$10);
 /*TODO: io when act how CONVERTER name from to*/ }
-| REF name                       { $$ = mm.createRefNode($2); }
+| io REF name                    { $$ = mm.createRefNode($1,$3); }
 | name name                      { $$ = mm.createDeclaration($1,$2); }
 | name DOT exp DOT_GT name       { MM::Name * preName = $1->getPreName();
                                    $1->setPreName(MM_NULL); //prevent double free
