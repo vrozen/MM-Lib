@@ -12,6 +12,7 @@
 #include "Types.h"
 #include "Recyclable.h"
 #include "Vector.h"
+#include "Map.h"
 #include "Recycler.h"
 #include "Location.h"
 #include "String.h"
@@ -19,16 +20,22 @@
 #include "Element.h"
 #include "Exp.h"
 #include "Edge.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "RefNodeBehavior.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
+#include "InterfaceNode.h"
 
 const MM::CHAR * MM::RefNodeBehavior::REF_STR = "ref";
 const MM::UINT32 MM::RefNodeBehavior::REF_LEN =
   strlen(MM::RefNodeBehavior::REF_STR);
 
-MM::RefNodeBehavior::RefNodeBehavior():
-  NodeBehavior(IO_ERROR, WHEN_ERROR, ACT_ERROR, HOW_ERROR)
+MM::RefNodeBehavior::RefNodeBehavior(MM::NodeBehavior::IO io):
+  NodeBehavior(io, WHEN_ERROR, ACT_ERROR, HOW_ERROR)
 {
   alias = MM_NULL;
 }
@@ -111,6 +118,85 @@ MM::UINT32 MM::RefNodeBehavior::getUpdateMessage()
 MM::UINT32 MM::RefNodeBehavior::getDeleteMessage()
 {
   return MM::MSG_DEL_REF;
+}
+
+//resolve reference via alias edge and i to the correct i and node
+MM::Instance * MM::RefNodeBehavior::resolveInstance(MM::Instance * i,
+                                                    MM::Node * aliasSrc,
+                                                    MM::Node * aliasTgt)
+{
+  MM::Instance * aliasInstance = i;
+  if(aliasTgt->instanceof(MM::T_InterfaceNode) == MM_TRUE)
+  {
+    aliasInstance = i->getParent();
+  }
+
+  if(aliasSrc->instanceof(MM::T_InterfaceNode) == MM_TRUE)
+  {
+    MM::InterfaceNode * iNode = (MM::InterfaceNode *) aliasSrc;
+    MM::Declaration * decl = iNode->getDeclaration();
+    aliasInstance = aliasInstance->getInstance(decl);
+  }
+  
+  return aliasInstance;
+}
+
+MM::VOID MM::RefNodeBehavior::add(MM::Instance * i,
+                                  MM::Node * n,
+                                  MM::UINT32 amount)
+{
+  MM::Node * aliasSrc = alias->getSource();
+  MM::Node * aliasTgt = alias->getTarget();
+  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  aliasSrc->add(aliasInstance, amount);
+}
+
+MM::VOID MM::RefNodeBehavior::sub(MM::Instance * i,
+                                  MM::Node * n,
+                                  MM::UINT32 amount)
+{
+  MM::Node * aliasSrc = alias->getSource();
+  MM::Node * aliasTgt = alias->getTarget();
+  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  aliasSrc->sub(aliasInstance, amount);
+}
+
+MM::UINT32 MM::RefNodeBehavior::getCapacity(MM::Instance * i,
+                                            MM::Node * n)
+{
+  MM::Node * aliasSrc = alias->getSource();
+  MM::Node * aliasTgt = alias->getTarget();
+  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  return aliasSrc->getCapacity(aliasInstance);
+}
+
+MM::UINT32 MM::RefNodeBehavior::getResources(MM::Instance * i,
+                                             MM::Node * n)
+{
+  MM::Node * aliasSrc = alias->getSource();
+  MM::Node * aliasTgt = alias->getTarget();
+  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  return aliasSrc->getResources(aliasInstance);
+}
+
+MM::BOOLEAN MM::RefNodeBehavior::hasCapacity(MM::Instance * i,
+                                             MM::Node * n,
+                                             MM::UINT32 amount)
+{
+  MM::Node * aliasSrc = alias->getSource();
+  MM::Node * aliasTgt = alias->getTarget();
+  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  return aliasSrc->hasCapacity(aliasInstance, amount);
+}
+
+MM::BOOLEAN MM::RefNodeBehavior::hasResources(MM::Instance * i,
+                                              MM::Node * n,
+                                              MM::UINT32 amount)
+{ 
+  MM::Node * aliasSrc = alias->getSource();
+  MM::Node * aliasTgt = alias->getTarget();
+  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  return aliasSrc->hasResources(aliasInstance, amount);
 }
 
 MM::VOID MM::RefNodeBehavior::toString(MM::String * buf)
