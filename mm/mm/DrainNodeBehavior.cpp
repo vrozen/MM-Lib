@@ -12,12 +12,22 @@
 #include "Types.h"
 #include "Recyclable.h"
 #include "Vector.h"
+#include "Map.h"
 #include "Recycler.h"
-#include "String.h"
 #include "Location.h"
+#include "String.h"
 #include "Name.h"
+#include "Element.h"
+#include "Exp.h"
+#include "Edge.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "NodeBehavior.h"
+#include "Node.h"
 #include "DrainNodeBehavior.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
 
 const MM::CHAR * MM::DrainNodeBehavior::DRAIN_STR = "drain";
 const MM::UINT32 MM::DrainNodeBehavior::DRAIN_LEN =
@@ -70,6 +80,47 @@ MM::UINT32 MM::DrainNodeBehavior::getUpdateMessage()
 MM::UINT32 MM::DrainNodeBehavior::getDeleteMessage()
 {
   return MM::MSG_DEL_DRAIN;
+}
+
+
+MM::VOID MM::DrainNodeBehavior::add(MM::Instance * i,
+                                    MM::Node * n,
+                                    MM::UINT32 amount)
+{
+  //do nothing
+}
+
+MM::VOID MM::DrainNodeBehavior::sub(MM::Instance * i,
+                                    MM::Node * n,
+                                    MM::UINT32 amount)
+{
+  //do nothing
+}
+
+MM::UINT32 MM::DrainNodeBehavior::getCapacity(MM::Instance * i,
+                                              MM::Node * n)
+{
+  return MM_MAX_RESOURCES;
+}
+
+MM::UINT32 MM::DrainNodeBehavior::getResources(MM::Instance * i,
+                                               MM::Node * n)
+{
+  return 0;
+}
+
+MM::BOOLEAN MM::DrainNodeBehavior::hasCapacity(MM::Instance * i,
+                                               MM::Node * n,
+                                               MM::UINT32 amount)
+{
+  return MM_TRUE;
+}
+
+MM::BOOLEAN MM::DrainNodeBehavior::hasResources(MM::Instance * i,
+                                                MM::Node * n,
+                                                MM::UINT32 amount)
+{
+  return MM_FALSE;
 }
 
 MM::VOID MM::DrainNodeBehavior::toString(MM::String * buf)

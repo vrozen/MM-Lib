@@ -17,7 +17,16 @@
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
+#include "Element.h"
+#include "Exp.h"
+#include "Edge.h"
+#include "Observer.h"
+#include "Observable.h"
+#include "Node.h"
 #include "NodeBehavior.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
 
 const MM::CHAR * MM::NodeBehavior::IO_STR[] =
 {

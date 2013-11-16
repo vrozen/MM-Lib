@@ -12,7 +12,7 @@
 namespace MM
 {
   class Transition;
-  
+  class Instance;
   class NodeBehavior : public Recyclable
   {
   public:
@@ -90,6 +90,24 @@ namespace MM
     MM::VOID setHow(MM::NodeBehavior::How how);    
     
     MM::BOOLEAN conformsTo(MM::NodeBehavior::IO direction);
+    
+    //instance manipulation during transitions
+    virtual MM::VOID add(MM::Instance * i,
+                         MM::Node * n,
+                         MM::UINT32 amount) = 0;
+    virtual MM::VOID sub(MM::Instance * i,
+                         MM::Node * n,
+                         MM::UINT32 amount) = 0;
+    virtual MM::UINT32 getCapacity(MM::Instance * i,
+                                   MM::Node * n) = 0;
+    virtual MM::UINT32 getResources(MM::Instance * i,
+                                    MM::Node * n) = 0;
+    virtual MM::BOOLEAN hasCapacity(MM::Instance * i,
+                                    MM::Node * n,
+                                    MM::UINT32 amount) = 0;
+    virtual MM::BOOLEAN hasResources(MM::Instance * i,
+                                     MM::Node * n,
+                                     MM::UINT32 amount) = 0;
     
   public:
     virtual MM::VOID toString(MM::String * buf, MM::Name * name);

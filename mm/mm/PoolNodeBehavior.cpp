@@ -17,9 +17,17 @@
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
+#include "Element.h"
 #include "Exp.h"
+#include "Observer.h"
+#include "Observable.h"
+#include "Node.h"
 #include "NodeBehavior.h"
 #include "PoolNodeBehavior.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
+
 
 const MM::CHAR * MM::PoolNodeBehavior::POOL_STR = "pool";
 const MM::CHAR * MM::PoolNodeBehavior::AT_STR   = "at";
@@ -124,6 +132,74 @@ MM::UINT32 MM::PoolNodeBehavior::getUpdateMessage()
 MM::UINT32 MM::PoolNodeBehavior::getDeleteMessage()
 {
   return MM::MSG_DEL_POOL;
+}
+
+MM::UINT32 MM::PoolNodeBehavior::getCapacity(MM::Instance * i, MM::Node * n)
+{
+  return max - i->getNewValue(n);
+}
+
+MM::UINT32 MM::PoolNodeBehavior::getResources(MM::Instance * i, MM::Node * n)
+{
+  return i->getOldValue(n);
+}
+
+MM::VOID MM::PoolNodeBehavior::add(MM::Instance * i,
+                                   MM::Node * n,
+                                   MM::UINT32 amount)
+{
+  //add to new value
+  MM::UINT32 newValue = i->getNewValue(n);
+  newValue = newValue + amount;
+  i->setNewValue(n, newValue);
+}
+
+MM::VOID MM::PoolNodeBehavior::sub(MM::Instance * i,
+                                   MM::Node * n,
+                                   MM::UINT32 amount)
+{
+  //subtract from old value
+  MM::UINT32 oldValue = i->getOldValue(n);
+  oldValue = oldValue - amount;
+  i->setOldValue(n, oldValue);
+  
+  //subtract from new value
+  MM::UINT32 newValue = i->getNewValue(n);
+  newValue = newValue - amount;
+  i->setNewValue(n, newValue);
+}
+
+MM::BOOLEAN MM::PoolNodeBehavior::hasCapacity(MM::Instance * i,
+                                              MM::Node * n,
+                                              MM::UINT32 amount)
+{
+  MM::BOOLEAN r = MM_FALSE;
+  if(max == 0)
+  {
+    r = MM_TRUE;
+  }
+  else
+  {
+    MM::UINT32 newValue = i->getNewValue(n);
+    if(max - newValue >= amount)
+    {
+      r = MM_TRUE;
+    }
+  }
+  return r;
+}
+
+MM::BOOLEAN MM::PoolNodeBehavior::hasResources(MM::Instance * i,
+                                               MM::Node * n,
+                                               MM::UINT32 amount)
+{
+  MM::BOOLEAN r = MM_FALSE;
+  MM::UINT32 oldValue = i->getOldValue(n);
+  if(oldValue >= amount)
+  {
+    r = MM_TRUE;
+  }
+  return r;
 }
 
 MM::VOID MM::PoolNodeBehavior::toString(MM::String * buf)

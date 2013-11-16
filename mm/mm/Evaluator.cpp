@@ -40,6 +40,7 @@
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
+#include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
 #include "Operator.h"
@@ -352,9 +353,12 @@ MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * i,
   while(curInstance != MM_NULL)
   {
     curName = curInstance->getName();
-    MM::Name * name = m->createName(curName);
-    name->setName(edgeName);
-    edgeName = name;
+    if(curName != MM_NULL)
+    {
+      MM::Name * name = m->createName(curName);
+      name->setName(edgeName);
+      edgeName = name;
+    }
     curInstance = curInstance->getParent();
   }
   
@@ -502,7 +506,6 @@ MM::VOID MM::Evaluator::initStartState(MM::Instance * i)
     }
   }
   
-  
   MM::Map<MM::Declaration *, MM::Instance *> * instances =
   i->getInstances();
   MM::Map<MM::Declaration *, MM::Instance *>::Iterator instanceIter =
@@ -514,7 +517,6 @@ MM::VOID MM::Evaluator::initStartState(MM::Instance * i)
     initStartState(iChild);
   }
 }
-
 
 //set active nodes for an instance
 MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
@@ -790,6 +792,10 @@ MM::VOID MM::Evaluator::propagateGates(MM::Instance * i,
 }
 */
 
+
+//------------------------------------------------------------------------------
+//eval
+//------------------------------------------------------------------------------
 MM::ValExp * MM::Evaluator::eval(MM::Instance * i, MM::Edge * e)
 {
   return eval(e->getExp(), i, e);
