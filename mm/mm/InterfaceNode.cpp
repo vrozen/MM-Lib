@@ -31,16 +31,19 @@
 #include "Definition.h"
 #include "Node.h"
 #include "InterfaceNode.h"
+#include "Instance.h"
 
 MM::InterfaceNode::InterfaceNode(MM::Name * name,
                                  MM::Declaration * decl,
                                  MM::Node * ref):
   MM::Node(name, MM_NULL)
 {
+  this->ref = ref;
 }
 
 MM::InterfaceNode::~InterfaceNode()
 {
+  this->ref = MM_NULL;
 }
 
 MM::VOID MM::InterfaceNode::recycle(MM::Recycler *r)
@@ -65,16 +68,61 @@ MM::BOOLEAN MM::InterfaceNode::instanceof(MM::TID tid)
   }
 }
 
+MM::NodeBehavior * MM::InterfaceNode::getBehavior()
+{
+  return ref->getBehavior();
+}
+
+
 MM::Declaration * MM::InterfaceNode::getDeclaration()
 {
   return this->decl;
 }
 
-MM::Node * MM::InterfaceNode::getReference()
+MM::Node * MM::InterfaceNode::getNode()
 {
   return this->ref;
 }
 
+MM::VOID MM::InterfaceNode::add(MM::Instance * i, MM::UINT32 amount)
+{
+  MM::Instance * iChild = i->getInstance(decl);
+  ref->add(iChild, amount);
+}
+
+MM::VOID MM::InterfaceNode::sub(MM::Instance * i, MM::UINT32 amount)
+{
+  MM::Instance * iChild = i->getInstance(decl);
+  ref->sub(iChild, amount);
+}
+
+MM::UINT32 MM::InterfaceNode::getCapacity(MM::Instance * i)
+{
+  MM::Instance * iChild = i->getInstance(decl);
+  return ref->getCapacity(iChild);
+}
+
+MM::UINT32 MM::InterfaceNode::getResources(MM::Instance * i)
+{
+  MM::Instance * iChild = i->getInstance(decl);
+  return ref->getResources(iChild);
+}
+
+MM::BOOLEAN MM::InterfaceNode::hasCapacity(MM::Instance * i,
+                                           MM::UINT32 amount)
+{
+  MM::Instance * iChild = i->getInstance(decl);
+  return ref->hasCapacity(iChild, amount);
+}
+
+MM::BOOLEAN MM::InterfaceNode::hasResources(MM::Instance * i,
+                                            MM::UINT32 amount)
+{
+  MM::Instance * iChild = i->getInstance(decl);
+  return ref->hasResources(iChild, amount);
+}
+
 MM::VOID MM::InterfaceNode::toString(MM::String * buf)
 {
+  //not explicitly represented
 }

@@ -25,8 +25,16 @@ namespace MM
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
     
+    MM::NodeBehavior * getBehavior();
     MM::Declaration * getDeclaration();
-    MM::Node * getReference();
+    MM::Node * getNode();
+
+    MM::VOID add(MM::Instance * i, MM::UINT32 amount);
+    MM::VOID sub(MM::Instance * i, MM::UINT32 amount);
+    MM::UINT32 getCapacity(MM::Instance * i);
+    MM::UINT32 getResources(MM::Instance * i);
+    MM::BOOLEAN hasCapacity(MM::Instance * i, MM::UINT32 amount);
+    MM::BOOLEAN hasResources(MM::Instance * i, MM::UINT32 amount);
     
     MM::VOID toString(MM::String * buf);
   };
