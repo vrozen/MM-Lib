@@ -69,9 +69,10 @@ MM::VOID MM::Node::recycle(MM::Recycler * r)
   {
     delete aliases;
   }
-  
-  behavior->recycle(r);
-  
+  if(behavior != MM_NULL)
+  {
+    behavior->recycle(r);
+  }
   MM::Element::recycle(r);
 }
 
@@ -200,6 +201,38 @@ MM::VOID MM::Node::setTriggers(MM::Vector<MM::Edge *> * triggers)
 MM::VOID MM::Node::setAliases(MM::Vector<MM::Edge *> * aliases)
 {
   this->aliases = aliases;
+}
+
+MM::VOID MM::Node::add(MM::Instance * i, MM::UINT32 amount)
+{
+  behavior->add(i, this, amount);
+}
+
+MM::VOID MM::Node::sub(MM::Instance * i, MM::UINT32 amount)
+{
+  behavior->sub(i, this, amount);
+}
+
+MM::UINT32 MM::Node::getCapacity(MM::Instance * i)
+{
+  return behavior->getCapacity(i, this);
+}
+
+MM::UINT32 MM::Node::getResources(MM::Instance * i)
+{
+  return behavior->getResources(i, this);
+}
+
+MM::BOOLEAN MM::Node::hasCapacity(MM::Instance * i,
+                                  MM::UINT32 amount)
+{
+  return behavior->hasCapacity(i, this, amount);
+}
+
+MM::BOOLEAN MM::Node::hasResources(MM::Instance * i,
+                                   MM::UINT32 amount)
+{
+  return behavior->hasResources(i, this, amount);
 }
 
 MM::VOID MM::Node::toString(MM::String * buf)

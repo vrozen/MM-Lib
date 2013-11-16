@@ -13,6 +13,8 @@ namespace MM
 {
   class Transition;
   
+  class NodeBehavior;
+  class Instance;
   class Node : public MM::Element
   {
   private:
@@ -43,7 +45,7 @@ namespace MM
       }
     };
 
-    MM::NodeBehavior * getBehavior();
+    virtual MM::NodeBehavior * getBehavior();
     MM::VOID setBehavior(MM::NodeBehavior * behavior);
     
     MM::VOID addInput(MM::Edge * edge);
@@ -69,6 +71,15 @@ namespace MM
     MM::VOID setConditions(MM::Vector<MM::Edge *> * conditions);
     MM::VOID setTriggers(MM::Vector<MM::Edge *> * triggers);
     MM::VOID setAliases(MM::Vector<MM::Edge *> * aliases);
+    
+    
+    virtual MM::VOID add(MM::Instance * i, MM::UINT32 amount);
+    virtual MM::VOID sub(MM::Instance * i, MM::UINT32 amount);
+    virtual MM::UINT32 getCapacity(MM::Instance * i);
+    virtual MM::UINT32 getResources(MM::Instance * i);
+    virtual MM::BOOLEAN hasCapacity(MM::Instance * i, MM::UINT32 amount);
+    virtual MM::BOOLEAN hasResources(MM::Instance * i, MM::UINT32 amount);
+    
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };

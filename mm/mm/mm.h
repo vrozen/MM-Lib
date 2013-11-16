@@ -43,6 +43,7 @@
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
+#include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
 #include "Operator.h"

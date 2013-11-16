@@ -218,7 +218,11 @@ namespace MM
                               MM::UINT32      max,
                               MM::Exp       * exp);
     
-    MM::Node * createRefNode(MM::Name * name);
+    MM::Node * createRefNode(MM::NodeBehavior::IO io, MM::Name * name);
+    
+    MM::InterfaceNode * createInterfaceNode(MM::Name * name,
+                                            MM::Declaration * decl,
+                                            MM::Node * ref);
     
     MM::StateEdge * createStateEdge(MM::Name * name,
                                     MM::Name * src,

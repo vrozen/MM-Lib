@@ -40,6 +40,7 @@
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
+#include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
 #include "Operator.h"
@@ -542,13 +543,13 @@ MM::Node * MM::Machine::createGateNode(MM::NodeBehavior::IO    io,
 }
 
 MM::Node * MM::Machine::createPoolNode(MM::NodeBehavior::IO    io,
-                                           MM::NodeBehavior::When  when,
-                                           MM::NodeBehavior::Act   act,
-                                           MM::NodeBehavior::How   how,
-                                           MM::Name      * name,
-                                           MM::UINT32      at,
-                                           MM::UINT32      max,
-                                           MM::Exp       * exp)
+                                       MM::NodeBehavior::When  when,
+                                       MM::NodeBehavior::Act   act,
+                                       MM::NodeBehavior::How   how,
+                                       MM::Name      * name,
+                                       MM::UINT32      at,
+                                       MM::UINT32      max,
+                                       MM::Exp       * exp)
 {
   MM::PoolNodeBehavior * behavior =
     new MM::PoolNodeBehavior(io,when,act,how,at,max,exp);
@@ -559,11 +560,21 @@ MM::Node * MM::Machine::createPoolNode(MM::NodeBehavior::IO    io,
   return r;
 }
 
-MM::Node * MM::Machine::createRefNode(MM::Name * name)
+MM::Node * MM::Machine::createRefNode(MM::NodeBehavior::IO io, MM::Name * name)
 {
-  MM::RefNodeBehavior * behavior = new RefNodeBehavior();
+  MM::RefNodeBehavior * behavior = new MM::RefNodeBehavior(io);
   MM::Recycler::create(behavior);
   MM::Node * r = new MM::Node(name, behavior);
+  MM::Recycler::create(r);
+  return r;
+}
+
+
+MM::InterfaceNode * MM::Machine::createInterfaceNode(MM::Name * name,
+                                                     MM::Declaration * decl,
+                                                     MM::Node * ref)
+{
+  MM::InterfaceNode * r = new MM::InterfaceNode(name,decl,ref);
   MM::Recycler::create(r);
   return r;
 }

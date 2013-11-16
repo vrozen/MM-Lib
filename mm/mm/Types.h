@@ -18,6 +18,8 @@ namespace MM
   typedef void          VOID;    /**> void type */
   typedef bool          BOOLEAN; /**> boolean type */
   
+  #define MM_MAX_RESOURCES ULLONG_MAX
+  
   #define MM_TRUE  true  /**> true value */
   #define MM_FALSE false /**> false value */
   #define MM_NULL  0     /**> null value */
@@ -27,52 +29,53 @@ namespace MM
     MSG_ERROR,    //error message
     
     //type creation messages
-    MSG_NEW_TYPE,
-    MSG_NEW_DECL,
-    MSG_NEW_POOL,
-    MSG_NEW_SOURCE,
-    MSG_NEW_DRAIN,
-    MSG_NEW_GATE,
-    MSG_NEW_REF,
+    MSG_NEW_TYPE,   //a new type definition was created
+    MSG_NEW_DECL,   //a declaration of a certain type was made in a definition
+    MSG_NEW_POOL,   //a pool was added to a definiton
+    MSG_NEW_SOURCE, //a source was added to a definition
+    MSG_NEW_DRAIN,  //a drain was added to a definition
+    MSG_NEW_GATE,   //a gate was added to a definition
+    MSG_NEW_REF,    //a reference (alias) was added to a definition
   
     //type deletion messages
-    MSG_DEL_TYPE,
-    MSG_DEL_DECL,
-    MSG_DEL_POOL,
-    MSG_DEL_SOURCE,
-    MSG_DEL_DRAIN,
-    MSG_DEL_GATE,
-    MSG_DEL_REF,
+    MSG_DEL_TYPE,   //a type definition was deleted
+    MSG_DEL_DECL,   //a declaration was undeclared from a definition
+    MSG_DEL_POOL,   //a pool was removed from a definition
+    MSG_DEL_SOURCE, //a source was removed from a definition
+    MSG_DEL_DRAIN,  //a drain was removed from a definition
+    MSG_DEL_GATE,   //a gate was removed from a definition
+    MSG_DEL_REF,    //a reference (alias) was removed from a definition
     
     //type update messages
-    MSG_UPD_TYPE,
-    MSG_UPD_DECL,
-    MSG_UPD_POOL,
-    MSG_UPD_SOURCE,
-    MSG_UPD_DRAIN,
-    MSG_UPD_GATE,
-    MSG_UPD_REF,
+    MSG_UPD_TYPE,   //a type definition was updated
+    MSG_UPD_DECL,   //a declaration was updated (it changed type!)
+    MSG_UPD_POOL,   //a pool was updated (changed modifiers)
+    MSG_UPD_SOURCE, //a source was updated (changed modifiers)
+    MSG_UPD_DRAIN,  //a drain was updated (changed modifiers)
+    MSG_UPD_GATE,   //a gate was updated (changed modifiers)
+    MSG_UPD_REF,    //a reference was updated (can this happen?)
     
     //instance messages
-    MSG_NEW_INST,
-    MSG_DEL_INST,
+    MSG_NEW_INST,   //a new instance was created inside another instance
+    MSG_DEL_INST,   //an instance was deleted from another instance
     
-    //instance flow message?
+    //instance flow messages needed?
     
     //instance pool message
-    MSG_VALUE,     //a pool has a new value
+    MSG_VALUE,     //a pool inside an instance has a new value
     
     //instance trigger message
-    MSG_TRIGGER,   //a trigger happened
+    MSG_TRIGGER,   //a trigger inside an instance happened
 
     //instance activated message
-    MSG_ACTIVATED, //a node was activated
+    MSG_ACTIVATED, //a node inside an instance was activated
     
     //instance disabled message
-    MSG_DISABLED,  //a node was not activated because its conditions where false
+    MSG_DISABLED,  //a node inside an instance was not activated
+                   //because at least one of its conditions was false
     
     //instance signal condition message
-    MSG_SIGNAL     //an invariant was violated
+    MSG_SIGNAL     //an invariant inside an instance was violated
   } MSG;
   
   /*

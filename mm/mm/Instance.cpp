@@ -44,6 +44,7 @@
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
+#include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
 #include "Operator.h"
@@ -91,6 +92,7 @@ MM::Instance::Instance(MM::Instance * parent,
   curGateValues = new MM::Map<MM::Node *, MM::UINT32>();
   gateValues = new MM::Map<MM::Node*, MM::UINT32>();
   
+  this->parent = parent;
   this->type = def;
   this->name = name;
 }
@@ -184,6 +186,11 @@ MM::Instance * MM::Instance::getParent()
   return parent;
 }
 
+MM::Instance * MM::Instance::getInstance(MM::Declaration * decl)
+{
+  return instances->get(decl);
+}
+
 MM::Name * MM::Instance::getName()
 {
   return name;
@@ -195,10 +202,13 @@ MM::Name * MM::Instance::getName()
  * @param node pool node id
  * @param val pool value
  */
-MM::VOID MM::Instance::store(MM::Node * node, MM::UINT32 val)
+/*
+MM::VOID MM::Instance::store(MM::Node * node,
+                             MM::UINT32 val)
 {
   values->put(node, val);
 }
+*/
 
 /**
  * @fn MM::INT32 MM::Instance::retrieve(MM::UINT32 node)
@@ -206,10 +216,12 @@ MM::VOID MM::Instance::store(MM::Node * node, MM::UINT32 val)
  * @param node pool node id
  * @return value
  */
+/*
 MM::INT32 MM::Instance::retrieve(MM::Node * node)
 {
   return values->get(node);
 }
+*/
 
 /**
  * @fn MM::Instance * MM::Instance::retrieveInstance(MM::UINT32 decl)
@@ -251,6 +263,36 @@ MM::VOID MM::Instance::setDisabled(MM::Node * node)
 MM::UINT32 MM::Instance::getValue(MM::Node * node)
 {
   return values->get(node);
+}
+
+MM::UINT32 MM::Instance::getNewValue(MM::Node * node)
+{
+  return newValues->get(node);
+}
+
+MM::UINT32 MM::Instance::getOldValue(MM::Node * node)
+{
+  return oldValues->get(node);
+}
+
+MM::UINT32 MM::Instance::getGateValue(MM::Node * node)
+{
+  return gateValues->get(node);
+}
+
+MM::VOID MM::Instance::setNewValue(MM::Node * node, MM::UINT32 value)
+{
+  newValues->put(node, value);
+}
+
+MM::VOID MM::Instance::setOldValue(MM::Node * node, MM::UINT32 value)
+{
+  oldValues->put(node, value);
+}
+
+MM::VOID MM::Instance::setGateValue(MM::Node * node, MM::UINT32 value)
+{
+  gateValues->put(node, value);
 }
 
 /**
@@ -324,7 +366,6 @@ MM::VOID MM::Instance::update(MM::Observable * observable,
              ((MM::Declaration*)object)->getName()->getBuffer());
       createInstance((Declaration *) object, (MM::Machine *) aux );
       break;
-      
     case MM::MSG_UPD_DECL:
       break;
     case MM::MSG_DEL_DECL:
@@ -460,171 +501,39 @@ MM::VOID MM::Instance::begin()
 
 MM::UINT32 MM::Instance::getResources(MM::Node * node)
 {
-  MM::UINT32 resources = oldValues->get(node);
-  return resources; //FIXME: drain, source, gate
+  //checks in old values
+  return node->getResources(this);
 }
 
 MM::BOOLEAN MM::Instance::hasResources(MM::Node * node,
                                        MM::UINT32 amount)
 {
-  MM::BOOLEAN r = MM_FALSE;
-  MM::NodeBehavior * behavior = node->getBehavior();
-  switch(behavior->getTypeId())
-  {
-    case MM::T_PoolNodeBehavior:
-      //old has resources
-      if(oldValues->get(node) >= amount)
-      {
-        r = MM_TRUE;
-      }
-      break;
-    case MM::T_GateNodeBehavior:
-      break;
-    case MM::T_SourceNodeBehavior:
-      r = MM_TRUE;
-      break;
-    case MM::T_DrainNodeBehavior:
-      r = MM_FALSE;
-      break;
-    default:
-      break;
-  }
-  
-  return r;
+  //checks in old values  
+  return node->hasResources(this, amount);
 }
 
 MM::UINT32 MM::Instance::getCapacity(MM::Node * node)
 {
-  MM::UINT32 capacity = 0;  
-  MM::NodeBehavior * behavior = node->getBehavior();
-  MM::UINT32 max = 0;
-  
-  switch(behavior->getTypeId())
-  {
-    case MM::T_PoolNodeBehavior:
-      max = ((MM::PoolNodeBehavior*) behavior)->getMax();
-      capacity = max - newValues->get(node);
-      break;
-    case MM::T_GateNodeBehavior:
-      max = INT_MAX; //not strictly correct
-      break;
-    case MM::T_SourceNodeBehavior:
-      max = 0;
-      break;
-    case MM::T_DrainNodeBehavior:
-      max = INT_MAX;
-      break;
-    default:
-      break;
-  }
-  
-  return capacity;
+  return node->getCapacity(this);
 }
 
 MM::BOOLEAN MM::Instance::hasCapacity(MM::Node * node,
                                       MM::UINT32 amount)
 {
-  MM::NodeBehavior * behavior = node->getBehavior();
-  MM::UINT32 max = 0;
-  MM::BOOLEAN r = MM_FALSE;
-  
-  switch(behavior->getTypeId())
-  {
-    case MM::T_PoolNodeBehavior:
-      max = ((MM::PoolNodeBehavior*) behavior)->getMax();
-      if(max - newValues->get(node) >= amount  || max == 0)
-      {
-        r = MM_TRUE;
-      }
-      break;
-    case MM::T_DrainNodeBehavior:
-      r = MM_TRUE;
-      break;
-    case MM::T_SourceNodeBehavior:
-      r = MM_FALSE;
-      break;
-    case MM::T_GateNodeBehavior:
-      r = MM_TRUE; //not strictly correct
-      break;
-    default:
-      break;
-  }
-  
-  return r;
+  //checks in new values
+  return node->hasCapacity(this, amount);
 }
 
 MM::VOID MM::Instance::sub(MM::Node * node,
                            MM::UINT32 amount)
 {
-  MM::NodeBehavior * behavior = node->getBehavior();
-  
-  if(behavior->getTypeId() == MM::T_PoolNodeBehavior) //FIXME: gates
-  {
-    //subtract from old value
-    MM::UINT32 oldValue = oldValues->get(node);
-    oldValue = oldValue - amount;
-    oldValues->put(node, oldValue);
-  
-    //subtract from new value
-    MM::UINT32 newValue = newValues->get(node);
-    newValue = newValue - amount;
-    newValues->put(node, newValue);
-  }
-  
-  if(behavior->getTypeId() == MM::T_GateNodeBehavior)
-  {
-    MM::UINT32 tempValue = 0;
-    
-    if(gateValues->contains(node) == MM_TRUE)
-    {
-      tempValue = gateValues->get(node);
-
-      if(amount <= tempValue)
-      {
-        tempValue = tempValue - amount;
-        gateValues->put(node, tempValue);
-      }
-      else
-      {
-        //error
-      }
-    }
-    else
-    {
-      //error
-    }
-    
-  }
-  
+  return node->sub(this, amount);
 }
 
 MM::VOID MM::Instance::add(MM::Node * node,
                            MM::UINT32 amount)
 {
-  MM::NodeBehavior * behavior = node->getBehavior();
-  
-  if(behavior->getTypeId() == MM::T_PoolNodeBehavior)
-  {
-    //add to new value
-    MM::UINT32 newValue = newValues->get(node);
-    newValue = newValue + amount;
-    newValues->put(node, newValue);
-  }
-  
-  if(behavior->getTypeId() == MM::T_GateNodeBehavior)
-  {
-    MM::UINT32 tempValue = 0;
-    
-    if(gateValues->contains(node) == MM_TRUE)
-    {
-      tempValue = gateValues->get(node);
-    }
-    
-    tempValue = tempValue + amount;
-    
-    gateValues->put(node, tempValue);
-  }
-  
+  return node->add(this, amount);
 }
 
 /**

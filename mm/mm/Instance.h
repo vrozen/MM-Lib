@@ -59,17 +59,25 @@ namespace MM
     
     MM::Definition * getDefinition();
     MM::Instance * getParent();
+    MM::Instance * getInstance(MM::Declaration * decl);
     MM::Name * getName();
+   
     
     //Pool:
-    MM::VOID store(MM::Node * pool, MM::UINT32 val); //stores a value of a pool
-    MM::INT32 retrieve(MM::Node * pool);             //retrieves value of a pool
-    
+    //MM::VOID store(MM::Node * pool, MM::UINT32 val); //stores a value of a pool
+    //MM::INT32 retrieve(MM::Node * pool);             //retrieves value of a pool
     
     //Instances:
     MM::Instance * retrieveInstance(MM::Declaration * decl);
     
+    //pool and gate values:
     MM::UINT32 getValue(MM::Node * node);
+    MM::UINT32 getNewValue(MM::Node * node);
+    MM::UINT32 getOldValue(MM::Node * node);
+    MM::UINT32 getGateValue(MM::Node * node);
+    MM::VOID setNewValue(MM::Node * node, MM::UINT32 value);
+    MM::VOID setOldValue(MM::Node * node, MM::UINT32 value);
+    MM::VOID setGateValue(MM::Node * node, MM::UINT32 value);
     
     //Activity:
     MM::BOOLEAN isActive(MM::Node * node);

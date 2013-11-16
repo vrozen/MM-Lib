@@ -27,6 +27,7 @@
 #include "Observable.h"
 #include "Declaration.h"
 #include "Definition.h"
+#include "InterfaceNode.h"
 
 const MM::CHAR MM::Definition::LPAREN_CHAR = '(';
 const MM::CHAR MM::Definition::RPAREN_CHAR = ')';
@@ -148,51 +149,62 @@ MM::BOOLEAN MM::Definition::instanceof(MM::TID tid)
 //------------------------------------------------------------------------------
 //Locate nodes in definitions
 //NOTE: the method searches through declarations and types
-//NOTE: normally we only allow a search to go one deep
+//NOTE: we only allow a search to go one deep
 //      because graphically we cannot depict edges between 2-nested types
 //NOTE: the method does not respect visibility yet
+//NOTE: findNode should only find InterfaceNodes when used to resolve a target
 //------------------------------------------------------------------------------
 MM::Node * MM::Definition::findNode(MM::Name * name,
                                     MM::NodeBehavior::IO direction)
 {
-  MM::Node * node = MM_NULL;
+  MM::Node * node = MM_NULL; //node to return
   
   if(name != MM_NULL)
   {
-    MM::Element * e1 = this->getElement(name);
-    if(e1 != MM_NULL)
+    MM::Element * element = this->getElement(name);
+    if(element != MM_NULL)
     {
-      if(e1->getTypeId() == MM::T_Declaration)
+      if(element->getTypeId() == MM::T_Declaration)
       {
         //element is a declaration --> edge is to an interface
-        MM::Declaration * decl = (MM::Declaration *) e1;
-        MM::Definition * def = decl->getDefinition();
+        MM::Declaration * decl = (MM::Declaration *) element;
         MM::Name * nodeName = name->getName();
-        if(nodeName != MM_NULL && def != MM_NULL)
+        if(nodeName != MM_NULL)
         {
-          MM::Element * e2 = def->getElement(nodeName);
-          if(e2 != MM_NULL &&
-             e2->instanceof(MM::T_InterfaceNode) == MM_TRUE &&
-             nodeName->getName() == MM_NULL)
+          //MM::Element * e2 = def->getElement(nodeName);
+          MM::Node * n = decl->getInterface(nodeName);
+          if(n != MM_NULL &&
+             n->instanceof(MM::T_InterfaceNode) == MM_TRUE)
           {
             //FIXME: check edge end is connected to an interface that is input or output
-            MM::Node * n = (MM::Node *) e2;            
-            if(n->getBehavior()->conformsTo(direction) == MM_TRUE)
-            {
-              node = (MM::Node *) e2;
-              //* ref = (MM::Declaration *) e1;
-            }
-            else
+            MM::InterfaceNode * iNode = (MM::InterfaceNode *) n;
+            MM::Node * declNode = iNode->getNode();
+            MM::NodeBehavior * behavior = declNode->getBehavior();
+
+            if(nodeName->getName() != MM_NULL)
             {
               //TODO: error
-              printf("Definition Error: interface does not accept input");
+              printf("Definition Error: cannot search inside interface\n");
             }
+            
+            if(behavior->conformsTo(direction) == MM_FALSE)
+            {
+              //TODO: error
+              printf("Definition Error: interface does not accept input\n");
+            }
+            
+            node = iNode;
+          }
+          else
+          {
+            printf("Definition Error: interface not found\n");
           }
         }
       }
-      else if(e1->getTypeId() == MM::T_Node && name->getName() == MM_NULL)
+      else if(element->getTypeId() == MM::T_Node &&
+              name->getName() == MM_NULL)
       {
-        node = (MM::Node *) e1;
+        node = (MM::Node *) element;
         //* ref = MM_NULL;
       }
       else
