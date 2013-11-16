@@ -19,10 +19,10 @@ namespace MM
     ~Observer();
     virtual MM::TID getTypeId();
     virtual MM::BOOLEAN instanceof(MM::TID tid);
-    virtual MM::VOID update(MM::Observable * observable,
-                            MM::VOID * aux,
-                            MM::UINT32 message,
-                            MM::VOID * object) = 0;   
+    virtual MM::VOID update(MM::Observable * observable, //observable object
+                            MM::VOID * aux,              //auxiliary context
+                            MM::UINT32 message,          //message
+                            MM::VOID * object) = 0;      //subject object
   };
 }
 

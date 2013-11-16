@@ -24,10 +24,10 @@ namespace MM
 
     MM::VOID addObserver(MM::Observer * observer);
     MM::VOID removeObserver(MM::Observer * observer);
-    MM::VOID notifyObservers(MM::Observable * observable,
-                             MM::VOID * aux,
-                             MM::UINT32 message,
-                             MM::VOID * object);
+    MM::VOID notifyObservers(MM::Observable * observable, //observable object
+                             MM::VOID * aux,              //auxiliary context
+                             MM::UINT32 message,          //message
+                             MM::VOID * object);          //subject object
   };
 }
 
