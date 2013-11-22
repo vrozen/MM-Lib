@@ -76,6 +76,10 @@ namespace  MM
 
     MM::VOID init(MM::Definition * def, MM::Element * element);
     MM::VOID init(MM::Definition * def, MM::Node * node);
+    //MM::VOID init(MM::Declaration * decl, MM::InterfaceNode * node);
+  public:
+    MM::VOID init(MM::Node * node);
+  private:
     MM::VOID init(MM::Definition * def, MM::Edge * edge);
     
     //these are private because nodes and edges must be processed
@@ -84,6 +88,8 @@ namespace  MM
     MM::VOID init(MM::Definition * def, MM::Node * node, MM::DrainNodeBehavior * behavior);
     MM::VOID init(MM::Definition * def, MM::Node * node, MM::SourceNodeBehavior * behavior);
     MM::VOID init(MM::Definition * def, MM::Node * node, MM::RefNodeBehavior * behavior);
+    MM::VOID init(MM::Definition * def, MM::Node * node, MM::GateNodeBehavior * behavior);
+    MM::VOID init(MM::Definition * def, MM::Node * node, MM::ConverterNodeBehavior * behavior);
     MM::VOID init(MM::Definition * def, MM::Definition * def2);
     MM::VOID init(MM::Definition * def, MM::Declaration * decl);
     MM::VOID init(MM::Definition * def, MM::FlowEdge * edge);
@@ -99,7 +105,10 @@ namespace  MM
     MM::VOID deinit(MM::Definition * def);
     MM::VOID deinit(MM::Definition * def, MM::Element * element);
     MM::VOID deinit(MM::Definition * def, MM::Node * node);
+    //    MM::VOID deinit(MM::Declaration * decl, MM::InterfaceNode * node);
+  public:
     MM::VOID deinit(MM::Definition * def, MM::Edge * edge);
+  private:
     MM::VOID deinit(MM::Definition * def, MM::Node * node, MM::PoolNodeBehavior * behavior);
     MM::VOID deinit(MM::Definition * def, MM::Node * node, MM::DrainNodeBehavior * behavior);
     MM::VOID deinit(MM::Definition * def, MM::Node * node, MM::SourceNodeBehavior * behavior);
@@ -110,7 +119,7 @@ namespace  MM
     MM::VOID deinit(MM::Definition * def, MM::StateEdge * edge);
     MM::VOID deinit(MM::Definition * def, MM::Assertion * assert);
     MM::VOID deinit(MM::Definition * def, MM::Deletion * del);
-    
+        
     /**************************************************************************
     * Replace
     * Visitor that replaces an element by another element inside a definition.

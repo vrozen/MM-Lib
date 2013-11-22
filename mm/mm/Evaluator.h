@@ -9,13 +9,14 @@
 #ifndef __mm__Evaluator__
 #define __mm__Evaluator__
 
-namespace  MM
+namespace MM
 {
   class Evaluator : public Recyclable
   {
   private:
     MM::Machine * m;
 
+    class Instance;
     class NodeInstance
     {
     private:
@@ -63,44 +64,51 @@ namespace  MM
     MM::VOID stepLevel(MM::Transition * transition,
                        MM::Vector<MM::Evaluator::NodeInstance *> * work);
     
-    MM::VOID stepNode(MM::Transition * transition,
-                      MM::Instance * instance,
-                      MM::Node * node);
+    //MM::VOID stepNode(MM::Transition * transition,
+    //                 MM::Instance * instance,
+    //                  MM::Node * node);
     
-    MM::VOID stepNodeAll(MM::Transition * transition,
-                         MM::Instance * instance,
-                         MM::Node * node,
-                         MM::Vector<Edge *> * work);
+    //MM::VOID stepNodeAll(MM::Transition * transition,
+    //                     MM::Instance * instance,
+    //                     MM::Node * node,
+    //                     MM::Vector<Edge *> * work);
 
-    MM::VOID stepNodeAny(MM::Transition * transition,
-                         MM::Instance * instance,
-                         MM::Node * node,
-                         MM::Vector<Edge *> * work);
+    //MM::VOID stepNodeAny(MM::Transition * transition,
+    //                     MM::Instance * instance,
+    //                     MM::Node * node,
+    //                     MM::Vector<Edge *> * work);
     
     //phase 3
     MM::VOID finalize(MM::Instance * instance, MM::Transition * tr);
     
+  public:
     MM::FlowEdge * synthesizeFlowEdge(MM::Instance * i,
                                       MM::Node * src,
                                       MM::UINT32 flow,
                                       MM::Node * tgt);
-
+  private:
+    MM::VOID clearActiveNodes(MM::Instance * i);
+    
     MM::VOID setActiveNodes(MM::Instance * i,
                             MM::Transition * tr);
-
-    MM::BOOLEAN isDisabled(MM::Node * node,
-                           MM::Instance * i);
-
-    MM::BOOLEAN isSatisfied(MM::Instance * i,
-                            MM::Node *,
-                            MM::Transition * tr);
     
-    MM::VOID propagateGates(MM::Instance * i,
-                            MM::Transition * tr);
+    //MM::VOID activateTriggerTargets(MM::Instance * i,
+    //                        MM::Node * n);
+
+    //MM::BOOLEAN isDisabled(MM::Node * node,
+    //                       MM::Instance * i);
+
+    //MM::BOOLEAN isSatisfied(MM::Instance * i,
+    //                        MM::Node *,
+    //                        MM::Transition * tr);
+    
+    //MM::VOID propagateGates(MM::Instance * i,
+    //                        MM::Transition * tr);
     
     //------------------------------------------------------------
     //Visitor
     //------------------------------------------------------------
+  public:
     MM::ValExp * eval(MM::Instance * i, MM::Edge * e);
     
  

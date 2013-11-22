@@ -23,6 +23,7 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
+#include "Activation.h"
 #include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
@@ -37,6 +38,8 @@
 #include "SourceNodeBehavior.h"
 #include "DrainNodeBehavior.h"
 #include "RefNodeBehavior.h"
+#include "GateNodeBehavior.h"
+#include "ConverterNodeBehavior.h"
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
@@ -454,17 +457,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Node * node)
     printf("Error: required simple name, found query\n");
   }
   
-  MM::Vector<MM::Edge *> * input = m->createEdgeVector();
-  MM::Vector<MM::Edge *> * output = m->createEdgeVector();
-  MM::Vector<MM::Edge *> * conditions = m->createEdgeVector();
-  MM::Vector<MM::Edge *> * triggers = m->createEdgeVector();
-  MM::Vector<MM::Edge *> * aliases = m->createEdgeVector();
-  
-  node->setInput(input);
-  node->setOutput(output);
-  node->setConditions(conditions);
-  node->setTriggers(triggers);
-  node->setAliases(aliases);
+  init(node);
   
   def->prioritize(node);
   
@@ -485,9 +478,30 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Node * node)
     case MM::T_RefNodeBehavior:
       init(def, node, (MM::RefNodeBehavior *) behavior);
       break;
+    case MM::T_GateNodeBehavior:
+      init(def, node, (MM::GateNodeBehavior *) behavior);
+      break;
+    case MM::T_ConverterNodeBehavior:
+      init(def, node, (MM::ConverterNodeBehavior *) behavior);
+      break;
     default:
       break;
   }
+}
+
+MM::VOID MM::Reflector::init(MM::Node * node)
+{
+  MM::Vector<MM::Edge *> * input = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * output = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * conditions = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * triggers = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * aliases = m->createEdgeVector();
+  
+  node->setInput(input);
+  node->setOutput(output);
+  node->setConditions(conditions);
+  node->setTriggers(triggers);
+  node->setAliases(aliases);
 }
 
 MM::VOID MM::Reflector::init(MM::Definition * def,
@@ -513,10 +527,26 @@ MM::VOID MM::Reflector::init(MM::Definition * def,
 
 MM::VOID MM::Reflector::init(MM::Definition * def,
                              MM::Node * node,
+                             MM::GateNodeBehavior * behavior)
+{
+  def->notifyObservers(def, m, MSG_NEW_GATE, node);
+}
+
+
+MM::VOID MM::Reflector::init(MM::Definition * def,
+                             MM::Node * node,
                              MM::RefNodeBehavior * behavior)
 {
   def->notifyObservers(def, m, MSG_NEW_REF, node);
 }
+
+MM::VOID MM::Reflector::init(MM::Definition * def,
+                             MM::Node * node,
+                             MM::ConverterNodeBehavior * behavior)
+{
+  def->notifyObservers(def, m, MSG_NEW_CONVERTER, node);
+}
+
 
 MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
 {
