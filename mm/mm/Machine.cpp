@@ -26,6 +26,7 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
+#include "Activation.h"
 #include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
@@ -37,6 +38,7 @@
 #include "DrainNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
+#include "ConverterNodeBehavior.h"
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
@@ -82,7 +84,7 @@ MM::Machine::Machine() : MM::Recycler()
   reflector->init(type);
   
   //initialize the start state (set active nodes)
-  evaluator->initStartState(inst);
+  //evaluator->initStartState(inst);
 }
 
 MM::Machine::~Machine()
@@ -429,6 +431,20 @@ MM::Name * MM::Machine::createName(MM::Name * name)
   return r;
 }
 
+MM::Name * MM::Machine::createName(MM::CHAR * buf)
+{
+  MM::UINT32 len = strlen(buf);
+  MM::CHAR * buf2 = createBuffer(len);
+  strncpy(buf2, buf, len);
+  
+  MM::Name * r = new MM::Name(buf2, len);
+  
+  MM::Recycler::create(r);
+  
+  return r;
+}
+
+
 MM::Program * MM::Machine::createProgram()
 {
   MM::Vector<MM::Transformation *> *
@@ -501,12 +517,10 @@ MM::Transition * MM::Machine::createTransition(MM::Vector<MM::Element *> *
 
 MM::Node * MM::Machine::createSourceNode(MM::NodeBehavior::IO   io,
                                          MM::NodeBehavior::When when,
-                                         MM::NodeBehavior::Act  act,
-                                         MM::NodeBehavior::How  how,
                                          MM::Name             * name)
 {
   MM::SourceNodeBehavior * behavior =
-    new MM::SourceNodeBehavior(io,when,act,how);
+    new MM::SourceNodeBehavior(io,when);
   MM::Recycler::create(behavior);
   MM::Node * r = new MM::Node(name, behavior);
   MM::Recycler::create(r);
@@ -514,13 +528,12 @@ MM::Node * MM::Machine::createSourceNode(MM::NodeBehavior::IO   io,
 }
 
 MM::Node * MM::Machine::createDrainNode(MM::NodeBehavior::IO    io,
-                                             MM::NodeBehavior::When  when,
-                                             MM::NodeBehavior::Act   act,
-                                             MM::NodeBehavior::How   how,
-                                             MM::Name      * name)
+                                        MM::NodeBehavior::When  when,
+                                        MM::NodeBehavior::How   how,
+                                        MM::Name      * name)
 {
   MM::DrainNodeBehavior * behavior =
-    new MM::DrainNodeBehavior(io,when,act,how);
+    new MM::DrainNodeBehavior(io,when,how);
   MM::Recycler::create(behavior);
   MM::Node * r = new MM::Node(name,behavior);
   MM::Recycler::create(r);
@@ -553,6 +566,46 @@ MM::Node * MM::Machine::createPoolNode(MM::NodeBehavior::IO    io,
 {
   MM::PoolNodeBehavior * behavior =
     new MM::PoolNodeBehavior(io,when,act,how,at,max,exp);
+  MM::Recycler::create(behavior);
+  
+  MM::Node * r = new MM::Node(name, behavior);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Node * MM::Machine::createConverterNode(MM::NodeBehavior::IO    io,
+                                            MM::NodeBehavior::When  when,
+                                            MM::Name      * name,
+                                            MM::Name      * from,
+                                            MM::Name      * to)
+{
+  MM::Name * sourceName = createName((MM::CHAR*)"__source");
+  MM::Name * drainName = createName((MM::CHAR*)"__drain");
+
+  MM::Name * sourceEdgeName = createName(name);
+  MM::Name * targetEdgeName = createName(name);
+  
+  MM::Node * sourceNode = createSourceNode(io,
+                   MM::NodeBehavior::WHEN_PASSIVE,
+                   sourceName);
+  MM::Node * drainNode = createDrainNode(io,
+                  when,
+                  MM::NodeBehavior::HOW_ALL,
+                  drainName);
+  MM::Exp * e1 = createOneExp();
+  MM::Exp * e2 = createOneExp();
+  MM::Exp * exp = createBinExp(e1, MM::Operator::OP_MUL, e2);
+  
+  MM::Edge * triggerEdge = createStateEdge(MM_NULL, sourceEdgeName, exp, targetEdgeName);
+  triggerEdge->setSource(drainNode);
+  triggerEdge->setTarget(sourceNode);
+
+  reflector->init(drainNode);
+  reflector->init(sourceNode);
+  drainNode->addTrigger(triggerEdge);
+  
+  MM::ConverterNodeBehavior * behavior =
+    new MM::ConverterNodeBehavior(io, when, from, to, sourceNode, drainNode, triggerEdge);
   MM::Recycler::create(behavior);
   
   MM::Node * r = new MM::Node(name, behavior);
@@ -659,6 +712,22 @@ MM::Deletion * MM::Machine::createDeletion(YYLTYPE * deleteLoc,
 {
   MM::Location * loc = MM::Machine::createLocation(deleteLoc);
   MM::Deletion * r = new MM::Deletion(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Activation * MM::Machine::createActivation(YYLTYPE * deleteLoc,
+                                             MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(deleteLoc);
+  MM::Activation * r = new MM::Activation(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Activation * MM::Machine::createActivation(MM::Name * name)
+{
+  MM::Activation * r = new MM::Activation(name);
   MM::Recycler::create(r);
   return r;
 }
@@ -820,6 +889,13 @@ MM::AliasExp * MM::Machine::createAliasExp(YYLTYPE * aliasLoc)
 {
   MM::Location * loc = createLocation(aliasLoc);
   MM::AliasExp * r = new MM::AliasExp(loc);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::OneExp * MM::Machine::createOneExp()
+{
+  MM::OneExp * r = new MM::OneExp(MM_NULL);
   MM::Recycler::create(r);
   return r;
 }

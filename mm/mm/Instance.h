@@ -94,16 +94,31 @@ namespace MM
                     MM::VOID * object);
     
   private:
+    MM::VOID createNode(MM::Node * node);
+    
     MM::VOID createInstance(MM::Declaration * decl, MM::Machine * m);
     MM::VOID createPool(MM::Node * pool);
     MM::VOID createGate(MM::Node * gate);
+    MM::VOID createSource(MM::Node * source);
+    MM::VOID createDrain(MM::Node * drain);
+    MM::VOID createConverter(MM::Node * converter);
+    MM::VOID createReference(MM::Node * ref);
+    
     
     MM::VOID removeInstance(MM::Declaration * decl, MM::Recycler * r);
     MM::VOID removePool(MM::Node * pool);
     MM::VOID removeGate(MM::Node * gate);
-        
+    MM::VOID removeSource(MM::Node * source);
+    MM::VOID removeDrain(MM::Node * drain);
+    MM::VOID removeConverter(MM::Node * converter);
+    MM::VOID removeReference(MM::Node * ref);
+    
+    
   public:
     MM::VOID begin();
+    MM::VOID clearActive();
+    MM::VOID clearDisabled();
+    
     MM::UINT32 getCapacity(MM::Node * node);
     MM::UINT32 getResources(MM::Node * node);
     MM::BOOLEAN hasResources(MM::Node * node, MM::UINT32 amount);

@@ -23,9 +23,9 @@
 #include "Observable.h"
 #include "Exp.h"
 #include "Edge.h"
+#include "FlowEdge.h"
 #include "NodeBehavior.h"
 #include "Node.h"
-
 
 const MM::CHAR MM::Edge::COLON_CHAR = ':';
 

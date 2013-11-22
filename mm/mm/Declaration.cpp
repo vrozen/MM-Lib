@@ -58,6 +58,7 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
+#include "Activation.h"
 #include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
@@ -69,6 +70,7 @@
 #include "DrainNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
+#include "ConverterNodeBehavior.h"
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
@@ -148,7 +150,7 @@ MM::VOID MM::Declaration::update(MM::Observable * observable,
                                  MM::VOID * aux,
                                  MM::UINT32 message,
                                  MM::VOID * object)
-{
+{  
   switch(message)
   {
     case MM::MSG_NEW_DRAIN:
@@ -191,19 +193,23 @@ MM::Node * MM::Declaration::getInterface(MM::Name * name)
   return interfaces->get(name);
 }
 
+
 MM::VOID MM::Declaration::addInterface(MM::Machine * m,
                                        MM::Node * node)
 {
   if(node->getBehavior()->getIO() != MM::NodeBehavior::IO_PRIVATE)
   {
     MM::Name * name = node->getName();
-    MM::CHAR * str = name->getBuffer();    
+    MM::CHAR * str = name->getBuffer();
     printf("Declaration: Sees interface %s begin\n", str);
 
     MM::Name * clone = m->createName(name);
     MM::InterfaceNode * iNode = m->createInterfaceNode(clone, this, node);
     
     interfaces->put(name, iNode);
+    
+    MM::Reflector * reflector = m->getReflector();
+    reflector->init(iNode);
   }
 }
 
@@ -214,6 +220,54 @@ MM::VOID MM::Declaration::removeInterface(MM::Machine * m, MM::Node * node)
   {
     printf("Declaration: Sees interface end\n");
     MM::InterfaceNode * iNode = (MM::InterfaceNode *) interfaces->get(name);
+    
+    MM::Reflector * reflector = m->getReflector();
+    
+    //deinit input edges
+    MM::Vector<MM::Edge *> * input = iNode->getInput();
+    MM::Vector<MM::Edge *>::Iterator inputIter = input->getIterator();
+    while(inputIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = inputIter.getNext();
+      reflector->deinit(def, edge);
+    }
+    
+    //deinit output edges
+    MM::Vector<MM::Edge *> * output = iNode->getOutput();
+    MM::Vector<MM::Edge *>::Iterator outputIter = output->getIterator();
+    while(outputIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = outputIter.getNext();
+      reflector->deinit(def, edge);
+    }
+    
+    //deinit condition edges
+    MM::Vector<MM::Edge *> * conditions = iNode->getConditions();
+    MM::Vector<MM::Edge *>::Iterator conditionsIter = conditions->getIterator();
+    while(conditionsIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = conditionsIter.getNext();
+      reflector->deinit(def, edge);
+    }
+    
+    //deinit trigger edges
+    MM::Vector<MM::Edge *> * triggers = iNode->getTriggers();
+    MM::Vector<MM::Edge *>::Iterator triggersIter = triggers->getIterator();
+    while(triggersIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = triggersIter.getNext();
+      reflector->deinit(def, edge);
+    }
+    
+    //deinit alias edges
+    MM::Vector<MM::Edge *> * aliases = iNode->getAliases();
+    MM::Vector<MM::Edge *>::Iterator aliasesIter = aliases->getIterator();
+    while(aliasesIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = aliasesIter.getNext();
+      reflector->deinit(def, edge);
+    }    
+    
     iNode->recycle(m);
     interfaces->remove(name);
   }

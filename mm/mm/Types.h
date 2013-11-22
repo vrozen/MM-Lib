@@ -36,7 +36,13 @@ namespace MM
     MSG_NEW_DRAIN,  //a drain was added to a definition
     MSG_NEW_GATE,   //a gate was added to a definition
     MSG_NEW_REF,    //a reference (alias) was added to a definition
-  
+    MSG_NEW_CONVERTER,
+ 
+    MSG_NEW_CONDITION,
+    MSG_NEW_TRIGGER,
+    MSG_NEW_FLOW,
+
+    
     //type deletion messages
     MSG_DEL_TYPE,   //a type definition was deleted
     MSG_DEL_DECL,   //a declaration was undeclared from a definition
@@ -45,6 +51,11 @@ namespace MM
     MSG_DEL_DRAIN,  //a drain was removed from a definition
     MSG_DEL_GATE,   //a gate was removed from a definition
     MSG_DEL_REF,    //a reference (alias) was removed from a definition
+    MSG_DEL_CONVERTER,
+
+    MSG_DEL_CONDITION,
+    MSG_DEL_TRIGGER,
+    MSG_DEL_FLOW,
     
     //type update messages
     MSG_UPD_TYPE,   //a type definition was updated
@@ -54,6 +65,11 @@ namespace MM
     MSG_UPD_DRAIN,  //a drain was updated (changed modifiers)
     MSG_UPD_GATE,   //a gate was updated (changed modifiers)
     MSG_UPD_REF,    //a reference was updated (can this happen?)
+    MSG_UPD_CONVERTER,
+    
+    MSG_UPD_CONDITION,
+    MSG_UPD_TRIGGER,
+    MSG_UPD_FLOW,
     
     //instance messages
     MSG_NEW_INST,   //a new instance was created inside another instance
@@ -80,7 +96,7 @@ namespace MM
   
   /*
    //NOTE: use observers for now
-  //callback type defintions
+  //callback type definitions
   typedef MM::VOID (* CALLBACK)
   (
     MM::VOID * caller,     //caller: Who're you gonna call?
@@ -125,6 +141,7 @@ namespace MM
     T_Assertion,
     T_Signal,
     T_Deletion,
+    T_Activation,
     T_Edge,
     T_FlowEdge,
     T_StateEdge,
@@ -136,6 +153,7 @@ namespace MM
     T_GateNodeBehavior,
     T_SourceNodeBehavior,
     T_RefNodeBehavior,
+    T_ConverterNodeBehavior,
     //expressions
     T_Exp,
     T_TriggerExp,

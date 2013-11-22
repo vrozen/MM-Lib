@@ -42,99 +42,52 @@ namespace MM
     MM::VOID setDefinition(MM::Definition * def);
     MM::VOID setInstance(MM::Instance * inst);
     
+    //--------------------------------------------------------------------------
+    //external API
+    //--------------------------------------------------------------------------
     //evaluates input and adds elements to the model
     MM::VOID eval (const MM::CHAR * input);
     
-    /*
     //takes a step in an MM model
-    MM::Transition * step       ();
-    
-    //retrieves a definition from a parent element by name
-    MM::UINT32 get              (MM::UINT32   def,  //0 -> global scope
-                                 MM::CHAR   * name);
-    
-    MM::VOID   getName          (MM::UINT32   node,
-                                 MM::CHAR *   buffer,
-                                 MM::UINT32   bufferSize);
-    
-    //activates an interactive node in an instance
-    MM::VOID   activate         (MM::UINT32   node,
-                                 MM::UINT32   instance);
-    
-    //removes an element from a type definition
-    MM::VOID   destroy          (MM::UINT32   def,   //0 -> global scope
-                                 MM::UINT32   node); //0 -> global scope
+    MM::VOID step ();
+    MM::VOID step (MM::UINT32 instance);
     
     //resets all instances to definition start values
-    MM::VOID   reset            ();
+    MM::VOID reset ();
+    MM::VOID reset (MM::UINT32 instance);
+
+    //activates an interactive node in an instance
+    MM::VOID activate (MM::UINT32 node,
+                       MM::UINT32 instance);
     
+    //retrieves a definition from a parent element by name
+    //MM::UINT32 getDefinition(MM::UINT32   def,  //0 -> global scope type
+    //                         MM::CHAR   * name);
+    
+    MM::UINT32 getInstance(MM::UINT32 instance, //0 -> global scope
+                           MM::CHAR  * name);
+    
+    MM::VOID getName (MM::UINT32   element,
+                      MM::CHAR *   buffer,
+                      MM::UINT32   bufferSize);
     
     //adds an observer to the model
     //the caller receives a callback
-    MM::UINT32 addObserver(MM::UINT32 definition,
+    //MM::UINT32 addObserver(MM::UINT32 definition,
+    //                       MM::VOID * caller,
+    //                       MM::CALLBACK callback);
+   
+    MM::UINT32 addObserver(MM::UINT32 instance,
                            MM::VOID * caller,
                            MM::CALLBACK callback);
     
     //removes an observer from a pools
-    MM::VOID   removeObserver   (MM::UINT32 observer);
-    */
-    
-    /*
-     //adds a type definition and returns its API handle (definitions are global)
-     MM::UINT32 addDefinition    (MM::CHAR   * name);
-     
-     //adds an instance to a parent element
-     MM::UINT32 addDeclaration   (MM::UINT32   type, //0 -> global scope
-     MM::UINT32   decl_type,
-     MM::CHAR   * name);
-     
-     //adds a pool to a perent element
-     MM::UINT32 addPool          (MM::UINT32     type, //0 -> global scope
-     MM::Node::When when,
-     MM::Node::Act  act,
-     MM::Node::How  how,
-     MM::CHAR     * name,
-     MM::INT32      at,
-     MM::UINT32     max,
-     MM::CHAR     * exp);
-     
-     //adds a source to a parent element
-     MM::UINT32 addSource        (MM::UINT32      type, //0 -> global scope
-     MM::Node::When  when,
-     MM::Node::Act   act,
-     MM::Node::How   how,
-     MM::CHAR      * name);
-     
-     //adds a drain to a parent element
-     MM::UINT32 addDrain         (MM::UINT32      type, //0 -> global scope
-     MM::Node::When  when,
-     MM::Node::Act   act,
-     MM::Node::How   how,
-     MM::CHAR      * name);
-     
-     //adds a flow edge between two nodes
-     MM::UINT32 addFlow          (MM::UINT32   src,
-     MM::CHAR   * exp,
-     MM::UINT32   tgt);
-     
-     //adds a condition between two nodes
-     MM::UINT32 addCondition     (MM::UINT32   src,
-     MM::CHAR   * exp,
-     MM::UINT32   tgt);
-     
-     //adds a trigger
-     MM::UINT32 addTrigger       (MM::UINT32   src,
-     MM::UINT32   tgt);
-     */
+    MM::VOID removeObserver (MM::UINT32 observer);
     
     
-    //MM::Definition * getDefinition(MM::Name * name);
-    
-    //MM::VOID putDefinition(MM::Name * name, MM::Definition * def);
-    
-    //------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Create
-    //------------------------------------------------------------
+    //--------------------------------------------------------------------------
     MM::Vector<MM::Transformation *> * createTransformationVector();
     
     MM::Vector<MM::Element *> * createElementVector();
@@ -169,6 +122,8 @@ namespace MM
     
     MM::Name * createName(MM::Name * name);
     
+    MM::Name * createName(MM::CHAR * buf);
+    
     MM::Program * createProgram();
     
     MM::Program * createProgram(MM::Vector<MM::Transformation *> *
@@ -193,13 +148,10 @@ namespace MM
     
     MM::Node * createSourceNode(MM::NodeBehavior::IO    io,
                                 MM::NodeBehavior::When  when,
-                                MM::NodeBehavior::Act   act,
-                                MM::NodeBehavior::How   how,
                                 MM::Name      * name);
     
     MM::Node * createDrainNode(MM::NodeBehavior::IO    io,
                                MM::NodeBehavior::When  when,
-                               MM::NodeBehavior::Act   act,
                                MM::NodeBehavior::How   how,
                                MM::Name      * name);
     
@@ -218,6 +170,12 @@ namespace MM
                               MM::UINT32      max,
                               MM::Exp       * exp);
     
+    MM::Node * createConverterNode(MM::NodeBehavior::IO    io,
+                                   MM::NodeBehavior::When  when,
+                                   MM::Name      * name,
+                                   MM::Name      * from,
+                                   MM::Name      * to);
+                                  
     MM::Node * createRefNode(MM::NodeBehavior::IO io, MM::Name * name);
     
     MM::InterfaceNode * createInterfaceNode(MM::Name * name,
@@ -255,6 +213,11 @@ namespace MM
     
     MM::Deletion * createDeletion(YYLTYPE * deleteLoc,
                                   MM::Name * name);
+    
+    MM::Activation * createActivation(MM::Name * name);
+    
+    MM::Activation * createActivation(YYLTYPE * deleteLoc,
+                                      MM::Name * name);
     
     MM::Signal * createSignal(MM::Name * name);
 

@@ -25,6 +25,7 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
+#include "Activation.h"
 #include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
@@ -35,6 +36,7 @@
 #include "DrainNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
+#include "ConverterNodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
 #include "Modification.h"
@@ -60,8 +62,8 @@
 #include "AliasExp.h"
 #include "OneExp.h"
 #include "VarExp.h"
-#include "Reflector.h"
 #include "Evaluator.h"
+#include "Reflector.h"
 #include "Machine.h"
 
 #endif

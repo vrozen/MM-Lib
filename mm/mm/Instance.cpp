@@ -30,6 +30,7 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
+#include "Activation.h"
 #include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
@@ -41,6 +42,7 @@
 #include "DrainNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
+#include "ConverterNodeBehavior.h"
 #include "Observer.h"
 #include "Observable.h"
 #include "Declaration.h"
@@ -295,6 +297,10 @@ MM::VOID MM::Instance::setGateValue(MM::Node * node, MM::UINT32 value)
   gateValues->put(node, value);
 }
 
+
+//NOTE: we need all conditions that affect nodes in this instance
+//      in order to re-evaluate if a node is active in this state ... :'(
+
 /**
  * @fn MM::VOID MM::Instance::update(MM::Observable * observable,
  MM::VOID * aux, MM::UINT32 message, MM::VOID * object)
@@ -313,69 +319,105 @@ MM::VOID MM::Instance::update(MM::Observable * observable,
 
   switch(message)
   {
+    //creation
     case MM::MSG_NEW_POOL:
       printf("Instance: Sees pool %s begin\n",
              ((MM::Node*)object)->getName()->getBuffer());
       createPool((MM::Node *) object);
-      break;
-    case MM::MSG_UPD_POOL:
-      printf("Instance: Sees pool %s change\n",
-             ((MM::Node*)object)->getName()->getBuffer());
-      createPool((MM::Node*) object);
-      break;
-    case MM::MSG_DEL_POOL:
-      printf("Instance: Sees pool %s end\n",
-             ((MM::Node*)object)->getName()->getBuffer());
-      removePool((MM::Node *) object);
       break;
     case MM::MSG_NEW_GATE:
       printf("Instance: Sees gate %s begin\n",
              ((MM::Node*)object)->getName()->getBuffer());
       createGate((MM::Node *) object);
       break;
-    case MM::MSG_UPD_GATE:
-      printf("Instance: Sees gate %s begin\n",
-             ((MM::Node*)object)->getName()->getBuffer());
-      createGate((MM::Node *) object);
-      break;
-    case MM::MSG_DEL_GATE:
-      printf("Instance: Sees gate %s begin\n",
-             ((MM::Node*)object)->getName()->getBuffer());
-      removeGate((MM::Node *) object);
-      break;
-    case MM::MSG_NEW_REF:
-      break;
-    case MM::MSG_UPD_REF:
-      break;
-    case MM::MSG_DEL_REF:
-      break;
     case MM::MSG_NEW_DRAIN:
-      break;
-    case MM::MSG_UPD_DRAIN:
-      break;
-    case MM::MSG_DEL_DRAIN:
+      printf("Instance: Sees drain %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createDrain((MM::Node *) object);
       break;
     case MM::MSG_NEW_SOURCE:
+      printf("Instance: Sees source %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createSource((MM::Node *) object);
       break;
-    case MM::MSG_UPD_SOURCE:
+    case MM::MSG_NEW_CONVERTER:
+      printf("Instance: Sees converter %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createConverter((MM::Node*) object);
       break;
-    case MM::MSG_DEL_SOURCE:
+    case MM::MSG_NEW_REF:
+      printf("Instance: Sees reference %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createReference((MM::Node *) object);
       break;
     case MM::MSG_NEW_DECL:
       printf("Instance: Sees declaration %s begin\n",
              ((MM::Declaration*)object)->getName()->getBuffer());
       createInstance((Declaration *) object, (MM::Machine *) aux );
       break;
-    case MM::MSG_UPD_DECL:
+  
+    //deletion
+    case MM::MSG_DEL_POOL:
+      printf("Instance: Sees pool %s end\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      removePool((MM::Node *) object);
+      break;
+    case MM::MSG_DEL_GATE:
+      printf("Instance: Sees gate %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      removeGate((MM::Node *) object);
+      break;
+    case MM::MSG_DEL_SOURCE:
+      break;
+    case MM::MSG_DEL_DRAIN:
+      break;      
+    case MM::MSG_DEL_REF:
+      break;
+    case MM::MSG_DEL_CONVERTER:      
       break;
     case MM::MSG_DEL_DECL:
       printf("Instance: Sees declaration %s end\n",
              ((MM::Declaration*)object)->getName()->getBuffer());
       //removeInstance((Declaration *) object, (MM::Recycler *) aux);
       break;
+
+    //mutation
+    case MM::MSG_UPD_POOL:
+      printf("Instance: Sees pool %s change\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createPool((MM::Node*) object);
+      break;
+    case MM::MSG_UPD_GATE:
+      printf("Instance: Sees gate %s begin\n",
+             ((MM::Node*)object)->getName()->getBuffer());
+      createGate((MM::Node *) object);
+      break;
+    case MM::MSG_UPD_SOURCE:
+      break;      
+    case MM::MSG_UPD_DRAIN:
+      break;
+    case MM::MSG_UPD_REF:
+      break;
+    case MM::MSG_UPD_CONVERTER:
+      break;
+    case MM::MSG_UPD_DECL:
+      break;
     default:
       //message not understood
       break;
+  }
+}
+
+
+//all nodes do this on creation
+MM::VOID MM::Instance::createNode(MM::Node * node)
+{
+  //TODO: for all new nodes add it to the active nodes when auto
+  //FIXME: remove when an edge is added that disables it again? YES
+  MM::NodeBehavior * behavior = node->getBehavior();
+  if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO)
+  {
+    setActive(node);
   }
 }
 
@@ -396,10 +438,7 @@ MM::VOID MM::Instance::createInstance(MM::Declaration * decl,
     {
       case MM::T_Node:
         behavior = ((MM::Node*)element)->getBehavior();
-        if(behavior->getTypeId() == MM::T_PoolNodeBehavior)
-        {
-          instance->update(def, m, MM::MSG_NEW_POOL, element);
-        }
+        instance->update(def, m, behavior->getCreateMessage(), element);
         break;
       case MM::T_Declaration:
         instance->update(def, m, MM::MSG_NEW_DECL, element);
@@ -426,12 +465,7 @@ MM::VOID MM::Instance::createPool(MM::Node * pool)
     values->put(pool, at);
   }
 
-  //TODO: for all new nodes add it to the active nodes when auto
-  if(pool->getBehavior()->getWhen() == MM::NodeBehavior::WHEN_AUTO)
-  {
-    //FIXME: remove when an edge is added that disables it again?
-    activeNodes->add(pool);
-  }
+  createNode(pool);
 }
 
 
@@ -451,9 +485,33 @@ MM::VOID MM::Instance::createGate(MM::Node * gate)
 
     i = output->getNewIterator();
     gates->put(gate, i);
-    curGateValues->put(gate, 0);    
+    curGateValues->put(gate, 0);
   }
+  
+  createNode(gate);
 }
+
+MM::VOID MM::Instance::createSource(MM::Node * source)
+{
+  createNode(source);
+}
+
+MM::VOID MM::Instance::createDrain(MM::Node * drain)
+{
+  createNode(drain);
+}
+
+MM::VOID MM::Instance::createReference(MM::Node * ref)
+{
+  createNode(ref);
+}
+
+MM::VOID MM::Instance::createConverter(MM::Node * converter)
+{
+  createNode(converter);
+}
+
+
 
 
 MM::VOID MM::Instance::removeInstance(MM::Declaration * decl,
@@ -492,11 +550,20 @@ MM::VOID MM::Instance::begin()
   oldValues->clear();
   newValues->clear();  
   oldValues->putAll(values);
-  newValues->putAll(values);
-  
+  newValues->putAll(values);  
   gateValues->clear();
-  disabledNodes->clear();
+  //disabledNodes->clear();
+  //activeNodes->clear();
+}
+
+MM::VOID MM::Instance::clearActive()
+{
   activeNodes->clear();
+}
+
+MM::VOID MM::Instance::clearDisabled()
+{
+  disabledNodes->clear();
 }
 
 MM::UINT32 MM::Instance::getResources(MM::Node * node)
