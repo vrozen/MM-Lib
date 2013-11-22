@@ -34,10 +34,11 @@ const MM::UINT32  MM::SourceNodeBehavior::SOURCE_LEN =
   strlen(MM::SourceNodeBehavior::SOURCE_STR);
 
 MM::SourceNodeBehavior::SourceNodeBehavior(MM::NodeBehavior::IO io,
-                                           MM::NodeBehavior::When when,
-                                           MM::NodeBehavior::Act act,
-                                           MM::NodeBehavior::How how):
-  MM::NodeBehavior(io, when, act, how)
+                                           MM::NodeBehavior::When when):
+  MM::NodeBehavior(io,
+                   when,
+                   MM::NodeBehavior::ACT_PUSH,
+                   MM::NodeBehavior::HOW_ALL)
 {
 }
 

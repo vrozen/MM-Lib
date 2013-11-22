@@ -15,6 +15,7 @@ namespace MM
   
   class NodeBehavior;
   class Instance;
+  class Evaluator;
   class Node : public MM::Element
   {
   private:
@@ -79,6 +80,22 @@ namespace MM
     virtual MM::UINT32 getResources(MM::Instance * i);
     virtual MM::BOOLEAN hasCapacity(MM::Instance * i, MM::UINT32 amount);
     virtual MM::BOOLEAN hasResources(MM::Instance * i, MM::UINT32 amount);
+    
+    
+    MM::VOID step(MM::Instance * i,
+                  MM::Machine * m,
+                  MM::Transition * tr);
+    
+    MM::BOOLEAN isDisabled(MM::Instance * i,
+                           MM::Evaluator * e,
+                           MM::Recycler * r);
+    
+    MM::BOOLEAN isSatisfied(MM::Instance * i,
+                            MM::Transition * t);
+    
+
+    virtual MM::VOID activateTriggerTargets(MM::Instance * i,
+                                            MM::Machine * m);
     
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);

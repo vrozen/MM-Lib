@@ -91,6 +91,23 @@ namespace MM
     
     MM::BOOLEAN conformsTo(MM::NodeBehavior::IO direction);
     
+    virtual MM::VOID step(MM::Node * n,
+                          MM::Instance * i,
+                          MM::Machine * m,
+                          MM::Transition * t);
+        
+    MM::VOID stepAll(MM::Node * node,
+                     MM::Instance * i,
+                     MM::Vector<MM::Edge *> * work,
+                     MM::Machine * m,
+                     MM::Transition * tr);
+    
+    MM::VOID stepAny(MM::Node * node,
+                     MM::Instance * i,
+                     MM::Vector<MM::Edge *> * work,
+                     MM::Machine * m,
+                     MM::Transition * tr);
+    
     //instance manipulation during transitions
     virtual MM::VOID add(MM::Instance * i,
                          MM::Node * n,
@@ -108,6 +125,10 @@ namespace MM
     virtual MM::BOOLEAN hasResources(MM::Instance * i,
                                      MM::Node * n,
                                      MM::UINT32 amount) = 0;
+    
+    virtual MM::VOID activateTriggerTargets(MM::Node *,
+                                            MM::Instance * i,
+                                            MM::Machine * m);
     
   public:
     virtual MM::VOID toString(MM::String * buf, MM::Name * name);

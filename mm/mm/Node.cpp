@@ -6,6 +6,7 @@
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include "YYLTYPE.h"
@@ -25,6 +26,65 @@
 #include "Edge.h"
 #include "NodeBehavior.h"
 #include "Node.h"
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "YYLTYPE.h"
+#include "Types.h"
+#include "Recyclable.h"
+#include "Vector.h"
+#include "Map.h"
+#include "Recycler.h"
+#include "Location.h"
+#include "String.h"
+#include "Name.h"
+#include "Element.h"
+#include "Operator.h"
+#include "Exp.h"
+#include "Assertion.h"
+#include "Deletion.h"
+#include "Activation.h"
+#include "Signal.h"
+#include "Edge.h"
+#include "StateEdge.h"
+#include "FlowEdge.h"
+#include "NodeBehavior.h"
+#include "Node.h"
+#include "Transformation.h"
+#include "Modification.h"
+#include "Transition.h"
+#include "Program.h"
+#include "PoolNodeBehavior.h"
+#include "SourceNodeBehavior.h"
+#include "DrainNodeBehavior.h"
+#include "RefNodeBehavior.h"
+#include "GateNodeBehavior.h"
+#include "ConverterNodeBehavior.h"
+#include "Observer.h"
+#include "Observable.h"
+#include "Declaration.h"
+#include "InterfaceNode.h"
+#include "Definition.h"
+#include "Instance.h"
+#include "Operator.h"
+#include "ValExp.h"
+#include "UnExp.h"
+#include "BinExp.h"
+#include "RangeValExp.h"
+#include "BooleanValExp.h"
+#include "NumberValExp.h"
+#include "OverrideExp.h"
+#include "ActiveExp.h"
+#include "AllExp.h"
+#include "DieExp.h"
+#include "AliasExp.h"
+#include "OneExp.h"
+#include "VarExp.h"
+#include "Reflector.h"
+#include "Evaluator.h"
+#include "Machine.h"
 
 MM::Node::Node(MM::Name * name,
                MM::NodeBehavior * behavior): MM::Element(name)
@@ -233,6 +293,201 @@ MM::BOOLEAN MM::Node::hasResources(MM::Instance * i,
                                    MM::UINT32 amount)
 {
   return behavior->hasResources(i, this, amount);
+}
+
+
+MM::VOID MM::Node::step(MM::Instance * i,
+                        MM::Machine * m,
+                        MM::Transition * tr) //output
+
+{
+  behavior->step(this, i, m, tr);
+}
+
+MM::BOOLEAN MM::Node::isDisabled(MM::Instance  * i,
+                                 MM::Evaluator * e,
+                                 MM::Recycler  * r)
+{
+  MM::BOOLEAN result = MM_FALSE;
+  
+  MM::Vector<MM::Edge *>::Iterator cIter = conditions->getIterator();
+  while(cIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = cIter.getNext();
+    MM::ValExp * resultExp = e->eval(i, edge);
+    
+    if(resultExp->instanceof(MM::T_BooleanValExp) == MM_TRUE)
+    {
+      MM::BOOLEAN value = ((MM::BooleanValExp *) resultExp)->getValue();
+      resultExp->recycle(r);
+      if(value == MM_FALSE)
+      {
+        result = MM_TRUE;
+        break;
+      }
+    }
+    else
+    {
+      resultExp->recycle(r);
+      //FIXME: run-time type error!
+      r = MM_FALSE;
+      break;
+    }
+  }
+  
+  MM::Vector<MM::Edge *>::Iterator aIter = aliases->getIterator();
+  while(aIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = cIter.getNext();
+    MM::Node * tgtNode = edge->getTarget();
+    //target must be a Node with RefNodeBehavior
+    //or InterfaceNode that results from a Node with RefNodeBehavior
+    
+    MM::BOOLEAN disabled = tgtNode->isDisabled(i, e, r);
+    if(disabled == MM_TRUE)
+    {
+      result = MM_TRUE;
+      break;
+    }    
+  }
+  
+  return result;
+}
+
+//checks if a node is "satisfied" such that its triggers activate other nodes
+//NOTE: call after a flow happens -> transition occurs!
+//NOTE: call after disabled nodes are calculated and stored in the instance!
+//FIXME: include aliases
+MM::BOOLEAN MM::Node::isSatisfied(MM::Instance   * i,
+                                  MM::Transition * t)
+{
+  //calculate which node's inputs are 'satisfied'
+  //this set is the set of node labels for which all flow edges they operate on are satisfied at the same time
+  //this semantics is a bit strange since we also have the 'all' and 'any' modifiers
+  //therefore we might expect any nodes to trigger when any flow is satisfied, but this is not true!
+  
+  //satisfied nodes are
+  //1. pulling nodes
+  //either each inflow is satisfied and it has inflow
+  //or the node has no inflow and it is active (auto or activated)
+  //2. pushing nodes
+  //either each outflow is satisfied and it has outflow
+  //or the node has no outflow and it is active (auto or activated)
+  
+  if(i->isDisabled(this) == MM_TRUE)
+  {
+    return MM_FALSE; //diabled nodes are never satisfied
+  }
+  
+  if(t == MM_NULL)
+  {
+    return MM_FALSE; //no transition means never satisfied
+  }
+  
+  MM::BOOLEAN satisfied = MM_TRUE;
+  MM::NodeBehavior::Act act = behavior->getAct();
+  
+  MM::Vector<MM::Edge *> * edges = MM_NULL;
+  
+  if(act == MM::NodeBehavior::ACT_PULL)
+  {
+    edges = input;
+  }
+  else //act == ACT_PUSH
+  {
+    edges = output;
+  }
+  
+  if(edges->isEmpty() == MM_TRUE)
+  {
+    if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO ||
+       i->isActive(this) == MM_TRUE)
+    {
+      satisfied = MM_TRUE;
+    }
+    else
+    {
+      satisfied = MM_FALSE;
+    }
+  }
+  else
+  {
+    MM::Vector<Edge *>::Iterator iIter = edges->getIterator();
+    
+    while(iIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * iEdge = iIter.getNext();
+      MM::Name * iSrc = iEdge->getSourceName();
+      MM::Name * iTgt = iEdge->getTargetName();
+      MM::ValExp * iValExp = (MM::ValExp *) iEdge->getExp();
+      MM::BOOLEAN found = MM_FALSE;
+      
+      MM::Vector<Element *> * tElements = t->getElements();
+      MM::Vector<Element *>::Iterator tIter = tElements->getIterator();
+      while(tIter.hasNext() == MM_TRUE)
+      {
+        MM::Element * tElement = tIter.getNext();
+        if(tElement->instanceof(MM::T_FlowEdge) == MM_TRUE)
+        {
+          MM::FlowEdge * tEdge = (MM::FlowEdge *) tElement;
+          if(tEdge->getInstance() == i) //added for fast search instead of qualified name
+          {
+            MM::Name * tSrc = tEdge->getSourceName();
+            MM::Name * tTgt = tEdge->getTargetName();
+            
+            while(tSrc->getName() != MM_NULL)
+            {
+              tSrc = tSrc->getName();
+            }
+            
+            while(tTgt->getName() != MM_NULL)
+            {
+              tTgt = tTgt->getName();
+            }
+            
+            
+            MM::NumberValExp * tExp = (MM::NumberValExp *) iEdge->getExp();
+            MM::UINT32 value = tExp->getValue();
+            
+            //the final name of the transition must match the name of the node??
+            
+            if(iSrc->equals(tSrc) == MM_TRUE && iTgt->equals(tTgt) == MM_TRUE)
+            {
+              found = MM_TRUE;
+              if(iValExp->greaterEquals(value) == MM_FALSE)
+              {
+                satisfied = MM_FALSE;
+                break;
+              }
+            }
+          }
+        }
+      }
+      if(found == MM_FALSE)
+      {
+        satisfied = MM_FALSE;
+        break;
+      }
+    }
+  }
+
+  MM::CHAR * buf = name->getBuffer();
+  
+  if(satisfied == MM_TRUE)
+  {
+    printf("SATISFIED %s\n", buf);
+  }
+  //else
+  //{
+  //  printf("SATISFIED %s\n", buf);
+  //}
+  
+  return satisfied;
+}
+
+MM::VOID MM::Node::activateTriggerTargets(MM::Instance * i, MM::Machine * m)
+{
+  behavior->activateTriggerTargets(this, i, m);
 }
 
 MM::VOID MM::Node::toString(MM::String * buf)

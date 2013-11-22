@@ -36,6 +36,7 @@ namespace MM
     MM::BOOLEAN hasCapacity(MM::Instance * i, MM::UINT32 amount);
     MM::BOOLEAN hasResources(MM::Instance * i, MM::UINT32 amount);
     
+    MM::VOID activateTriggerTargets(MM::Instance * i, MM::Machine * m);
     MM::VOID toString(MM::String * buf);
   };
 }

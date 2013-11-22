@@ -35,9 +35,8 @@ const MM::UINT32 MM::DrainNodeBehavior::DRAIN_LEN =
 
 MM::DrainNodeBehavior::DrainNodeBehavior(MM::NodeBehavior::IO io,
                                          MM::NodeBehavior::When when,
-                                         MM::NodeBehavior::Act act,
                                          MM::NodeBehavior::How how):
-  NodeBehavior(io, when, act, how)
+  NodeBehavior(io, when, MM::NodeBehavior::ACT_PULL, how)
 {
 }
 

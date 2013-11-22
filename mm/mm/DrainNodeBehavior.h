@@ -18,7 +18,6 @@ namespace MM
   public:
     DrainNodeBehavior(MM::NodeBehavior::IO    io,
                       MM::NodeBehavior::When  when,
-                      MM::NodeBehavior::Act   act,
                       MM::NodeBehavior::How   how);
     ~DrainNodeBehavior();
     MM::VOID recycle(MM::Recycler * r);

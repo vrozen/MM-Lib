@@ -16,10 +16,7 @@ namespace MM
     static const MM::CHAR * SOURCE_STR;
     static const MM::UINT32 SOURCE_LEN;
   public:
-    SourceNodeBehavior(MM::NodeBehavior::IO   io,
-               MM::NodeBehavior::When when,
-               MM::NodeBehavior::Act  act,
-               MM::NodeBehavior::How  how);
+    SourceNodeBehavior(MM::NodeBehavior::IO io, MM::NodeBehavior::When when);
     ~SourceNodeBehavior();
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();

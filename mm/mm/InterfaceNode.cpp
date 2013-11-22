@@ -38,6 +38,7 @@ MM::InterfaceNode::InterfaceNode(MM::Name * name,
                                  MM::Node * ref):
   MM::Node(name, MM_NULL)
 {
+  this->decl = decl;
   this->ref = ref;
 }
 
@@ -121,6 +122,14 @@ MM::BOOLEAN MM::InterfaceNode::hasResources(MM::Instance * i,
   MM::Instance * iChild = i->getInstance(decl);
   return ref->hasResources(iChild, amount);
 }
+
+MM::VOID MM::InterfaceNode::activateTriggerTargets(MM::Instance * i,
+                                                   MM::Machine * m)
+{
+  MM::NodeBehavior * behavior = ref->getBehavior(); //HACK  
+  behavior->activateTriggerTargets(this, i, m);
+}
+
 
 MM::VOID MM::InterfaceNode::toString(MM::String * buf)
 {

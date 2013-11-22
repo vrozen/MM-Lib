@@ -36,6 +36,7 @@ namespace MM
     MM::BOOLEAN hasCapacity(MM::Instance * i, MM::Node * n, MM::UINT32 amount);
     MM::BOOLEAN hasResources(MM::Instance * i, MM::Node * n, MM::UINT32 amount);
 
+    
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::Name * name);    
   };

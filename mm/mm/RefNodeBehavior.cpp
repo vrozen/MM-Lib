@@ -199,6 +199,14 @@ MM::BOOLEAN MM::RefNodeBehavior::hasResources(MM::Instance * i,
   return aliasSrc->hasResources(aliasInstance, amount);
 }
 
+MM::VOID MM::RefNodeBehavior::doTriggers(MM::Instance * i,
+                                         MM::Node * n)
+{
+  
+  
+}
+
+
 MM::VOID MM::RefNodeBehavior::toString(MM::String * buf)
 {
   buf->append((MM::CHAR*)MM::RefNodeBehavior::REF_STR,
