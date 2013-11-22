@@ -15,6 +15,7 @@
   #include "Exp.h"
   #include "Assertion.h"
   #include "Deletion.h"
+  #include "Activation.h"
   #include "Signal.h"
   #include "Edge.h"
   #include "StateEdge.h"
@@ -30,6 +31,7 @@
   #include "DrainNodeBehavior.h"
   #include "GateNodeBehavior.h"
   #include "RefNodeBehavior.h"
+  #include "ConverterNodeBehavior.h"
   #include "Observer.h"
   #include "Observable.h"
   #include "Declaration.h"
@@ -91,7 +93,7 @@
 %token <str> ALL ANY
 %token <str> FROM TO OF
 %token <str> EQ PRINT NE LT GT LE GE AND OR NOT TRUE FALSE ACTIVE
-%token <str> ASSERT DELETE MODIFY STEP SIGNAL
+%token <str> ASSERT DELETE ACTIVATE MODIFY STEP SIGNAL
 %token <str> AT MAX DICE
 %token <str> ALIAS DOT PER REF DOT_GT SUB_GT LCURLY RCURLY COMMA COLON ATSIGN RANGE PERCENT
 %token <str> SOURCE DRAIN POOL GATE CONVERTER
@@ -146,12 +148,12 @@ elementList
 ;
 
 element
-: io when act how SOURCE name of { $$ = mm.createSourceNode($1,$2,$3,$4,$6); }
-| io when act how DRAIN name of  { $$ = mm.createDrainNode($1,$2,$3,$4,$6);  }
+: io when SOURCE name of         { $$ = mm.createSourceNode($1,$2,$4); }
+| io when how DRAIN name of      { $$ = mm.createDrainNode($1,$2,$3,$5);  }
 | io when act how GATE name of   { $$ = mm.createGateNode($1,$2,$3,$4,$6); }
 | io when act how POOL name of
-  at max add                     { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$8,$9,$10);
-/*TODO: io when act how CONVERTER name from to*/ }
+  at max add                     { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$8,$9,$10); }
+| io when CONVERTER name from to { $$ = mm.createConverterNode($1,$2,$4,$5,$6); }
 | io REF name                    { $$ = mm.createRefNode($1,$3); }
 | name name                      { $$ = mm.createDeclaration($1,$2); }
 | name DOT exp DOT_GT name       { MM::Name * preName = $1->getPreName();
@@ -163,8 +165,10 @@ element
 | name LCURLY elementList RCURLY { $$ = mm.createDefinition($1,$3); }
 | ASSERT name COLON exp STRING   { $$ = mm.createAssertion(&@1,$2,$4,$5); }
 | DELETE name                    { $$ = mm.createDeletion(&@1,$2); }
-| SIGNAL name                    { $$ = mm.createSignal(&@1,$2); }
 ;
+//| ACTIVATE name                  { $$ = mm.createActivation(&@1,$2); }
+//| SIGNAL name                    { $$ = mm.createSignal(&@1,$2); }
+//;
 
 io
 : PRIVATE     { $$ = MM::NodeBehavior::IO_PRIVATE;   }

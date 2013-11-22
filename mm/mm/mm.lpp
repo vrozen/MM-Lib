@@ -104,6 +104,7 @@
 "true"/[^a-z]      { inID = false; return TRUE;       }
 "assert"/[^a-z]    { inID = false; return ASSERT;     }
 "delete"/[^a-z]    { inID = false; return DELETE;     }
+"activate"/[^a-z]  { inID = false; return ACTIVATE;   }
 "private"/[^a-z]   { inID = false; return PRIVATE;    }
 "add"/[^a-z]       { inID = false; return ADDITION;   }
 "from"/[^a-z]      { inID = false; return FROM;       }
