@@ -1,0 +1,17 @@
+
+inout auto pool p at 4
+
+A
+{
+  out auto pool do
+  in ref r
+  edge: r -3-> do
+}
+
+A a
+
+p . = .> a.r
+
+a.do - 2 -> p
+
+modify

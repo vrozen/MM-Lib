@@ -1,13 +1,10 @@
-user source hell
+auto source hell
 
 pool creeps
 pool superCreeps
 pool gold
 pool xp
 pool mana
-
-source build
-user pool towers at 1
 
 spawn: hell --> creeps
 
@@ -19,8 +16,8 @@ Tower
   inout ref creeps
   inout ref superCreeps
 
-  user converter killCreep
-  user converter killSuperCreep
+  auto converter killCreep
+  auto converter killSuperCreep
   
   auto push pool chance max 1
 
@@ -30,8 +27,8 @@ Tower
 
   mahem: chance --> superCreeps
   riches: chance -2-> gold
-  kill3: superCreeps --> killSuperCreep
 
+  kill3: superCreeps --> killSuperCreep
   smarter: killSuperCreep -100-> xp
   wiser: killSuperCreep -10-> mana
 }
@@ -44,6 +41,8 @@ xp          . = .> t.xp
 creeps      . = .> t.creeps
 superCreeps . = .> t.superCreeps
 
-assert win : towers > 20 "Your base is ready, you win!"
+assert win : towers > 20 "Your base is big enough, you win!"
 
 modify
+
+
