@@ -23,6 +23,7 @@
 #include "Location.h"
 #include "String.h"
 #include "Exp.h"
+#include "ValExp.h"
 #include "OneExp.h"
 
 /**
@@ -30,7 +31,7 @@
  * Constructs a OneExp object.
  * @return new OneExp object
  */
-MM::OneExp::OneExp() : MM::Exp()
+MM::OneExp::OneExp() : MM::ValExp()
 {
   this->loc = MM_NULL;
 }
@@ -41,7 +42,7 @@ MM::OneExp::OneExp() : MM::Exp()
  * @param loc source location
  * @return new OneExp object
  */
-MM::OneExp::OneExp(MM::Location * loc) : MM::Exp()
+MM::OneExp::OneExp(MM::Location * loc) : MM::ValExp()
 {
   this->loc = loc;
 }
@@ -66,7 +67,7 @@ MM::VOID MM::OneExp::recycle(MM::Recycler * r)
   {
     loc->recycle(r);
   }
-  this->MM::Exp::recycle(r);
+  this->MM::ValExp::recycle(r);
 }
 
 /**
@@ -93,7 +94,19 @@ MM::BOOLEAN MM::OneExp::instanceof(MM::TID tid)
   }
   else
   {
-    return MM::Exp::instanceof(tid);
+    return MM::ValExp::instanceof(tid);
+  }
+}
+
+MM::BOOLEAN MM::OneExp::greaterEquals(MM::UINT32 val)
+{
+  if(val >= 1)
+  {
+    return MM_TRUE;
+  }
+  else
+  {
+    return MM_FALSE;
   }
 }
 

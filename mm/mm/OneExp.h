@@ -22,7 +22,7 @@ namespace MM
    * @class OneExp
    * @brief Defines the OneExp class
    */
-  class OneExp : public MM::Exp
+  class OneExp : public MM::ValExp
   {
   private:
     MM::Location * loc; /**> source locations */
@@ -33,6 +33,7 @@ namespace MM
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
+    MM::BOOLEAN greaterEquals(MM::UINT32 val);
     MM::VOID toString(MM::String * buf);
   };
 }
