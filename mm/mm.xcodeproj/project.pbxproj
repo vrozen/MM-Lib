@@ -44,6 +44,8 @@
 		66D87CC7179B247600E9022C /* OverrideExp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66D87CC5179B247400E9022C /* OverrideExp.cpp */; };
 		66D87CCA179BD53800E9022C /* ActiveExp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66D87CC8179BD53500E9022C /* ActiveExp.cpp */; };
 		66D87CCD179C17A700E9022C /* Definition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66D87CCB179C17A400E9022C /* Definition.cpp */; };
+		66DD53F3183EA53600CBF698 /* ConverterNodeBehavior.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66DD53F1183EA53500CBF698 /* ConverterNodeBehavior.cpp */; };
+		66DD53F7183FCC9B00CBF698 /* Activation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66DD53F5183FCC9900CBF698 /* Activation.cpp */; };
 		66E0733516E747B000C65EE9 /* mm.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 66E0733416E747B000C65EE9 /* mm.1 */; };
 		66E751D318043AB8004389C6 /* InterfaceNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66E751D118043AB8004389C6 /* InterfaceNode.cpp */; };
 		66E751D91805D9E9004389C6 /* NodeBehavior.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66E751D71805D9E9004389C6 /* NodeBehavior.cpp */; };
@@ -90,7 +92,7 @@
 		6638125E17F8848000F540BA /* Reflector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reflector.h; sourceTree = "<group>"; };
 		6638126017F8889100F540BA /* Deletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Deletion.cpp; sourceTree = "<group>"; };
 		6638126117F8889300F540BA /* Deletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Deletion.h; sourceTree = "<group>"; };
-		665BA8A817AC65BD002B22BC /* test2 */ = {isa = PBXFileReference; lastKnownFileType = text; path = test2; sourceTree = "<group>"; };
+		667B365B18381D1900D27A9F /* test2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = test2; path = mm/test2; sourceTree = "<group>"; };
 		6690F73317F06979001EDFC8 /* mm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mm.h; sourceTree = "<group>"; };
 		6692E47417E092BF0017C9A7 /* Instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
 		6692E47517E092C00017C9A7 /* Instance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Instance.h; sourceTree = "<group>"; };
@@ -152,6 +154,12 @@
 		66D87CC9179BD53600E9022C /* ActiveExp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ActiveExp.h; sourceTree = "<group>"; };
 		66D87CCB179C17A400E9022C /* Definition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Definition.cpp; sourceTree = "<group>"; };
 		66D87CCC179C17A600E9022C /* Definition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Definition.h; sourceTree = "<group>"; };
+		66DD53F1183EA53500CBF698 /* ConverterNodeBehavior.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConverterNodeBehavior.cpp; sourceTree = "<group>"; };
+		66DD53F2183EA53500CBF698 /* ConverterNodeBehavior.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConverterNodeBehavior.h; sourceTree = "<group>"; };
+		66DD53F5183FCC9900CBF698 /* Activation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Activation.cpp; sourceTree = "<group>"; };
+		66DD53F6183FCC9A00CBF698 /* Activation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Activation.h; sourceTree = "<group>"; };
+		66DD53F81840137C00CBF698 /* test3 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = test3; path = mm/test3; sourceTree = "<group>"; };
+		66DD53F91840137D00CBF698 /* tower */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = tower; path = mm/tower; sourceTree = "<group>"; };
 		66DED7B817E3480800852939 /* Map.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Map.h; sourceTree = "<group>"; };
 		66E0732F16E747B000C65EE9 /* mm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = mm; sourceTree = BUILT_PRODUCTS_DIR; };
 		66E0733416E747B000C65EE9 /* mm.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = mm.1; sourceTree = "<group>"; };
@@ -197,8 +205,10 @@
 		66E0732616E747B000C65EE9 = {
 			isa = PBXGroup;
 			children = (
+				66DD53F81840137C00CBF698 /* test3 */,
+				66DD53F91840137D00CBF698 /* tower */,
 				66F86F3C17A6BD0A0035874C /* test */,
-				665BA8A817AC65BD002B22BC /* test2 */,
+				667B365B18381D1900D27A9F /* test2 */,
 				66E0733116E747B000C65EE9 /* mm */,
 				66E0733016E747B000C65EE9 /* Products */,
 			);
@@ -218,8 +228,8 @@
 				66E751D41805BADB004389C6 /* base */,
 				66E751D51805BD61004389C6 /* parser */,
 				66E751D61805BD81004389C6 /* ast */,
-				6690F73317F06979001EDFC8 /* mm.h */,
 				66E0733416E747B000C65EE9 /* mm.1 */,
+				6690F73317F06979001EDFC8 /* mm.h */,
 				66D87C8717955D5800E9022C /* Machine.h */,
 				66D87C8617955D5800E9022C /* Machine.cpp */,
 				6638124317F4745000F540BA /* Evaluator.h */,
@@ -235,6 +245,7 @@
 			children = (
 				66A38A3317EA021D006055FA /* Vector.h */,
 				66A71248178DDE4700F71DC0 /* String.h */,
+				66FB84FA17A415D6005F2392 /* Location.h */,
 				66A71247178DDE4700F71DC0 /* String.cpp */,
 				66DED7B817E3480800852939 /* Map.h */,
 				66A71243178DA93A00F71DC0 /* Types.h */,
@@ -264,6 +275,7 @@
 			isa = PBXGroup;
 			children = (
 				6612C418180ECDD2004B715A /* Program.h */,
+				66A7124B178EADB700F71DC0 /* Exp.h */,
 				6612C417180ECDD2004B715A /* Program.cpp */,
 				66E751DF180ECB6A004389C6 /* Transformation.h */,
 				66E751DE180ECB61004389C6 /* Transformation.cpp */,
@@ -271,18 +283,14 @@
 				66E751E1180ECBDD004389C6 /* Modification.cpp */,
 				66A71235178D8F6A00F71DC0 /* Transition.h */,
 				66A71234178D8F6A00F71DC0 /* Transition.cpp */,
-				66FB84FA17A415D6005F2392 /* Location.h */,
 				66FB84F917A415D5005F2392 /* Location.cpp */,
 				66FB850017A445E2005F2392 /* Name.h */,
 				66FB84FF17A445E1005F2392 /* Name.cpp */,
-				66A7124B178EADB700F71DC0 /* Exp.h */,
 				66A7124A178EADB600F71DC0 /* Exp.cpp */,
 				66D87CBA179B1F7100E9022C /* TriggerExp.h */,
 				66D87CB9179B1F7000E9022C /* TriggerExp.cpp */,
 				66D87CBD179B1F8D00E9022C /* AliasExp.h */,
 				66D87CBC179B1F8B00E9022C /* AliasExp.cpp */,
-				66D87CC0179B21F000E9022C /* OneExp.h */,
-				66D87CBF179B21EE00E9022C /* OneExp.cpp */,
 				66D87CC9179BD53600E9022C /* ActiveExp.h */,
 				66D87CC8179BD53500E9022C /* ActiveExp.cpp */,
 				66D87CC3179B22B100E9022C /* DieExp.h */,
@@ -299,6 +307,8 @@
 				66D87C9E1799426B00E9022C /* UnExp.cpp */,
 				66D87C9C17992D2B00E9022C /* ValExp.h */,
 				66D87C9B17992D2700E9022C /* ValExp.cpp */,
+				66D87CC0179B21F000E9022C /* OneExp.h */,
+				66D87CBF179B21EE00E9022C /* OneExp.cpp */,
 				66D87CAE17998B9700E9022C /* BooleanValExp.h */,
 				66D87CAD17998B9600E9022C /* BooleanValExp.cpp */,
 				66D87CB117998BDC00E9022C /* NumberValExp.h */,
@@ -319,6 +329,8 @@
 				66F86F3D17A70A000035874C /* Assertion.cpp */,
 				6638126117F8889300F540BA /* Deletion.h */,
 				6638126017F8889100F540BA /* Deletion.cpp */,
+				66DD53F6183FCC9A00CBF698 /* Activation.h */,
+				66DD53F5183FCC9900CBF698 /* Activation.cpp */,
 				6612C41B180ED9FE004B715A /* Signal.h */,
 				6612C41A180ED9FD004B715A /* Signal.cpp */,
 				66A71229178D65DB00F71DC0 /* Edge.h */,
@@ -343,6 +355,8 @@
 				66FB850217A48466005F2392 /* RefNodeBehavior.cpp */,
 				6612C41E180F2E17004B715A /* GateNodeBehavior.h */,
 				6612C41D180F2E15004B715A /* GateNodeBehavior.cpp */,
+				66DD53F2183EA53500CBF698 /* ConverterNodeBehavior.h */,
+				66DD53F1183EA53500CBF698 /* ConverterNodeBehavior.cpp */,
 			);
 			name = ast;
 			sourceTree = "<group>";
@@ -448,6 +462,8 @@
 				6612C419180ECDD2004B715A /* Program.cpp in Sources */,
 				6612C41C180ED9FF004B715A /* Signal.cpp in Sources */,
 				6612C41F180F2E1A004B715A /* GateNodeBehavior.cpp in Sources */,
+				66DD53F3183EA53600CBF698 /* ConverterNodeBehavior.cpp in Sources */,
+				66DD53F7183FCC9B00CBF698 /* Activation.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
