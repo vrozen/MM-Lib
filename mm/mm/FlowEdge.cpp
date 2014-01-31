@@ -20,6 +20,7 @@
 #include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "FlowEdge.h"

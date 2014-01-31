@@ -21,6 +21,7 @@
 #include "Exp.h"
 #include "BinExp.h"
 #include "Edge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "StateEdge.h"
@@ -109,12 +110,16 @@ MM::VOID MM::StateEdge::toString(MM::String * buf)
 
 MM::VOID MM::StateEdge::toString(MM::String * buf, MM::UINT32 indent)
 {
-  MM::Edge::toString(buf, indent);
-  getSourceName()->toString(buf);
-  buf->space();
-  buf->append((MM::CHAR*)MM::StateEdge::DOT_STR, MM::StateEdge::DOT_LEN);
-  getExp()->toString(buf);
-  buf->append((MM::CHAR*)MM::StateEdge::DOTGT_STR, MM::StateEdge::DOTGT_LEN);
-  buf->space();
-  getTargetName()->toString(buf);
+  //prevent output of anonymous state edges
+  if(getSourceName() != MM_NULL && getTargetName() != MM_NULL)
+  {
+    MM::Edge::toString(buf, indent);
+    getSourceName()->toString(buf);
+    buf->space();
+    buf->append((MM::CHAR*)MM::StateEdge::DOT_STR, MM::StateEdge::DOT_LEN);
+    getExp()->toString(buf);
+    buf->append((MM::CHAR*)MM::StateEdge::DOTGT_STR, MM::StateEdge::DOTGT_LEN);
+    buf->space();
+    getTargetName()->toString(buf);
+  }
 }
