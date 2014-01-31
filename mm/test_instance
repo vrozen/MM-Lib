@@ -1,0 +1,20 @@
+A
+{
+  pool self at 1
+  pool p
+  in ref r1
+  in ref r2
+  auto converter c
+  flow1:  r1 -r2-> c
+  flow2: c --> p
+}
+
+pool p1 at 100
+pool p2 at 10
+auto pool p3 of A
+
+flow1: p2 --> p3
+bind1: p1 .=.> p3.r1
+bind2: p2 .=.> p3.r2
+
+modify

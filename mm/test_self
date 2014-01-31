@@ -1,0 +1,17 @@
+pool s at 1
+
+A
+{
+  in ref r
+  auto pool a
+}
+
+pool p of A at 1
+
+s .=.> p.r
+
+auto pool q
+
+p --> q
+
+modify

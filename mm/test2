@@ -1,0 +1,29 @@
+/*source S
+auto converter C
+pool P at 1
+pool P2
+
+S - P -> C
+C - 3 -> P
+P . * .> P2
+S --> P2
+
+modify
+*/
+
+A {}
+
+A a
+
+auto pool A.a at 7
+auto pool A.b at 3
+drain A.c
+
+A.e1: b -1-> a
+A.e2: a -1-> b
+A.e3: a -4-> c
+
+A.condition: a . a > 5 .> b
+A.trigger: b . * .> c
+
+modify
