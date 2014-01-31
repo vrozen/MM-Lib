@@ -7,6 +7,8 @@
   #include "Vector.h"
   #include "Map.h"
   #include "Recycler.h"
+  #include "Observer.h"
+  #include "Observable.h"
   #include "Location.h"
   #include "String.h"
   #include "Name.h"
@@ -20,10 +22,12 @@
   #include "Edge.h"
   #include "StateEdge.h"
   #include "FlowEdge.h"
+  #include "NodeWorkItem.h"
   #include "NodeBehavior.h"
   #include "Node.h"
   #include "Transformation.h"
   #include "Transition.h"
+  #include "FlowEvent.h"
   #include "Modification.h"
   #include "Program.h"
   #include "PoolNodeBehavior.h"
@@ -32,8 +36,6 @@
   #include "GateNodeBehavior.h"
   #include "RefNodeBehavior.h"
   #include "ConverterNodeBehavior.h"
-  #include "Observer.h"
-  #include "Observable.h"
   #include "Declaration.h"
   #include "InterfaceNode.h"
   #include "Definition.h"
@@ -148,12 +150,13 @@ elementList
 ;
 
 element
-: io when SOURCE name of         { $$ = mm.createSourceNode($1,$2,$4); }
-| io when how DRAIN name of      { $$ = mm.createDrainNode($1,$2,$3,$5);  }
+: io when act how SOURCE name of { $$ = mm.createSourceNode($1,$2,$6); }
+| io when act how DRAIN name of  { $$ = mm.createDrainNode($1,$2,$4,$6);  }
 | io when act how GATE name of   { $$ = mm.createGateNode($1,$2,$3,$4,$6); }
 | io when act how POOL name of
-  at max add                     { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$8,$9,$10); }
-| io when CONVERTER name from to { $$ = mm.createConverterNode($1,$2,$4,$5,$6); }
+  at max add                     { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$7,$8,$9,$10); }
+| io when act how CONVERTER name
+  from to                        { $$ = mm.createConverterNode($1,$2,$6,$7,$8); }
 | io REF name                    { $$ = mm.createRefNode($1,$3); }
 | name name                      { $$ = mm.createDeclaration($1,$2); }
 | name DOT exp DOT_GT name       { MM::Name * preName = $1->getPreName();
@@ -163,7 +166,7 @@ element
                                    $1->setPreName(MM_NULL); //prevent double free
                                    $$ = mm.createFlowEdge(preName,$1,$3,$5);  }
 | name LCURLY elementList RCURLY { $$ = mm.createDefinition($1,$3); }
-| ASSERT name COLON exp STRING   { $$ = mm.createAssertion(&@1,$2,$4,$5); }
+| ASSERT name COLON exp STRING   { $$ = mm.createAssertion(&@1,$2,$4,$5); free(yylval.str); }
 | DELETE name                    { $$ = mm.createDeletion(&@1,$2); }
 ;
 //| ACTIVATE name                  { $$ = mm.createActivation(&@1,$2); }
@@ -266,17 +269,25 @@ MM::Machine mm;        //TODO: create an instance and use its parser
 MM::Program * program; //TODO: parser attribute
 
 extern FILE * yyin;
-extern int yy_scan_string ( const char *str );
+extern struct yy_buffer_state;
+typedef yy_buffer_state *YY_BUFFER_STATE;
+extern int yyparse();
+extern YY_BUFFER_STATE yy_scan_buffer(char *, size_t);
 
 int main(int argc, const char * argv[])
 {
   mm.eval((MM::CHAR const *)argv[1]);
+  for(int i =0; i<20; i++)
+  {
+    mm.step();
+  }
   return 0;
 }
 
-MM::Program * MM_parse(const MM::CHAR * input)
+MM::Program * MM_parse(MM::CHAR * input)
 {
-  yy_scan_string (input);
+  yy_scan_buffer(input, strlen(input));
+    
   yyparse();
   
   return program;
