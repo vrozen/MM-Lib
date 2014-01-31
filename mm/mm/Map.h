@@ -199,7 +199,7 @@ namespace MM
       }
     };
     
-    MM::Map<MAP_KEY, MAP_VALUE, COMPARE>::Iterator getIterator()
+    typename MM::Map<MAP_KEY, MAP_VALUE, COMPARE>::Iterator getIterator()
     {
       return MM::Map<MAP_KEY, MAP_VALUE, COMPARE>::Iterator(map->begin(), map->end());
     }

@@ -55,6 +55,16 @@ namespace MM
       v->push_back(element);
     }
     
+    MM::VOID addAll(MM::Vector<T> * other)
+    {
+      MM::Vector<T>::Iterator i = other->getIterator();
+      while(i.hasNext())
+      {
+        T element = i.getNext();
+        add(element);
+      }
+    }
+    
     T pop()
     {
       T element = v->back();
@@ -77,6 +87,32 @@ namespace MM
       return v->at(pos);
     }
     
+    MM::INT32 getPosition(T element)
+    {
+      typename std::vector<T>::iterator begin = v->begin();
+      typename std::vector<T>::iterator end = v->end();
+      
+      for(MM::UINT32 i = 0; begin+i != end; i++)
+      {
+        if(*(begin+i) == element)
+        {
+          return i;
+        }
+      }
+      return -1;
+    }
+    
+    MM::VOID remove(MM::UINT32 pos)
+    {
+      typename std::vector<T>::iterator i = v->begin() + pos;
+      typename std::vector<T>::iterator end = v->end();
+      
+      if(i < end)
+      {
+        v->erase(i);
+      }
+    }
+    
     MM::VOID remove(T element)
     {
       typename std::vector<T>::iterator i = v->begin();
@@ -87,7 +123,6 @@ namespace MM
         if(*i == element)
         {
           v->erase(i);
-          //delete *i;
           break;
         }
       }
@@ -169,12 +204,12 @@ namespace MM
       
     };
     
-    MM::Vector<T>::Iterator getIterator()
+    typename MM::Vector<T>::Iterator getIterator()
     {
       return MM::Vector<T>::Iterator(v->begin(), v->end());
     }
     
-    MM::Vector<T>::Iterator * getNewIterator()
+    typename MM::Vector<T>::Iterator * getNewIterator()
     {
       return new MM::Vector<T>::Iterator(v->begin(), v->end());
     }

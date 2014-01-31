@@ -9,6 +9,11 @@
 #ifndef mm_Types_h
 #define mm_Types_h
 
+//FIXME: HACK
+#if _MSC_VER
+#define snprintf _snprintf
+#endif
+
 namespace MM
 {
   typedef unsigned char UINT8;   /**> unsigned byte type */
@@ -18,7 +23,7 @@ namespace MM
   typedef void          VOID;    /**> void type */
   typedef bool          BOOLEAN; /**> boolean type */
   
-  #define MM_MAX_RESOURCES ULLONG_MAX
+  #define MM_MAX_RESOURCES LONG_MAX
   
   #define MM_TRUE  true  /**> true value */
   #define MM_FALSE false /**> false value */
@@ -77,8 +82,9 @@ namespace MM
     
     //instance flow messages needed?
     
-    //instance pool message
-    MSG_VALUE,     //a pool inside an instance has a new value
+    //instance value messages
+    MSG_ADD_VALUE,
+    MSG_SUB_VALUE,
     
     //instance trigger message
     MSG_TRIGGER,   //a trigger inside an instance happened
@@ -94,19 +100,16 @@ namespace MM
     MSG_SIGNAL     //an invariant inside an instance was violated
   } MSG;
   
-  /*
-   //NOTE: use observers for now
   //callback type definitions
   typedef MM::VOID (* CALLBACK)
   (
-    MM::VOID * caller,     //caller: Who're you gonna call?
-    MM::MSG    message,    //what happened?
+    //MM::VOID * caller,     //caller: Who're you gonna call?
+    MM::UINT32 message,    //what happened?
     MM::UINT32 instance,   //instance in which it happened
                            //MM::UINT32 definition, //definition of the instance
     MM::UINT32 element,    //element (node or assertion) which caused the event
     MM::UINT32 val         //new value in case of MSG_VALUE
   );
-   */
   
   //The following enum is not OOP
   //Its reason is avoiding doublde dispatch
@@ -125,6 +128,7 @@ namespace MM
     //type transformation
     T_Reflector,
     T_Machine,
+    T_InstanceObserver, //API
     //data transformation
     T_Program,
     T_Evaluator,
@@ -132,6 +136,7 @@ namespace MM
     T_Transformation,
     T_Transition,
     T_Modification,
+    T_FlowEvent,
     //ast / type
     T_Location,
     T_Name,
