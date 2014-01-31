@@ -21,15 +21,7 @@
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
-//#include "Element.h"
-//#include "Operator.h"
 #include "Exp.h"
-//#include "Assert.h"
-//#include "Edge.h"
-//#include "StateEdge.h"
-//#include "FlowEdge.h"
-//#include "NodeBehavior.h"
-//#include "Node.h"
 #include "ActiveExp.h"
 
 const MM::CHAR * MM::ActiveExp::ACTIVE_STR = "active";

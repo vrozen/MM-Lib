@@ -18,15 +18,15 @@ namespace MM
     const static MM::UINT32 STEP_LEN;
   private:
     MM::Location * loc; /**> step source location*/
+
+    MM::String * str; /**> we must stringify before instances are deleted */
   public:
     Transition(MM::Vector<MM::Element *> * elements);
     Transition(MM::Vector<MM::Element *> * elements, MM::Location * loc);
     ~Transition();
     MM::VOID recycle(MM::Recycler *r);
     MM::TID getTypeId();
-    MM::BOOLEAN instanceof(MM::TID tid);
-    //MM::VOID step();
-    //MM::VOID back();     
+    MM::BOOLEAN instanceof(MM::TID tid);   
     MM::VOID toString(MM::String * str);
   };
 }

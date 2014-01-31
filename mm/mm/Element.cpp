@@ -26,10 +26,13 @@
 MM::Element::Element(MM::Name * name) : MM::Recyclable()
 {
   this->name = name;
+  this->visible = MM_TRUE;
 }
 
 MM::Element::~Element()
 {
+  this->name = MM_NULL;
+  this->visible = MM_FALSE;
 }
 
 MM::VOID MM::Element::recycle(MM::Recycler * r)
@@ -66,6 +69,32 @@ MM::Name * MM::Element::getName()
 MM::VOID MM::Element::setName(MM::Name * name)
 {
   this->name = name;
+}
+
+MM::BOOLEAN MM::Element::isVisible()
+{
+  return visible;
+}
+
+MM::VOID MM::Element::setVisible(MM::BOOLEAN visible)
+{
+  this->visible = visible;
+}
+
+//what happens when an element is added to an instance
+MM::VOID MM::Element::begin(MM::Instance * i)
+{
+  //nothing happens by default
+}
+
+MM::VOID MM::Element::end(MM::Instance * i)
+{
+  //nothing happens by default
+}
+
+MM::VOID MM::Element::change(MM::Instance * i)
+{
+  //nothing happens by default
 }
 
 MM::VOID MM::Element::toString(MM::String * buf)

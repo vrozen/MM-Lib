@@ -104,10 +104,14 @@ MM::BOOLEAN MM::Name::instanceof(MM::TID tid)
 
 MM::BOOLEAN MM::Name::equals(MM::Name * name)
 {
-  MM::BOOLEAN equal = MM_FALSE;
   MM::CHAR * str = name->getBuffer();  
   MM::UINT32 len = name->getLength();
-  
+  return equals(str, len);
+}
+
+MM::BOOLEAN MM::Name::equals(MM::CHAR * str, MM::UINT32 len)
+{
+  MM::BOOLEAN equal = MM_FALSE;
   if(len == this->len)
   {
     if(strncmp(str, this->str, len) == 0)
@@ -115,7 +119,6 @@ MM::BOOLEAN MM::Name::equals(MM::Name * name)
       equal = MM_TRUE;
     }
   }
-  
   return equal;
 }
 
@@ -189,6 +192,17 @@ MM::VOID MM::Name::setLocation(MM::Location * loc)
 MM::VOID MM::Name::setPreName(MM::Name * name)
 {
   this->pre = name;
+}
+
+
+MM::VOID MM::Name::append(MM::Name * name)
+{
+  MM::Name * n = this;
+  while(n->getName() != MM_NULL)
+  {
+    n = n->getName();
+  }
+  n->setName(name);
 }
 
 /**

@@ -19,11 +19,10 @@
 #include "Name.h"
 #include "Element.h"
 #include "Operator.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Exp.h"
 #include "Edge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 
@@ -39,23 +38,27 @@ MM::Edge::Edge(MM::Name * name,
   this->tgtName = tgt;
   this->srcNode = MM_NULL;
   this->tgtNode = MM_NULL;
-  this->instance = MM_NULL;
 }
 
 MM::Edge::~Edge()
 {
-  srcName = MM_NULL;
-  tgtName = MM_NULL;
-  srcNode = MM_NULL;
-  tgtNode = MM_NULL;
-  exp = MM_NULL;
-  instance = MM_NULL;
+  this->srcName = MM_NULL;
+  this->exp = MM_NULL;
+  this->tgtName = MM_NULL;
+  this->srcNode = MM_NULL;
+  this->tgtNode = MM_NULL;
 }
 
 MM::VOID MM::Edge::recycle(MM::Recycler * r)
 {
-  srcName->recycle(r);
-  tgtName->recycle(r);
+  if(srcName != MM_NULL)
+  {
+    srcName->recycle(r);
+  }
+  if(tgtName != MM_NULL)
+  {
+    tgtName->recycle(r);
+  }
   exp->recycle(r);
   this->Element::recycle(r);
 }
@@ -87,11 +90,6 @@ MM::Node * MM::Edge::getTarget()
   return this->tgtNode;
 }
 
-MM::Instance * MM::Edge::getInstance()
-{
-  return instance;
-}
-
 MM::Exp * MM::Edge::getExp()
 {
   return this->exp;
@@ -110,12 +108,6 @@ MM::VOID MM::Edge::setSource(MM::Node * src)
 MM::VOID MM::Edge::setTarget(MM::Node * tgt)
 {
   this->tgtNode = tgt;
-}
-
-//NOTE: only used for data flow events... not for normal flow edges
-MM::VOID MM::Edge::setInstance(MM::Instance * instance)
-{
-  this->instance = instance;
 }
 
 MM::Name * MM::Edge::getSourceName()

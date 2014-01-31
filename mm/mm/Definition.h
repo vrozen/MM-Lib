@@ -92,6 +92,7 @@ namespace MM
     MM::VOID removeElement(MM::Name * name);
     MM::VOID addElement(MM::Element * element);
     MM::VOID removeElement(MM::Element * element);
+    MM::BOOLEAN containsElement(MM::Element * element);
     MM::VOID clearElements();
     MM::Vector<MM::Element *> * getElements();
     MM::VOID toString(MM::String * buf);

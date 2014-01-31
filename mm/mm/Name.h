@@ -25,7 +25,7 @@ namespace MM
     MM::UINT32     len;  /**< string length */
     MM::Location * loc;  /**< location */
     MM::Name     * name; /**< child name */
-    MM::Name     * pre;  /**< preffix name (used for edges) */
+    MM::Name     * pre;  /**< prefix name (used for edges) */
   protected:
     ~Name();
   public:
@@ -36,7 +36,8 @@ namespace MM
     MM::BOOLEAN instanceof(MM::TID tid);
     
     MM::BOOLEAN equals(MM::Name * name);
-
+    MM::BOOLEAN equals(MM::CHAR * str, MM::UINT32 len);
+    
     friend MM::BOOLEAN operator < (const Name & n1, const Name & n2)
     {
       MM::BOOLEAN lt = MM_FALSE;
@@ -74,6 +75,7 @@ namespace MM
     MM::VOID setPreName(MM::Name * name);
     MM::Name * getPreName();
     
+    MM::VOID append(MM::Name * name);
     MM::VOID print(); //debug
     MM::CHAR * getBuffer();
     MM::Location * getLocation();

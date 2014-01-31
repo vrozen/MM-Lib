@@ -5,38 +5,6 @@
 //  Created by Riemer van Rozen on 7/23/13.
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include "YYLTYPE.h"
-#include "Types.h"
-#include "Recyclable.h"
-#include "Vector.h"
-#include "Map.h"
-#include "Recycler.h"
-#include "Location.h"
-#include "String.h"
-#include "Name.h"
-#include "Element.h"
-#include "Observer.h"
-#include "Observable.h"
-#include "Exp.h"
-#include "Edge.h"
-#include "StateEdge.h"
-#include "FlowEdge.h"
-#include "NodeBehavior.h"
-#include "Node.h"
-#include "PoolNodeBehavior.h"
-#include "DrainNodeBehavior.h"
-#include "SourceNodeBehavior.h"
-#include "RefNodeBehavior.h"
-#include "Assertion.h"
-#include "Deletion.h"
-#include "Signal.h"
-#include "Declaration.h"
-#include "Definition.h"
-#include "InterfaceNode.h"
-*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,6 +14,8 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -54,6 +24,7 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "FlowEvent.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Assertion.h"
@@ -63,6 +34,7 @@
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "PoolNodeBehavior.h"
@@ -71,8 +43,6 @@
 #include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
 #include "ConverterNodeBehavior.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "InterfaceNode.h"
 #include "Definition.h"
@@ -121,6 +91,7 @@ MM::VOID MM::Declaration::recycle(MM::Recycler * r)
     MM::Node * n = i.getNext();
     n->recycle(r);
   }
+  delete interfaces; //TODO recycle  
   type->recycle(r);
   this->Element::recycle(r);
 }
@@ -141,6 +112,7 @@ MM::BOOLEAN MM::Declaration::instanceof(MM::TID tid)
   {
     return MM_TRUE;
   }
+  else
   {
     return MM_FALSE;
   }
@@ -192,7 +164,6 @@ MM::Node * MM::Declaration::getInterface(MM::Name * name)
 {
   return interfaces->get(name);
 }
-
 
 MM::VOID MM::Declaration::addInterface(MM::Machine * m,
                                        MM::Node * node)
@@ -271,6 +242,27 @@ MM::VOID MM::Declaration::removeInterface(MM::Machine * m, MM::Node * node)
     iNode->recycle(m);
     interfaces->remove(name);
   }
+}
+
+
+
+//what happens to an instance when it sees a declaration begin
+MM::VOID MM::Declaration::begin(MM::Instance * i, MM::Machine * m)
+{
+  i->createInstances(this, m, def, 1);
+}
+
+//what happens to an instance when it sees a declaration end
+MM::VOID MM::Declaration::end(MM::Instance * i, MM::Machine * m)
+{
+  i->destroyAllInstances(this, m);
+}
+
+//what happens to an instance when it sees a declaration change
+MM::VOID MM::Declaration::change(MM::Instance * i, MM::Machine * m)
+{
+  end(i, m);
+  begin(i, m);
 }
 
 MM::VOID MM::Declaration::toString(MM::String * buf)

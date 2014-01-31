@@ -47,7 +47,6 @@ MM::BOOLEAN MM::Observable::instanceof(MM::TID tid)
   }
 }
 
-
 MM::VOID MM::Observable::addObserver(MM::Observer * observer)
 {
   observers->add(observer);

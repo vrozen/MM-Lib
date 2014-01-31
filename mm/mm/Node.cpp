@@ -5,29 +5,6 @@
 //  Created by Riemer van Rozen on 7/10/13.
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
-
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include "YYLTYPE.h"
-#include "Types.h"
-#include "Recyclable.h"
-#include "Vector.h"
-#include "Map.h"
-#include "Recycler.h"
-#include "Location.h"
-#include "String.h"
-#include "Name.h"
-#include "Observer.h"
-#include "Observable.h"
-#include "Element.h"
-#include "Operator.h"
-#include "Exp.h"
-#include "Edge.h"
-#include "NodeBehavior.h"
-#include "Node.h"
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,6 +14,8 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -50,11 +29,13 @@
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "FlowEvent.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -62,8 +43,6 @@
 #include "RefNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "ConverterNodeBehavior.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "InterfaceNode.h"
 #include "Definition.h"
@@ -95,6 +74,7 @@ MM::Node::Node(MM::Name * name,
   conditions = MM_NULL;
   triggers = MM_NULL;
   aliases = MM_NULL;
+  isOwner = MM_TRUE;
 }
 
 MM::Node::~Node()
@@ -105,34 +85,40 @@ MM::Node::~Node()
   conditions = MM_NULL;
   triggers = MM_NULL;
   aliases = MM_NULL;
+  isOwner = MM_FALSE;
 }
 
 MM::VOID MM::Node::recycle(MM::Recycler * r)
 {
-  if(input != MM_NULL)
+  if(isOwner == MM_TRUE)
   {
-    delete input;  //FIXME
+    if(input != MM_NULL)
+    {
+      delete input;  //FIXME
+    }
+    if(output != MM_NULL)
+    {
+      delete output; //FIXME
+    }
+    if(conditions != MM_NULL)
+    {
+      delete conditions;   //FIXME
+    }
+    if(triggers != MM_NULL)
+    {
+      delete triggers; //FIXME
+    }
+    if(aliases != MM_NULL)
+    {
+      delete aliases;
+    }
   }
-  if(output != MM_NULL)
-  {
-    delete output; //FIXME
-  }
-  if(conditions != MM_NULL)
-  {
-    delete conditions;   //FIXME
-  }
-  if(triggers != MM_NULL)
-  {
-    delete triggers; //FIXME
-  }
-  if(aliases != MM_NULL)
-  {
-    delete aliases;
-  }
+  
   if(behavior != MM_NULL)
   {
     behavior->recycle(r);
   }
+  
   MM::Element::recycle(r);
 }
 
@@ -151,6 +137,16 @@ MM::BOOLEAN MM::Node::instanceof(MM::TID tid)
   {
     return MM::Element::instanceof(tid);
   }
+}
+
+MM::VOID MM::Node::setEdgeOwnership(MM::BOOLEAN isOwner)
+{
+  this->isOwner = isOwner;
+}
+
+MM::BOOLEAN MM::Node::hasEdgeOwnership()
+{
+  return isOwner;
 }
 
 MM::NodeBehavior * MM::Node::getBehavior()
@@ -263,14 +259,42 @@ MM::VOID MM::Node::setAliases(MM::Vector<MM::Edge *> * aliases)
   this->aliases = aliases;
 }
 
-MM::VOID MM::Node::add(MM::Instance * i, MM::UINT32 amount)
+
+//NOTE: we need all conditions that affect nodes in this instance
+//      in order to re-evaluate if a node is active in this state ... :'(
+
+MM::VOID MM::Node::begin(MM::Instance * i, MM::Machine * m)
 {
-  behavior->add(i, this, amount);
+  if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO)
+  {
+    i->setActive(this);
+  }
+  
+  behavior->begin(i, m, this);
 }
 
-MM::VOID MM::Node::sub(MM::Instance * i, MM::UINT32 amount)
+MM::VOID MM::Node::end(MM::Instance * i, MM::Machine * m)
 {
-  behavior->sub(i, this, amount);
+  behavior->end(i, m, this);
+}
+
+MM::VOID MM::Node::change(MM::Instance * i, MM::Machine * m)
+{
+  behavior->change(i, m, this);
+}
+
+MM::VOID MM::Node::add(MM::Instance * i,
+                       MM::Machine * m,
+                       MM::UINT32 amount)
+{
+  behavior->add(i, m, this, amount);
+}
+
+MM::VOID MM::Node::sub(MM::Instance * i,
+                       MM::Machine * m,
+                       MM::UINT32 amount)
+{
+  behavior->sub(i, m, this, amount);
 }
 
 MM::UINT32 MM::Node::getCapacity(MM::Instance * i)
@@ -358,8 +382,7 @@ MM::BOOLEAN MM::Node::isDisabled(MM::Instance  * i,
 //NOTE: call after a flow happens -> transition occurs!
 //NOTE: call after disabled nodes are calculated and stored in the instance!
 //FIXME: include aliases
-MM::BOOLEAN MM::Node::isSatisfied(MM::Instance   * i,
-                                  MM::Transition * t)
+MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
 {
   //calculate which node's inputs are 'satisfied'
   //this set is the set of node labels for which all flow edges they operate on are satisfied at the same time
@@ -379,26 +402,21 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance   * i,
     return MM_FALSE; //diabled nodes are never satisfied
   }
   
-  if(t == MM_NULL)
-  {
-    return MM_FALSE; //no transition means never satisfied
-  }
-  
   MM::BOOLEAN satisfied = MM_TRUE;
   MM::NodeBehavior::Act act = behavior->getAct();
   
-  MM::Vector<MM::Edge *> * edges = MM_NULL;
+  MM::Vector<MM::Edge *> * nodeEdges = MM_NULL;
   
   if(act == MM::NodeBehavior::ACT_PULL)
   {
-    edges = input;
+    nodeEdges = input;
   }
   else //act == ACT_PUSH
   {
-    edges = output;
+    nodeEdges = output;
   }
   
-  if(edges->isEmpty() == MM_TRUE)
+  if(nodeEdges->isEmpty() == MM_TRUE)
   {
     if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO ||
        i->isActive(this) == MM_TRUE)
@@ -412,53 +430,37 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance   * i,
   }
   else
   {
-    MM::Vector<Edge *>::Iterator iIter = edges->getIterator();
+    MM::Vector<Edge *>::Iterator iIter = nodeEdges->getIterator();
     
     while(iIter.hasNext() == MM_TRUE)
     {
       MM::Edge * iEdge = iIter.getNext();
-      MM::Name * iSrc = iEdge->getSourceName();
-      MM::Name * iTgt = iEdge->getTargetName();
-      MM::ValExp * iValExp = (MM::ValExp *) iEdge->getExp();
+      MM::Exp * iExp = iEdge->getExp();
       MM::BOOLEAN found = MM_FALSE;
       
-      MM::Vector<Element *> * tElements = t->getElements();
+      MM::Vector<Element *> * tElements = tr->getElements();
       MM::Vector<Element *>::Iterator tIter = tElements->getIterator();
       while(tIter.hasNext() == MM_TRUE)
       {
         MM::Element * tElement = tIter.getNext();
-        if(tElement->instanceof(MM::T_FlowEdge) == MM_TRUE)
+        if(tElement->instanceof(MM::T_FlowEvent) == MM_TRUE)
         {
-          MM::FlowEdge * tEdge = (MM::FlowEdge *) tElement;
-          if(tEdge->getInstance() == i) //added for fast search instead of qualified name
+          MM::FlowEvent * event = (MM::FlowEvent *) tElement;
+          MM::Instance * actInstance = event->getActInstance();
+          MM::Node * actNode = event->getActNode();
+          MM::Edge * actEdge = event->getActEdge();
+          if(actInstance == i && actNode == this && actEdge == iEdge)
           {
-            MM::Name * tSrc = tEdge->getSourceName();
-            MM::Name * tTgt = tEdge->getTargetName();
+            found = MM_TRUE;
+            MM::UINT32 flowValue = event->getAmount();
+            //note flowValue may not be the full flow value
+            //because two nodes can operate on the same edge
+            MM::UINT32 evaluatedEdgeExp = i->getEvaluatedExp(iExp);
             
-            while(tSrc->getName() != MM_NULL)
+            if(flowValue < evaluatedEdgeExp)
             {
-              tSrc = tSrc->getName();
-            }
-            
-            while(tTgt->getName() != MM_NULL)
-            {
-              tTgt = tTgt->getName();
-            }
-            
-            
-            MM::NumberValExp * tExp = (MM::NumberValExp *) iEdge->getExp();
-            MM::UINT32 value = tExp->getValue();
-            
-            //the final name of the transition must match the name of the node??
-            
-            if(iSrc->equals(tSrc) == MM_TRUE && iTgt->equals(tTgt) == MM_TRUE)
-            {
-              found = MM_TRUE;
-              if(iValExp->greaterEquals(value) == MM_FALSE)
-              {
-                satisfied = MM_FALSE;
-                break;
-              }
+              satisfied = MM_FALSE;
+              break;
             }
           }
         }
@@ -471,16 +473,17 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance   * i,
     }
   }
 
-  MM::CHAR * buf = name->getBuffer();
-  
   if(satisfied == MM_TRUE)
   {
+    MM::CHAR * buf = MM_NULL;
+    
+    if(name != MM_NULL)
+    {
+      buf = name->getBuffer();
+    }
+    
     printf("SATISFIED %s\n", buf);
   }
-  //else
-  //{
-  //  printf("SATISFIED %s\n", buf);
-  //}
   
   return satisfied;
 }
@@ -500,5 +503,3 @@ MM::VOID MM::Node::toString(MM::String * buf, MM::UINT32 indent)
   buf->space(indent);
   behavior->toString(buf, name);
 }
-
-

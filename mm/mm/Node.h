@@ -24,6 +24,8 @@ namespace MM
     MM::Vector<MM::Edge *> * conditions; //tgt = this node
     MM::Vector<MM::Edge *> * triggers;   //src = this node
     MM::Vector<MM::Edge *> * aliases;    //tgt = this node
+
+    MM::BOOLEAN isOwner; //node owns edges or not
     
     MM::NodeBehavior * behavior;
 
@@ -46,6 +48,9 @@ namespace MM
       }
     };
 
+    MM::VOID setEdgeOwnership(MM::BOOLEAN isOwner);
+    MM::BOOLEAN hasEdgeOwnership();
+    
     virtual MM::NodeBehavior * getBehavior();
     MM::VOID setBehavior(MM::NodeBehavior * behavior);
     
@@ -73,14 +78,16 @@ namespace MM
     MM::VOID setTriggers(MM::Vector<MM::Edge *> * triggers);
     MM::VOID setAliases(MM::Vector<MM::Edge *> * aliases);
     
-    
-    virtual MM::VOID add(MM::Instance * i, MM::UINT32 amount);
-    virtual MM::VOID sub(MM::Instance * i, MM::UINT32 amount);
+    //instance manipulation
+    virtual MM::VOID begin(MM::Instance * i, MM::Machine * m);
+    virtual MM::VOID end(MM::Instance * i, MM::Machine * m);
+    virtual MM::VOID change(MM::Instance * i, MM::Machine * m);
+    virtual MM::VOID add(MM::Instance * i, MM::Machine * m, MM::UINT32 amount);
+    virtual MM::VOID sub(MM::Instance * i, MM::Machine * m, MM::UINT32 amount);
     virtual MM::UINT32 getCapacity(MM::Instance * i);
     virtual MM::UINT32 getResources(MM::Instance * i);
     virtual MM::BOOLEAN hasCapacity(MM::Instance * i, MM::UINT32 amount);
     virtual MM::BOOLEAN hasResources(MM::Instance * i, MM::UINT32 amount);
-    
     
     MM::VOID step(MM::Instance * i,
                   MM::Machine * m,
@@ -91,8 +98,7 @@ namespace MM
                            MM::Recycler * r);
     
     MM::BOOLEAN isSatisfied(MM::Instance * i,
-                            MM::Transition * t);
-    
+                            MM::Transition * tr);
 
     virtual MM::VOID activateTriggerTargets(MM::Instance * i,
                                             MM::Machine * m);

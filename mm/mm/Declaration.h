@@ -48,6 +48,12 @@ namespace MM
     MM::Node * getInterface(MM::Name * name);
     MM::VOID addInterface(MM::Machine * m, MM::Node * node);
     MM::VOID removeInterface(MM::Machine * m, MM::Node * node);
+
+    //instance manipulation during transitions
+    MM::VOID begin(MM::Instance * i, MM::Machine * m);
+    MM::VOID end(MM::Instance * i, MM::Machine * m);
+    MM::VOID change(MM::Instance * i, MM::Machine * m);
+    
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };

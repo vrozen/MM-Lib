@@ -15,11 +15,13 @@
 namespace MM
 {
   class Machine;
+  class Instance;
   class Element : public MM::Recyclable
   {
   protected:
     Element(MM::Name * name);
     MM::Name * name;
+    MM::BOOLEAN visible;
   public:
     virtual ~Element();
     MM::VOID recycle(MM::Recycler * r);
@@ -27,6 +29,14 @@ namespace MM
     virtual MM::BOOLEAN instanceof(MM::TID tid);
     MM::Name * getName();
     MM::VOID setName(MM::Name * name);
+    MM::BOOLEAN isVisible();
+    MM::VOID setVisible(MM::BOOLEAN visible);
+
+    //effect of elements on instances
+    virtual MM::VOID begin(MM::Instance * i);
+    virtual MM::VOID end(MM::Instance * i);
+    virtual MM::VOID change(MM::Instance * i);
+    
     virtual MM::VOID toString(MM::String * buf) = 0;
     virtual MM::VOID toString(MM::String * buf, MM::UINT32 indent) = 0;
   };

@@ -12,9 +12,9 @@
 #include "Recyclable.h"
 #include "Vector.h"
 #include "Map.h"
+#include "Recycler.h"
 #include "Observer.h"
 #include "Observable.h"
-#include "Recycler.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -22,6 +22,7 @@
 #include "Operator.h"
 #include "Exp.h"
 #include "Edge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
@@ -31,11 +32,11 @@
 #include "Definition.h"
 #include "Node.h"
 #include "InterfaceNode.h"
-#include "Instance.h"
+//#include "Instance.h"
 
-MM::InterfaceNode::InterfaceNode(MM::Name * name,
-                                 MM::Declaration * decl,
-                                 MM::Node * ref):
+MM::InterfaceNode::InterfaceNode(MM::Name    * name,
+                                 MM::Element * decl,
+                                 MM::Node    * ref):
   MM::Node(name, MM_NULL)
 {
   this->decl = decl;
@@ -44,6 +45,7 @@ MM::InterfaceNode::InterfaceNode(MM::Name * name,
 
 MM::InterfaceNode::~InterfaceNode()
 {
+  this->decl = MM_NULL;
   this->ref = MM_NULL;
 }
 
@@ -74,64 +76,76 @@ MM::NodeBehavior * MM::InterfaceNode::getBehavior()
   return ref->getBehavior();
 }
 
-
-MM::Declaration * MM::InterfaceNode::getDeclaration()
+MM::Element * MM::InterfaceNode::getDeclaration()
 {
-  return this->decl;
+  return decl;
 }
 
 MM::Node * MM::InterfaceNode::getNode()
 {
-  return this->ref;
+  return ref;
 }
 
-MM::VOID MM::InterfaceNode::add(MM::Instance * i, MM::UINT32 amount)
+MM::VOID MM::InterfaceNode::add(MM::Instance * i,
+                                MM::UINT32 amount)
 {
-  MM::Instance * iChild = i->getInstance(decl);
-  ref->add(iChild, amount);
+  printf("should not happen anaymore MM::InterfaceNode::add\n");
 }
 
 MM::VOID MM::InterfaceNode::sub(MM::Instance * i, MM::UINT32 amount)
-{
-  MM::Instance * iChild = i->getInstance(decl);
-  ref->sub(iChild, amount);
+{  
+  printf("should not happen anaymore MM::InterfaceNode::sub\n");
+  //MM::Instance * iChild = i->getInstance(decl);
+  //ref->sub(iChild, amount);
 }
 
 MM::UINT32 MM::InterfaceNode::getCapacity(MM::Instance * i)
 {
-  MM::Instance * iChild = i->getInstance(decl);
-  return ref->getCapacity(iChild);
+  printf("should not happen anaymore MM::InterfaceNode::getCapacity\n");
+  //MM::Instance * iChild = i->getInstance(decl);
+  //return ref->getCapacity(iChild);
+  return 0;
 }
 
 MM::UINT32 MM::InterfaceNode::getResources(MM::Instance * i)
 {
-  MM::Instance * iChild = i->getInstance(decl);
-  return ref->getResources(iChild);
+  printf("should not happen anaymore MM::InterfaceNode::getResources\n");
+  //MM::Instance * iChild = i->getInstance(decl);
+  //return ref->getResources(iChild);
+  return 0;
 }
 
 MM::BOOLEAN MM::InterfaceNode::hasCapacity(MM::Instance * i,
                                            MM::UINT32 amount)
 {
-  MM::Instance * iChild = i->getInstance(decl);
-  return ref->hasCapacity(iChild, amount);
+  printf("should not happen anaymore MM::InterfaceNode::hasCapacity");
+  //MM::Instance * iChild = i->getInstance(decl);
+  //return ref->hasCapacity(iChild, amount);
+  return MM_FALSE;
 }
 
 MM::BOOLEAN MM::InterfaceNode::hasResources(MM::Instance * i,
                                             MM::UINT32 amount)
 {
-  MM::Instance * iChild = i->getInstance(decl);
-  return ref->hasResources(iChild, amount);
+  printf("should not happen anaymore MM::InterfaceNode::hasResources");
+  //MM::Instance * iChild = i->getInstance(decl);
+  //return ref->hasResources(iChild, amount);
+  return MM_FALSE;
 }
 
 MM::VOID MM::InterfaceNode::activateTriggerTargets(MM::Instance * i,
                                                    MM::Machine * m)
 {
-  MM::NodeBehavior * behavior = ref->getBehavior(); //HACK  
-  behavior->activateTriggerTargets(this, i, m);
+  printf("should not happen anaymore MM::InterfaceNode::activateTriggerTargets\n");
+  //MM::NodeBehavior * behavior = ref->getBehavior(); //HACK
+  //behavior->activateTriggerTargets(this, i, m);
 }
 
 
 MM::VOID MM::InterfaceNode::toString(MM::String * buf)
 {
-  //not explicitly represented
+  //not explicitly represented, output is a comment
+  buf->append((MM::CHAR*)"// interface ", 13);
+  name->toString(buf);
+  buf->linebreak();
 }

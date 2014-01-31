@@ -15,16 +15,18 @@
 #include "Map.h"
 #include "Vector.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
 #include "Element.h"
 #include "Exp.h"
 #include "Edge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
+#include "PoolNodeBehavior.h"
 #include "Node.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "Definition.h"
 #include "InterfaceNode.h"
@@ -157,18 +159,58 @@ MM::BOOLEAN MM::Definition::instanceof(MM::TID tid)
 MM::Node * MM::Definition::findNode(MM::Name * name,
                                     MM::NodeBehavior::IO direction)
 {
-  MM::Node * node = MM_NULL; //node to return
+  MM::Node * r = MM_NULL; //node to return
   
   if(name != MM_NULL)
   {
     MM::Element * element = this->getElement(name);
     if(element != MM_NULL)
     {
-      if(element->getTypeId() == MM::T_Declaration)
+      if(element->instanceof(MM::T_Node) == MM_TRUE &&         
+         name->getName() != MM_NULL)
+      {
+        MM::Node * node = (MM::Node *) element;
+        MM::Name * nodeName = name->getName();
+        MM::NodeBehavior * behavior = node->getBehavior();
+        
+          if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+          {
+            MM::Node * n = ((MM::PoolNodeBehavior*)behavior)->getInterface(nodeName);
+            
+            if(n != MM_NULL &&
+               n->instanceof(MM::T_InterfaceNode) == MM_TRUE)
+            {
+              //FIXME: check edge end is connected to an interface that is input or output
+              MM::InterfaceNode * iNode = (MM::InterfaceNode *) n;
+              //MM::Node * declNode = iNode->getNode();
+              //MM::NodeBehavior * behavior = declNode->getBehavior();
+              
+              if(nodeName->getName() != MM_NULL)
+              {
+                //TODO: error
+                printf("Definition Error: cannot search inside interface\n");
+              }
+              
+              //if(behavior->conformsTo(direction) == MM_FALSE)
+              // {
+              //  //TODO: error
+              //  printf("Definition Error: interface does not accept input\n");
+              // }
+              
+              r = iNode;
+            }
+            else
+            {
+              printf("Definition Error: interface not found\n");
+            }
+          }
+      }
+      else if(element->instanceof(MM::T_Declaration) == MM_TRUE)
       {
         //element is a declaration --> edge is to an interface
         MM::Declaration * decl = (MM::Declaration *) element;
         MM::Name * nodeName = name->getName();
+      
         if(nodeName != MM_NULL)
         {
           //MM::Element * e2 = def->getElement(nodeName);
@@ -178,8 +220,8 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
           {
             //FIXME: check edge end is connected to an interface that is input or output
             MM::InterfaceNode * iNode = (MM::InterfaceNode *) n;
-            MM::Node * declNode = iNode->getNode();
-            MM::NodeBehavior * behavior = declNode->getBehavior();
+            //MM::Node * declNode = iNode->getNode();
+            //MM::NodeBehavior * behavior = declNode->getBehavior();
 
             if(nodeName->getName() != MM_NULL)
             {
@@ -187,13 +229,13 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
               printf("Definition Error: cannot search inside interface\n");
             }
             
-            if(behavior->conformsTo(direction) == MM_FALSE)
-            {
-              //TODO: error
-              printf("Definition Error: interface does not accept input\n");
-            }
+            //if(behavior->conformsTo(direction) == MM_FALSE)
+            // {
+            //  //TODO: error
+            //  printf("Definition Error: interface does not accept input\n");
+            //}
             
-            node = iNode;
+            r = iNode;
           }
           else
           {
@@ -204,7 +246,7 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
       else if(element->getTypeId() == MM::T_Node &&
               name->getName() == MM_NULL)
       {
-        node = (MM::Node *) element;
+        r = (MM::Node *) element;
         //* ref = MM_NULL;
       }
       else
@@ -214,7 +256,7 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
       }
     }
   }
-  return node;
+  return r;
 }
 
 
@@ -413,6 +455,11 @@ MM::VOID MM::Definition::removeElement(MM::Name * name)
   n2e->remove(name);
 }
 
+MM::BOOLEAN MM::Definition::containsElement(MM::Element * element)
+{
+  return elements->contains(element);
+}
+
 MM::Vector<MM::Element *> * MM::Definition::getElements()
 {
   return elements;
@@ -439,15 +486,18 @@ MM::VOID MM::Definition::toString(MM::String * buf, MM::UINT32 indent)
   while(iter.hasNext())
   {
     element = iter.getNext();
-    if(name != MM_NULL)
+    if(element->isVisible() == MM_TRUE)
     {
-      element->toString(buf, indent+2);
+      if(name != MM_NULL)
+      {
+        element->toString(buf, indent+2);
+      }
+      else
+      {
+        element->toString(buf, 0);
+      }
+      buf->linebreak();
     }
-    else
-    {
-      element->toString(buf, 0);
-    }
-    buf->linebreak();
   }
   if(name != MM_NULL)
   {

@@ -28,6 +28,7 @@ MM::Transition::Transition(MM::Vector<MM::Element *> * elements):
   MM::Transformation(elements)
 {
   this->loc = MM_NULL;
+  this->str = MM_NULL;
 }
 
 MM::Transition::Transition(MM::Vector<MM::Element *> * elements,
@@ -35,11 +36,13 @@ MM::Transition::Transition(MM::Vector<MM::Element *> * elements,
   MM::Transformation(elements)
 {
   this->loc = loc;
+  this->str = MM_NULL;
 }
 
 MM::Transition::~Transition()
 {
   this->loc = MM_NULL;
+  this->str = MM_NULL;
 }
 
 MM::VOID MM::Transition::recycle(MM::Recycler * r)
@@ -47,7 +50,11 @@ MM::VOID MM::Transition::recycle(MM::Recycler * r)
   if(loc != MM_NULL)
   {
     loc->recycle(r);
-  }  
+  }
+  if(str != MM_NULL)
+  {
+    str->recycle(r);
+  }
   MM::Transformation::recycle(r);
 }
 
