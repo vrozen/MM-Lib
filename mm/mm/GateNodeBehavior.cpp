@@ -14,14 +14,15 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "String.h"
 #include "Location.h"
 #include "Name.h"
 #include "Element.h"
 #include "Exp.h"
 #include "Edge.h"
-#include "Observer.h"
-#include "Observable.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "GateNodeBehavior.h"
@@ -82,8 +83,47 @@ MM::UINT32 MM::GateNodeBehavior::getDeleteMessage()
   return MM::MSG_DEL_GATE;
 }
 
+MM::VOID MM::GateNodeBehavior::stepPullAll(MM::Node * node,
+                                           MM::Instance * i,
+                                           MM::Vector<MM::NodeWorkItem *> * work,
+                                           MM::Machine * m,
+                                           MM::Transition * tr)
+{
+  //TODO
+}
+
+MM::VOID MM::GateNodeBehavior::stepPushAll(MM::Node * node,
+                                           MM::Instance * i,
+                                           MM::Vector<MM::NodeWorkItem *> * work,
+                                           MM::Machine * m,
+                                           MM::Transition * tr)
+{
+  //gates don't push
+}
+
+MM::VOID MM::GateNodeBehavior::begin(MM::Instance * i,
+                                     MM::Machine * m,
+                                     MM::Node * n)
+{
+  //TODO
+}
+
+MM::VOID MM::GateNodeBehavior::end(MM::Instance * i,
+                                   MM::Machine * m,
+                                   MM::Node * n)
+{
+  //TODO
+}
+
+MM::VOID MM::GateNodeBehavior::change(MM::Instance * i,
+                                      MM::Machine * m,
+                                      MM::Node * n)
+{
+  //TODO
+}
 
 MM::VOID MM::GateNodeBehavior::add(MM::Instance * i,
+                                   MM::Machine * m,
                                    MM::Node * n,
                                    MM::UINT32 amount)
 {
@@ -94,6 +134,7 @@ MM::VOID MM::GateNodeBehavior::add(MM::Instance * i,
 }
 
 MM::VOID MM::GateNodeBehavior::sub(MM::Instance * i,
+                                   MM::Machine * m,                                   
                                    MM::Node * n,
                                    MM::UINT32 amount)
 {

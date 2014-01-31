@@ -5,31 +5,6 @@
 //  Created by Riemer van Rozen on 11/21/13.
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include "YYLTYPE.h"
-#include "Types.h"
-#include "Recyclable.h"
-#include "Vector.h"
-#include "Map.h"
-#include "Recycler.h"
-#include "Location.h"
-#include "String.h"
-#include "Name.h"
-#include "Element.h"
-#include "Exp.h"
-#include "Observer.h"
-#include "Observable.h"
-#include "Node.h"
-#include "Edge.h"
-#include "NodeBehavior.h"
-#include "ConverterNodeBehavior.h"
-#include "Declaration.h"
-#include "Definition.h"
-#include "Instance.h"
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +14,8 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -52,11 +29,13 @@
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "FlowEvent.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -64,8 +43,6 @@
 #include "RefNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "ConverterNodeBehavior.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "InterfaceNode.h"
 #include "Definition.h"
@@ -98,13 +75,19 @@ const MM::UINT32 MM::ConverterNodeBehavior::FROM_LEN =
 const MM::UINT32 MM::ConverterNodeBehavior::TO_LEN  =
   strlen(MM::ConverterNodeBehavior::TO_STR);
 
-MM::ConverterNodeBehavior::ConverterNodeBehavior(MM::NodeBehavior::IO    io,
-                                                 MM::NodeBehavior::When  when,
+
+/*
+ Nodes behaving like converters share their edges
+ with the implementing source and drain nodes.
+ This makes updating them sort of tricky: see Reflector.
+ Also, converter nodes are not scheduled,
+ instead the definition contains the source and the drain as anonymous nodes,
+ such that the semantics of those node behaviors is reused.
+ */
+MM::ConverterNodeBehavior::ConverterNodeBehavior(MM::NodeBehavior::IO   io,
+                                                 MM::NodeBehavior::When when,
                                                  MM::Name * from,
-                                                 MM::Name * to,
-                                                 MM::Node * sourceNode,
-                                                 MM::Node * drainNode,
-                                                 MM::Edge * triggerEdge) :
+                                                 MM::Name * to) :
   MM::NodeBehavior(io,
                    when,
                    MM::NodeBehavior::ACT_PULL,
@@ -112,15 +95,18 @@ MM::ConverterNodeBehavior::ConverterNodeBehavior(MM::NodeBehavior::IO    io,
 {
   this->from = from;
   this->to = to;
-  this->sourceNode = sourceNode;
-  this->drainNode = drainNode;
-  this->triggerEdge = triggerEdge;
+  this->sourceNode = MM_NULL;
+  this->drainNode = MM_NULL;
+  this->triggerEdge = MM_NULL;
 }
 
 MM::ConverterNodeBehavior::~ConverterNodeBehavior()
 {
   this->from = MM_NULL;
   this->to = MM_NULL;
+  this->sourceNode = MM_NULL;
+  this->drainNode = MM_NULL;
+  this->triggerEdge = MM_NULL;
 }
 
 MM::VOID MM::ConverterNodeBehavior::recycle(MM::Recycler *r)
@@ -133,11 +119,6 @@ MM::VOID MM::ConverterNodeBehavior::recycle(MM::Recycler *r)
   {
     to->recycle(r);
   }
-  
-  sourceNode->recycle(r);
-  drainNode->recycle(r);
-  triggerEdge->recycle(r);
-  
   MM::NodeBehavior::recycle(r);
 }
 
@@ -166,6 +147,21 @@ MM::Name * MM::ConverterNodeBehavior::getFrom()
 MM::Name * MM::ConverterNodeBehavior::getTo()
 {
   return to;
+}
+
+MM::VOID MM::ConverterNodeBehavior::setTriggerEdge(MM::Edge * triggerEdge)
+{
+  this->triggerEdge = triggerEdge;
+}
+
+MM::VOID MM::ConverterNodeBehavior::setSourceNode(MM::Node * sourceNode)
+{
+  this->sourceNode = sourceNode;
+}
+
+MM::VOID MM::ConverterNodeBehavior::setDrainNode(MM::Node * drainNode)
+{
+  this->drainNode = drainNode;
 }
 
 MM::Edge * MM::ConverterNodeBehavior::getTriggerEdge()
@@ -208,23 +204,87 @@ MM::UINT32 MM::ConverterNodeBehavior::getDeleteMessage()
   return MM::MSG_DEL_CONVERTER;
 }
 
-MM::VOID MM::ConverterNodeBehavior::step(MM::Node * node,
-                                         MM::Instance * i,
-                                         MM::Machine * m,
-                                         MM::Transition * tr)
+MM::VOID MM::ConverterNodeBehavior::step(MM::Node * n,
+              MM::Instance * i,
+              MM::Machine * m,
+              MM::Transition * t)
 {
-  MM::Name * name = node->getName();
-  MM::CHAR * buf = name->getBuffer();
-  printf("STEP NODE %s\n", buf);
-  
-  if(i->isActive(sourceNode) == MM_TRUE)
-  {
-    MM::Vector<MM::Edge *> * work = node->getOutput();
-    NodeBehavior::stepAll(sourceNode, i, work, m, tr);
-  }
+  //don't step --> drain / source
+}
 
-  MM::Vector<MM::Edge *> * work = node->getInput();
-  NodeBehavior::stepAll(node, i, work, m, tr);
+MM::VOID MM::ConverterNodeBehavior::stepPullAll(MM::Node * node,
+                                                MM::Instance * i,
+                                                MM::Vector<MM::NodeWorkItem *> * work,
+                                                MM::Machine * m,
+                                                MM::Transition * tr)
+{
+  //don't pull all --> drain / source
+}
+
+MM::VOID MM::ConverterNodeBehavior::stepPushAny(MM::Node * node,
+                                                MM::Instance * i,
+                                                MM::Vector<MM::NodeWorkItem *> * work,
+                                                MM::Machine * m,
+                                                MM::Transition * tr)
+{
+  //don't push all --> drain / source
+}
+
+
+MM::VOID MM::ConverterNodeBehavior::stepPullAny(MM::Node * node,
+                     MM::Instance * i,
+                     MM::Vector<MM::NodeWorkItem *> * work,
+                     MM::Machine * m,
+                     MM::Transition * tr)
+{
+  //don't pull all --> drain / source
+}
+
+MM::VOID MM::ConverterNodeBehavior::stepPushAll(MM::Node * node,
+                     MM::Instance * i,
+                     MM::Vector<MM::NodeWorkItem *> * work,
+                     MM::Machine * m,
+                     MM::Transition * tr)
+{
+  //don't push all --> drain / source
+}
+
+
+MM::VOID MM::ConverterNodeBehavior::begin(MM::Instance * i,
+                                          MM::Machine * m,
+                                          MM::Node * n)
+{
+  //do nothing
+}
+
+MM::VOID MM::ConverterNodeBehavior::end(MM::Instance * i,
+                                        MM::Machine * m,
+                                        MM::Node * n)
+{
+  //do nothing
+}
+
+MM::VOID MM::ConverterNodeBehavior::change(MM::Instance * i,
+                                           MM::Machine * m,
+                                           MM::Node * n)
+{
+  //TODO
+}
+
+MM::VOID MM::ConverterNodeBehavior::add(MM::Instance * i,
+                                        MM::Machine * m,
+                                        MM::Node * n,
+                                        MM::UINT32 amount)
+{
+  return drainNode->add(i, m, amount);
+}
+
+MM::VOID MM::ConverterNodeBehavior::sub(MM::Instance * i,
+                                        MM::Machine * m,
+                                        MM::Node * n,
+                                        MM::UINT32 amount)
+{
+  return sourceNode->sub(i, m, amount);
 }
 
 MM::UINT32 MM::ConverterNodeBehavior::getCapacity(MM::Instance * i,
@@ -237,20 +297,6 @@ MM::UINT32 MM::ConverterNodeBehavior::getResources(MM::Instance * i,
                                                    MM::Node * n)
 {
   return sourceNode->getResources(i);
-}
-
-MM::VOID MM::ConverterNodeBehavior::add(MM::Instance * i,
-                                        MM::Node * n,
-                                        MM::UINT32 amount)
-{
-  return drainNode->add(i, amount);
-}
-
-MM::VOID MM::ConverterNodeBehavior::sub(MM::Instance * i,
-                                        MM::Node * n,
-                                        MM::UINT32 amount)
-{
-  return sourceNode->sub(i, amount);
 }
 
 MM::BOOLEAN MM::ConverterNodeBehavior::hasCapacity(MM::Instance * i,
@@ -268,13 +314,14 @@ MM::BOOLEAN MM::ConverterNodeBehavior::hasResources(MM::Instance * i,
 }
 
 
+
 MM::VOID MM::ConverterNodeBehavior::activateTriggerTargets(MM::Node * node,
                                                            MM::Instance * i,
                                                            MM::Machine * m)
 {
   //trigger the source node
-  i->setActive(sourceNode);
-  MM::NodeBehavior::activateTriggerTargets(node, i, m);
+  //i->setActive(sourceNode);
+  //MM::NodeBehavior::activateTriggerTargets(node, i, m);
 }
 
 MM::VOID MM::ConverterNodeBehavior::toString(MM::String * buf)

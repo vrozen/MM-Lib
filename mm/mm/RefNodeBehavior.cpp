@@ -14,16 +14,18 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
 #include "Element.h"
 #include "Exp.h"
 #include "Edge.h"
-#include "Observer.h"
-#include "Observable.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
+#include "PoolNodeBehavior.h"
 #include "RefNodeBehavior.h"
 #include "Declaration.h"
 #include "Definition.h"
@@ -121,6 +123,7 @@ MM::UINT32 MM::RefNodeBehavior::getDeleteMessage()
 }
 
 //resolve reference via alias edge and i to the correct i and node
+/*
 MM::Instance * MM::RefNodeBehavior::resolveInstance(MM::Instance * i,
                                                     MM::Node * aliasSrc,
                                                     MM::Node * aliasTgt)
@@ -139,71 +142,151 @@ MM::Instance * MM::RefNodeBehavior::resolveInstance(MM::Instance * i,
   }
   
   return aliasInstance;
+}*/
+
+
+
+MM::VOID MM::RefNodeBehavior::step(MM::Node * n,
+              MM::Instance * i,
+              MM::Machine * m,
+              MM::Transition * t)
+{
+  //refnodes don't act
+}
+
+MM::VOID MM::RefNodeBehavior::stepPullAny(MM::Node * tgtNode,
+                                          MM::Instance * tgtInstance,
+                                          MM::Vector<MM::NodeWorkItem *> * work,
+                                          MM::Machine * m,
+                                          MM::Transition * tr)
+{
+  //refnodes don't act
+}
+
+MM::VOID MM::RefNodeBehavior::stepPushAny(MM::Node * srcNode,
+                                          MM::Instance * srcInstance,
+                                          MM::Vector<MM::NodeWorkItem *> * work,
+                                          MM::Machine * m,
+                                          MM::Transition * tr)
+{
+  //refnodes don't act
+}
+
+MM::VOID MM::RefNodeBehavior::stepPullAll(MM::Node * tgtNode,
+                                          MM::Instance * tgtInstance,
+                                          MM::Vector<MM::NodeWorkItem *> * work,
+                                          MM::Machine * m,
+                                          MM::Transition * tr)
+{
+  //refnodes don't act
+}
+
+MM::VOID MM::RefNodeBehavior::stepPushAll(MM::Node * srcNode,
+                                          MM::Instance * srcInstance,
+                                          MM::Vector<MM::NodeWorkItem *> * work,
+                                          MM::Machine * m,
+                                          MM::Transition * tr)
+{
+  //refnodes don't act
+}
+
+MM::VOID MM::RefNodeBehavior::begin(MM::Instance * i,
+                                    MM::Machine * m,
+                                    MM::Node * n)
+{
+  //do nothing
+}
+
+MM::VOID MM::RefNodeBehavior::end(MM::Instance * i,
+                                  MM::Machine * m,
+                                  MM::Node * n)
+{
+  //do nothing
+}
+
+MM::VOID MM::RefNodeBehavior::change(MM::Instance * i,
+                                     MM::Machine * m,
+                                     MM::Node * n)
+{
+  //do nothing
 }
 
 MM::VOID MM::RefNodeBehavior::add(MM::Instance * i,
+                                  MM::Machine * m,
                                   MM::Node * n,
                                   MM::UINT32 amount)
 {
-  MM::Node * aliasSrc = alias->getSource();
-  MM::Node * aliasTgt = alias->getTarget();
-  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
-  aliasSrc->add(aliasInstance, amount);
+  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::add");
+  
+  //MM::Node * aliasSrc = alias->getSource();
+  //MM::Node * aliasTgt = alias->getTarget();
+  //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  //aliasSrc->add(aliasInstance, amount);
 }
 
 MM::VOID MM::RefNodeBehavior::sub(MM::Instance * i,
+                                  MM::Machine * m,
                                   MM::Node * n,
                                   MM::UINT32 amount)
 {
-  MM::Node * aliasSrc = alias->getSource();
-  MM::Node * aliasTgt = alias->getTarget();
-  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
-  aliasSrc->sub(aliasInstance, amount);
+  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::sub");
+
+  //MM::Node * aliasSrc = alias->getSource();
+  //MM::Node * aliasTgt = alias->getTarget();
+  //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  //aliasSrc->sub(aliasInstance, amount);
 }
 
 MM::UINT32 MM::RefNodeBehavior::getCapacity(MM::Instance * i,
                                             MM::Node * n)
 {
-  MM::Node * aliasSrc = alias->getSource();
-  MM::Node * aliasTgt = alias->getTarget();
-  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
-  return aliasSrc->getCapacity(aliasInstance);
+  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getCapacity\n");
+  //MM::Node * aliasSrc = alias->getSource();
+  //MM::Node * aliasTgt = alias->getTarget();
+  //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  //return aliasSrc->getCapacity(aliasInstance);
+  return 0;
 }
 
 MM::UINT32 MM::RefNodeBehavior::getResources(MM::Instance * i,
                                              MM::Node * n)
 {
-  MM::Node * aliasSrc = alias->getSource();
-  MM::Node * aliasTgt = alias->getTarget();
-  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
-  return aliasSrc->getResources(aliasInstance);
+  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getResources\n");
+  //MM::Node * aliasSrc = alias->getSource();
+  //MM::Node * aliasTgt = alias->getTarget();
+  //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  //return aliasSrc->getResources(aliasInstance);
+  return 0;
 }
 
 MM::BOOLEAN MM::RefNodeBehavior::hasCapacity(MM::Instance * i,
                                              MM::Node * n,
                                              MM::UINT32 amount)
 {
-  MM::Node * aliasSrc = alias->getSource();
-  MM::Node * aliasTgt = alias->getTarget();
-  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
-  return aliasSrc->hasCapacity(aliasInstance, amount);
+  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasCapacity\n");
+  //MM::Node * aliasSrc = alias->getSource();
+  //MM::Node * aliasTgt = alias->getTarget();
+  //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  //return aliasSrc->hasCapacity(aliasInstance, amount);
+  return MM_FALSE;
 }
 
 MM::BOOLEAN MM::RefNodeBehavior::hasResources(MM::Instance * i,
                                               MM::Node * n,
                                               MM::UINT32 amount)
-{ 
-  MM::Node * aliasSrc = alias->getSource();
-  MM::Node * aliasTgt = alias->getTarget();
-  MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
-  return aliasSrc->hasResources(aliasInstance, amount);
+{
+  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasResources\n");
+  //MM::Node * aliasSrc = alias->getSource();
+  //MM::Node * aliasTgt = alias->getTarget();
+  //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
+  //return aliasSrc->hasResources(aliasInstance, amount);
+  return MM_FALSE;
 }
 
 MM::VOID MM::RefNodeBehavior::doTriggers(MM::Instance * i,
                                          MM::Node * n)
 {
-  
-  
+  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::doTriggers\n");
 }
 
 
@@ -215,6 +298,7 @@ MM::VOID MM::RefNodeBehavior::toString(MM::String * buf)
 
 MM::VOID MM::RefNodeBehavior::toString(MM::String * buf, MM::Name * name)
 {
+  MM::NodeBehavior::toString(buf,name);
   toString(buf);
   buf->space();
   name->toString(buf);

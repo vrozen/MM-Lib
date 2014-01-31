@@ -31,14 +31,48 @@ namespace MM
     MM::UINT32 getUpdateMessage();
     MM::UINT32 getDeleteMessage();
     
-  private:
-    MM::Instance * resolveInstance(MM::Instance * i,
-                                   MM::Node * aliasSrc,
-                                   MM::Node * aliasTgt);
-  public:
+    MM::VOID step(MM::Node * n,
+                  MM::Instance * i,
+                  MM::Machine * m,
+                  MM::Transition * t);
+
+    MM::VOID stepPullAny(MM::Node * node,
+                         MM::Instance * i,
+                         MM::Vector<MM::NodeWorkItem *> * work,
+                         MM::Machine * m,
+                         MM::Transition * tr);
+    
+    MM::VOID stepPushAny(MM::Node * node,
+                         MM::Instance * i,
+                         MM::Vector<MM::NodeWorkItem *> * work,
+                         MM::Machine * m,
+                         MM::Transition * tr);
+    
+    MM::VOID stepPullAll(MM::Node * node,
+                         MM::Instance * i,
+                         MM::Vector<MM::NodeWorkItem *> * work,
+                         MM::Machine * m,
+                         MM::Transition * tr);
+    
+    MM::VOID stepPushAll(MM::Node * node,
+                         MM::Instance * i,
+                         MM::Vector<MM::NodeWorkItem *> * work,
+                         MM::Machine * m,
+                         MM::Transition * tr);
+
     //instance manipulation during transitions
-    MM::VOID add(MM::Instance * i, MM::Node * n, MM::UINT32 amount);
-    MM::VOID sub(MM::Instance * i, MM::Node * n, MM::UINT32 amount);
+    MM::VOID begin(MM::Instance * i, MM::Machine * m, MM::Node * n);
+    MM::VOID end(MM::Instance * i, MM::Machine * m, MM::Node * n);
+    MM::VOID change(MM::Instance * i, MM::Machine * m, MM::Node * n);
+    //instance manipulation during transitions
+    MM::VOID add(MM::Instance * i,
+                 MM::Machine  * m,
+                 MM::Node     * n,
+                 MM::UINT32     amount);
+    MM::VOID sub(MM::Instance * i,
+                 MM::Machine  * m,
+                 MM::Node     * n,
+                 MM::UINT32     amount);
     MM::UINT32 getCapacity(MM::Instance * i, MM::Node * n);
     MM::UINT32 getResources(MM::Instance * i, MM::Node * n);
     MM::BOOLEAN hasCapacity(MM::Instance * i, MM::Node * n, MM::UINT32 amount);

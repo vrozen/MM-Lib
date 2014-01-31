@@ -5,31 +5,6 @@
 //  Created by Riemer van Rozen on 10/9/13.
 //  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
-
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include "YYLTYPE.h"
-#include "Types.h"
-#include "Recyclable.h"
-#include "Vector.h"
-#include "Map.h"
-#include "Recycler.h"
-#include "Location.h"
-#include "String.h"
-#include "Name.h"
-#include "Element.h"
-#include "Exp.h"
-#include "Edge.h"
-#include "Observer.h"
-#include "Observable.h"
-#include "Node.h"
-#include "NodeBehavior.h"
-#include "Declaration.h"
-#include "Definition.h"
-#include "Instance.h"
-*/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,6 +14,8 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -52,11 +29,13 @@
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "FlowEvent.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -64,8 +43,6 @@
 #include "RefNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "ConverterNodeBehavior.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "InterfaceNode.h"
 #include "Definition.h"
@@ -253,229 +230,399 @@ MM::BOOLEAN MM::NodeBehavior::conformsTo(MM::NodeBehavior::IO direction)
   return r;
 }
 
+
+
+MM::VOID MM::NodeBehavior::getWork(MM::Node * node, /*edge source node*/
+                                   MM::Instance * instance,
+                                   MM::Edge * edge,
+                                   MM::Vector<MM::NodeWorkItem *> * work)
+{
+  if(node->instanceof(MM::T_InterfaceNode) == MM_TRUE)
+  {
+    //we are dealing with an interface node, for which work must be resolved
+    MM::InterfaceNode * interfaceNode = (MM::InterfaceNode *) node;
+    MM::Name * interfaceNodeName = interfaceNode->getName();
+
+    //retrieve the parent declaration the interface node is part of
+    MM::Element * decl = interfaceNode->getDeclaration();
+    
+    //retrieve type definition of that declaration
+    MM::Definition * def = MM_NULL;
+    if(decl->instanceof(MM::T_Declaration) == MM_TRUE)
+    {
+      def = ((MM::Declaration *) decl)->getDefinition();
+    }
+    else if(decl->instanceof(MM::T_Node) == MM_TRUE)
+    {
+      MM::Node * declNode = (MM::Node *) decl;
+      MM::NodeBehavior * behavior = declNode->getBehavior();
+      if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+      {
+        def = ((MM::PoolNodeBehavior *) behavior)->getDefinition();
+      }
+    }
+    //FIXME: if there is no definition something is wrong
+    if(def != MM_NULL)
+    {
+      MM::Element * declNode = def->getElement(interfaceNodeName);
+      MM::Vector<MM::Instance *> * instances = instance->getInstances(decl);
+      MM::Vector<MM::Instance *>::Iterator iIter = instances->getIterator();
+      while(iIter.hasNext() == MM_TRUE)
+      {
+        MM::Instance * declInstance = iIter.getNext();
+        getWork((MM::Node*)declNode, declInstance, edge, work);
+      }
+    }
+  }
+  else if(node->getBehavior()->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
+  {
+    //resolve the reference to an actual node instance
+    MM::Node * curNode = node;
+    MM::NodeBehavior * curNodeBehavior = curNode->getBehavior();
+    MM::Instance * curInstance = instance;
+    
+    while(curNodeBehavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
+    {
+      MM::Edge * aliasEdge = ((MM::RefNodeBehavior *)curNodeBehavior)->getAlias();
+      if(aliasEdge != MM_NULL)
+      {
+        curNode = aliasEdge->getSource();
+
+        //internally bound: alias source node is in the same type
+        MM::Definition * def = curInstance->getDefinition();
+        if(def->containsElement(curNode) == MM_TRUE)
+        {
+          curNodeBehavior = curNode->getBehavior();
+        }
+        else
+        {
+          //externally bound: alias source node is in the parent type
+          //ASSUME: parent definition contains curNode
+          curInstance = instance->getParent();
+          break;
+        }
+      }
+      else
+      {
+        printf("NodeBehavior Error: %s has unresolved alias!\n",
+               node->getName()->getBuffer());
+        return;
+      }
+    }
+    //NOTE: assumed correct, references can be resolved using alias edges
+    //curNode and curInstance are resolved to a node instance edge works on
+    getWork(curNode, curInstance, edge, work);
+  }
+  else
+  {
+    //this is an actual node on which the edge can perform work
+    MM::NodeWorkItem * workItem =
+      new MM::NodeWorkItem(instance, node, edge);
+    work->add(workItem);
+  }
+}
+
 MM::VOID MM::NodeBehavior::step(MM::Node * node,
                                 MM::Instance * i,
                                 MM::Machine * m,
-                                MM::Transition *tr)
+                                MM::Transition * tr)
 {
   MM::Name * name = node->getName();
   MM::CHAR * buf = name->getBuffer();
   printf("STEP NODE %s\n", buf);
   
-  MM::Vector<MM::Edge *> * work = MM_NULL;
+  //NOTE: the work should be processed including
+  //  1. the edge the node operates on
+  //  2. the "connecting" instance (source or target depending on push, pull)
+  //  3. the actual node the resolved edge connects to (may be aliased)
+  //that way
+  //  1. late lookups / forwarding are not necessary
+  //  2. the same edge can connect multiple nodes (as with instance pools)
+  //     a. for declarations there is one
+  //are nodeinstances cleaned up properly?
+  //are edgeinstances cleaned up properly?
+  
+  MM::Vector<MM::NodeWorkItem *> * work = new MM::Vector<MM::NodeWorkItem *>();
+  
   if(act == MM::NodeBehavior::ACT_PULL)
   {
-    work = node->getInput();
+    //1. direct input  
+    MM::Vector<MM::Edge *> * edges = edges = node->getInput();
+    MM::Vector<MM::Edge *>::Iterator eIter = edges->getIterator();
+    while(eIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = eIter.getNext();
+      MM::Node * srcNode = edge->getSource();      
+      getWork(srcNode, i, edge, work);
+    }
+    
+    //2. interface input
+    //   FIXME: note to self, make this much less ugly please
+    if(conformsTo(MM::NodeBehavior::IO_IN) == MM_TRUE)
+    {
+      MM::Element * decl = i->getDeclaration();
+      MM::Name * nodeName = node->getName();
+      edges = MM_NULL;
+      if(decl->instanceof(MM::T_Declaration) == MM_TRUE)
+      {
+        MM::Declaration * declaration = (MM::Declaration *) decl;
+        MM::Node * interfaceNode = declaration->getInterface(nodeName);
+        edges = interfaceNode->getInput();
+      }
+      else if(decl->instanceof(MM::T_Node) == MM_TRUE)
+      {
+        MM::Node * declNode = (MM::Node *) decl;
+        MM::NodeBehavior * declNodeBehavior = declNode->getBehavior();
+        if(declNodeBehavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+        {
+          MM::PoolNodeBehavior * declPoolNodeBehavior = (MM::PoolNodeBehavior *) declNodeBehavior;
+          MM::Node * interfaceNode = declPoolNodeBehavior->getInterface(nodeName);
+          edges = interfaceNode->getInput();
+        }
+      }
+      if(edges != MM_NULL)
+      {
+        MM::Vector<MM::Edge *>::Iterator eIter = edges->getIterator();
+        while(eIter.hasNext() == MM_TRUE)
+        {
+          MM::Edge * edge = eIter.getNext();
+          MM::Node * srcNode = edge->getSource();
+          getWork(srcNode, i->getParent(), edge, work);
+        }
+      }
+    }
   }
   else
-  {
-    work = node->getOutput();
+  {    
+    //1. direct output
+    MM::Vector<MM::Edge *> * edges = node->getOutput();
+    MM::Vector<MM::Edge *>::Iterator eIter = edges->getIterator();
+    while(eIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = eIter.getNext();
+      MM::Node * tgtNode = edge->getTarget();
+      getWork(tgtNode, i, edge, work);
+    }
+
+    //2. interface output
+    //   FIXME: note to self, make this much less ugly please
+    if(conformsTo(MM::NodeBehavior::IO_OUT) == MM_TRUE)
+    {
+      MM::Element * decl = i->getDeclaration();
+      MM::Name * nodeName = node->getName();
+      edges = MM_NULL;
+      if(decl->instanceof(MM::T_Declaration) == MM_TRUE)
+      {
+        MM::Declaration * declaration = (MM::Declaration *) decl;
+        MM::Node * interfaceNode = declaration->getInterface(nodeName);
+        edges = interfaceNode->getOutput();
+      }
+      else if(decl->instanceof(MM::T_Node) == MM_TRUE)
+      {
+        MM::Node * declNode = (MM::Node *) decl;
+        MM::NodeBehavior * declNodeBehavior = declNode->getBehavior();
+        if(declNodeBehavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+        {
+          MM::PoolNodeBehavior * declPoolNodeBehavior = (MM::PoolNodeBehavior *) declNodeBehavior;
+          MM::Node * interfaceNode = declPoolNodeBehavior->getInterface(nodeName);
+          edges = interfaceNode->getOutput();
+        }
+      }
+      if(edges != MM_NULL)
+      {
+        MM::Vector<MM::Edge *>::Iterator eIter = edges->getIterator();
+        while(eIter.hasNext() == MM_TRUE)
+        {
+          MM::Edge * edge = eIter.getNext();
+          MM::Node * tgtNode = edge->getTarget();
+          getWork(tgtNode, i->getParent(), edge, work);
+        }
+      }
+    }
   }
   
   if(how == MM::NodeBehavior::HOW_ANY)
   {
-    stepAny(node, i, work, m, tr);
-  }
-  else
-  {
-    stepAll(node, i, work, m, tr);
-  }
-}
-
-
-
-//process an all instance node
-MM::VOID MM::NodeBehavior::stepAll(MM::Node * node,
-                                   MM::Instance * i,
-                                   MM::Vector<MM::Edge *> * work,
-                                   MM::Machine * m,
-                                   MM::Transition * tr)
-{
-  MM::Evaluator * evaluator = m->getEvaluator();
-  
-  MM::Vector<MM::Element *> es;
-  MM::Vector<MM::Edge *>::Iterator edgeIter = work->getIterator();
-  MM::BOOLEAN success = MM_TRUE;
-  
-  printf("STEP ALL NODE %s (%ld edges)\n",
-         node->getName()->getBuffer(),
-         work->size());
-  
-  while(edgeIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * edge = edgeIter.getNext();
-    MM::ValExp * valExp = evaluator->eval(i, edge); //chance plays into this!
-    MM::INT32 flow = 0;
-    
-    if(valExp->getTypeId() == MM::T_NumberValExp)
+    if(act == MM::NodeBehavior::ACT_PULL)
     {
-      flow = ((NumberValExp *) valExp)->getIntValue();
-    }
-    else if(valExp->getTypeId() == MM::T_RangeValExp)
-    {
-      flow = ((RangeValExp *) valExp)->getIntValue();
-    }
-    
-    valExp->recycle(m);
-    
-    MM::Node * src = edge->getSource();
-    MM::Node * tgt = edge->getTarget();
-    
-    if(flow > 0 &&
-       i->hasResources(src, flow) == MM_TRUE &&
-       i->hasCapacity(tgt, flow) == MM_TRUE)
-    {
-      MM::FlowEdge * edge = evaluator->synthesizeFlowEdge(i, src, flow, tgt);
-      es.add(edge);
+      stepPullAny(node, i, work, m, tr);
     }
     else
     {
-      success = MM_FALSE;
-      break;
-    }
-  }
-  
-  if(success == MM_TRUE)  //if we have computed a succesfull transition
-  {
-    MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
-    while(eIter.hasNext() == MM_TRUE)
-    {
-      //store the transition
-      MM::FlowEdge * edge = (MM::FlowEdge *) eIter.getNext();
-      tr->addElement((MM::Element*)edge);
-      
-      //and apply the flow
-      MM::Instance * i = edge->getInstance();
-      MM::Node * src = edge->getSource();
-      MM::Node * tgt = edge->getTarget();
-      MM::NumberValExp * exp = (MM::NumberValExp *) edge->getExp();
-      MM::UINT32 flow = exp->getIntValue();
-      
-      i->sub(src, flow);
-      i->add(tgt, flow);
+      stepPushAny(node, i, work, m, tr);
     }
   }
   else
   {
-    MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
-    while(eIter.hasNext() == MM_TRUE)
+    if(act == MM::NodeBehavior::ACT_PULL)
     {
-      MM::Element * element = eIter.getNext();
-      element->recycle(m);
+      stepPullAll(node, i, work, m, tr);
+    }
+    else
+    {
+      stepPushAll(node, i, work, m, tr);
     }
   }
 }
 
 
+MM::VOID MM::NodeBehavior::stepPullAny(MM::Node * node,
+                                       MM::Instance * i,
+                                       MM::Vector<MM::NodeWorkItem *> * work,
+                                       MM::Machine * m,
+                                       MM::Transition * tr)
+{
+  stepAny(MM::NodeBehavior::ACT_PULL, node, i, work, m, tr);
+}
+
+MM::VOID MM::NodeBehavior::stepPushAny(MM::Node * node,
+                             MM::Instance * i,
+                             MM::Vector<MM::NodeWorkItem *> * work,
+                             MM::Machine * m,
+                             MM::Transition * tr)
+{
+  stepAny(MM::NodeBehavior::ACT_PUSH, node, i, work, m, tr);
+}
+
 //process an any instance node
-MM::VOID MM::NodeBehavior::stepAny(MM::Node * node,
+MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
+                                   MM::Node * node,
                                    MM::Instance * i,
-                                   MM::Vector<MM::Edge *> * edges,
+                                   MM::Vector<MM::NodeWorkItem *> * work,
                                    MM::Machine * m,
                                    MM::Transition * tr)
 {
   MM::Evaluator * evaluator = m->getEvaluator();
-
-  //collect work
-  MM::Vector<MM::Edge *> work;
-  MM::Vector<MM::Edge *>::Iterator edgeIter = edges->getIterator();
-  while(edgeIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * edge = edgeIter.getNext();
-    work.add(edge);
-  }
-  MM::UINT32 size = work.size();
   
-  printf("STEP ANY NODE (%ld edges)\n", size);
+  MM::UINT32 size = work->size();
+  
+  printf("STEP ");
+  if(act == MM::NodeBehavior::ACT_PULL)
+  {
+    printf("PULL ");
+  }
+  else
+  {
+    printf("PUSH ");
+  }
+  printf("ANY NODE (%ld edges)\n", size);
   
   //process work
   while(size != 0)
   {
     MM::UINT32 randomPos = rand() % size;
-    MM::Edge * edge = work.elementAt(randomPos);
-    work.remove(edge);
-    size = work.size();
+    MM::NodeWorkItem * workItem = work->elementAt(randomPos);
     
-    MM::ValExp * valExp = evaluator->eval(i, edge);    
-    MM::INT32 flow = 0;
+    MM::Edge * edge = workItem->getEdge();
+    MM::Exp * exp = edge->getExp();
+    work->remove(workItem);
+    size = work->size();
     
-    if(valExp->getTypeId() == MM::T_NumberValExp)
+    MM::INT32 val = 0;
+    if(i->isEvaluatedExp(exp) == MM_TRUE)
     {
-      flow = ((NumberValExp *) valExp)->getIntValue();
-    }
-    else if(valExp->getTypeId() == MM::T_RangeValExp)
-    {
-      flow = ((RangeValExp *) valExp)->getIntValue();
+      val = i->getEvaluatedExp(exp);
     }
     else
     {
-      //TODO runtime exception
+      MM::ValExp * valExp = evaluator->eval(i, edge);
+      if(valExp->getTypeId() == MM::T_NumberValExp)
+      {
+        val = ((NumberValExp *) valExp)->getIntValue();
+        i->setEvaluatedExp(exp, val);
+      }
+      else if(valExp->getTypeId() == MM::T_RangeValExp)
+      {
+        val = ((RangeValExp *) valExp)->getIntValue();
+        i->setEvaluatedExp(exp, val);
+      }
+      else
+      {
+        //TODO runtime exception
+      }
+      
+      valExp->recycle(m);
     }
     
-    valExp->recycle(m);
+    MM::Node * srcNode = MM_NULL;
+    MM::Node * tgtNode = MM_NULL;
+    MM::Instance * srcInstance = MM_NULL;
+    MM::Instance * tgtInstance = MM_NULL;
     
-    MM::Node * src = edge->getSource();
-    MM::Node * tgt = edge->getTarget();
-    
-    if(flow > 0 &&
-       i->hasResources(src, 1) == MM_TRUE &&
-       i->hasCapacity(tgt, 1) == MM_TRUE)
+    if(act == MM::NodeBehavior::ACT_PULL)
     {
-      if(i->hasResources(src, flow) == MM_TRUE)
+      srcNode = workItem->getNode();
+      tgtNode = node;
+      srcInstance = workItem->getInstance();
+      tgtInstance = i;
+    }
+    else
+    {
+      srcNode = workItem->getNode();
+      tgtNode = node;
+      srcInstance = i;
+      tgtInstance = workItem->getInstance();
+    }
+    
+    if(val > 0 &&
+       srcInstance->hasResources(srcNode, 1) == MM_TRUE &&
+       tgtInstance->hasCapacity(tgtNode, 1) == MM_TRUE)
+    {
+      if(srcInstance->hasResources(srcNode, val) == MM_TRUE)
       {
-        if(i->hasCapacity(tgt, flow) == MM_TRUE)
+        if(tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
         {
-          printf("Full flow %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = evaluator->synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
-          
+          printf("Full flow %ld\n", val);
+          srcInstance->sub(srcNode, m, val);
+          tgtInstance->add(tgtNode, m, val);
+          MM::FlowEvent * event =
+            m->createFlowEvent(i, node, edge,
+                               srcInstance, srcNode, val, tgtInstance, tgtNode);
+
+          tr->addElement(event);
         }
         else
         {
-          flow = i->getCapacity(tgt);
-          printf("Flow up to capacity %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = evaluator->synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
+          val = i->getCapacity(tgtNode);
+          printf("Flow up to capacity %ld\n", val);
+          srcInstance->sub(srcNode, m, val);
+          tgtInstance->add(tgtNode, m, val);
+          MM::FlowEvent * event =
+            m->createFlowEvent(i, node, edge,
+                               srcInstance, srcNode, val, tgtInstance, tgtNode);
+          
+          tr->addElement(event);
         }
       }
       else
       {
-        flow = i->getResources(src);
-        if(i->hasCapacity(tgt,flow) == MM_TRUE)
+        val = srcInstance->getResources(srcNode);
+        if(tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
         {
-          printf("Flow up to availability %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = evaluator->synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
+          printf("Flow up to availability %ld\n", val);
+          srcInstance->sub(srcNode, m, val);
+          tgtInstance->add(tgtNode, m, val);
+          MM::FlowEvent * event =
+            m->createFlowEvent(i, node, edge,
+                               srcInstance, srcNode, val, tgtInstance, tgtNode);
+          
+          tr->addElement(event);
         }
         else
         {
-          flow = i->getCapacity(tgt);
-          printf("Flow up to capacity %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = evaluator->synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
+          val = tgtInstance->getCapacity(tgtNode);
+          printf("Flow up to capacity %ld\n", val);
+          srcInstance->sub(srcNode, m, val);
+          tgtInstance->add(tgtNode, m, val);
+          MM::FlowEvent * event =
+            m->createFlowEvent(i, node, edge,
+                               srcInstance, srcNode, val, tgtInstance, tgtNode);
+          
+          tr->addElement(event);
         }
       }
     }
   }
-  
-  /*
-  MM::Vector<MM::Edge *> * aliases = node->getAliases();
-  MM::Vector<MM::Edge *>::Iterator aliasIter = aliases->getIterator();
-  while(aliasIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * edge = aliasIter.getNext();
-    MM::Node * aliasNode = edge->getTarget();
-    aliasNode->activateTriggerTargets(i, e, r);
-  }
-   */
 }
 
 MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
@@ -486,7 +633,7 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
   MM::Vector<MM::Edge *> * triggers = node->getTriggers();
   MM::Vector<MM::Edge *>::Iterator tIter = triggers->getIterator();
   while(tIter.hasNext() == MM_TRUE)
-  {
+  {    
     MM::Edge * trigger = tIter.getNext();
     MM::Node * tgtNode = trigger->getTarget();
     
@@ -503,6 +650,8 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
     }
   }
   
+  //FIXME: activate trigger targets of aliases
+  //NOTE: trigger targets might live in different instances :S
   MM::Vector<MM::Edge *> * aliases = node->getAliases();
   MM::Vector<MM::Edge *>::Iterator aIter = aliases->getIterator();
   while(aIter.hasNext() == MM_TRUE)
@@ -515,25 +664,29 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
 
 MM::VOID MM::NodeBehavior::toString(MM::String * buf, MM::Name * name)
 {
-  if(io != MM::NodeBehavior::IO_PRIVATE)
+  if(io != MM::NodeBehavior::IO_PRIVATE &&
+     io != MM::NodeBehavior::IO_ERROR)
   {
     buf->append((MM::CHAR*)MM::NodeBehavior::IO_STR[io],
                 MM::NodeBehavior::IO_LEN[io]);
     buf->space();
   }
-  if(when != MM::NodeBehavior::WHEN_PASSIVE)
+  if(when != MM::NodeBehavior::WHEN_PASSIVE &&
+     when != MM::NodeBehavior::WHEN_ERROR)
   {
     buf->append((MM::CHAR*)MM::NodeBehavior::WHEN_STR[when],
               MM::NodeBehavior::WHEN_LEN[when]);
     buf->space();
   }
-  if(act != MM::NodeBehavior::ACT_PULL)
+  if(act != MM::NodeBehavior::ACT_PULL &&
+     act != MM::NodeBehavior::ACT_ERROR)
   {
     buf->append((MM::CHAR*)MM::NodeBehavior::ACT_STR[act],
                 MM::NodeBehavior::ACT_LEN[act]);
     buf->space();
   }
-  if(how != MM::NodeBehavior::HOW_ANY)
+  if(how != MM::NodeBehavior::HOW_ANY &&
+     how != MM::NodeBehavior::HOW_ERROR)
   {
     buf->append((MM::CHAR*)MM::NodeBehavior::HOW_STR[how],
               MM::NodeBehavior::HOW_LEN[how]);

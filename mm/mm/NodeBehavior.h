@@ -87,32 +87,73 @@ namespace MM
     MM::VOID setIO(MM::NodeBehavior::IO io);
     MM::VOID setWhen(MM::NodeBehavior::When when);
     MM::VOID setAct(MM::NodeBehavior::Act act);
-    MM::VOID setHow(MM::NodeBehavior::How how);    
+    MM::VOID setHow(MM::NodeBehavior::How how);
     
     MM::BOOLEAN conformsTo(MM::NodeBehavior::IO direction);
+    
+    //default node behavior is overridable
+    MM::VOID getWork(MM::Node * node,
+                     MM::Instance * intance,
+                     MM::Edge * edge,
+                     MM::Vector<MM::NodeWorkItem *> * work);
     
     virtual MM::VOID step(MM::Node * n,
                           MM::Instance * i,
                           MM::Machine * m,
                           MM::Transition * t);
-        
-    MM::VOID stepAll(MM::Node * node,
+    
+    virtual MM::VOID stepPullAny(MM::Node * node,
+                                 MM::Instance * i,
+                                 MM::Vector<MM::NodeWorkItem *> * work,
+                                 MM::Machine * m,
+                                 MM::Transition * tr);
+    
+    virtual MM::VOID stepPushAny(MM::Node * node,
+                                 MM::Instance * i,
+                                 MM::Vector<MM::NodeWorkItem *> * work,
+                                 MM::Machine * m,
+                                 MM::Transition * tr);
+    
+    
+    virtual MM::VOID stepPullAll(MM::Node * node,
+                                 MM::Instance * i,
+                                 MM::Vector<MM::NodeWorkItem *> * work,
+                                 MM::Machine * m,
+                                 MM::Transition * tr) = 0;
+
+    virtual MM::VOID stepPushAll(MM::Node * node,
+                                 MM::Instance * i,
+                                 MM::Vector<MM::NodeWorkItem *> * work,
+                                 MM::Machine * m,
+                                 MM::Transition * tr) = 0;
+   
+  private:
+    MM::VOID stepAny(MM::NodeBehavior::Act act,
+                     MM::Node * node,
                      MM::Instance * i,
-                     MM::Vector<MM::Edge *> * work,
+                     MM::Vector<MM::NodeWorkItem *> * work,
                      MM::Machine * m,
                      MM::Transition * tr);
     
-    MM::VOID stepAny(MM::Node * node,
-                     MM::Instance * i,
-                     MM::Vector<MM::Edge *> * work,
-                     MM::Machine * m,
-                     MM::Transition * tr);
-    
-    //instance manipulation during transitions
+  public:    
+    //instance manipulation during modifications
+    virtual MM::VOID begin(MM::Instance * i,
+                           MM::Machine  * m,
+                           MM::Node     * n) = 0;
+    virtual MM::VOID end(MM::Instance * i,
+                         MM::Machine  * m,
+                         MM::Node     * n) = 0;
+    virtual MM::VOID change(MM::Instance * i,
+                            MM::Machine  * m,
+                            MM::Node     * n) = 0;
+
+    //instance manipulation during transitions/steps
     virtual MM::VOID add(MM::Instance * i,
+                         MM::Machine * m,
                          MM::Node * n,
                          MM::UINT32 amount) = 0;
     virtual MM::VOID sub(MM::Instance * i,
+                         MM::Machine * m,
                          MM::Node * n,
                          MM::UINT32 amount) = 0;
     virtual MM::UINT32 getCapacity(MM::Instance * i,
@@ -129,6 +170,7 @@ namespace MM
     virtual MM::VOID activateTriggerTargets(MM::Node *,
                                             MM::Instance * i,
                                             MM::Machine * m);
+    
     
   public:
     virtual MM::VOID toString(MM::String * buf, MM::Name * name);
