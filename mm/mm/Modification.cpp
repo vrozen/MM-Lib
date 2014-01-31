@@ -25,14 +25,14 @@ const MM::UINT32 MM::Modification::MODIFY_LEN =
   strlen(MM::Modification::MODIFY_STR);
 
 MM::Modification::Modification(MM::Vector<MM::Element *> * elements) :
-  MM::Transformation::Transformation(elements)
+  Transformation(elements)
 {
   this->loc = MM_NULL;
 }
 
 MM::Modification::Modification(MM::Vector<MM::Element *> * elements,
                                MM::Location * loc) :
-  MM::Transformation::Transformation(elements)
+  Transformation(elements)
 {
   this->loc = loc;
 }

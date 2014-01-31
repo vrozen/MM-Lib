@@ -91,7 +91,7 @@ MM::CHAR * MM::Assertion::getMessage()
 
 MM::UINT32 MM::Assertion::getMessageLength()
 {
-  MM::UINT32 len = 0;
+  /*MM::UINT32 len = 0;
   if(loc != MM_NULL)
   {
     len = loc->getLength();
@@ -100,7 +100,8 @@ MM::UINT32 MM::Assertion::getMessageLength()
   {
     len = strlen(msg);
   }
-  return len;
+  return len;*/
+  return strlen(msg);
 }
 
 MM::Location * MM::Assertion::getLocation()
