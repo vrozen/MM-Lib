@@ -15,6 +15,8 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -28,11 +30,13 @@
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "FlowEvent.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -40,8 +44,6 @@
 #include "RefNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "ConverterNodeBehavior.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "InterfaceNode.h"
 #include "Definition.h"
@@ -132,6 +134,46 @@ MM::VOID MM::Evaluator::step(MM::Transition * tr)
 {
   MM::Reflector * r = m->getReflector();
   MM::Instance * i = r->getInstance();
+  prepareAll(i);
+  printf("STEP LEVEL (%ld nodes): pull all\n", pullAllWork->size());
+  stepLevel(tr, pullAllWork);
+  printf("STEP LEVEL (%ld nodes): pull any\n", pullAnyWork->size());
+  stepLevel(tr, pullAnyWork);
+  printf("STEP LEVEL (%ld nodes): push all\n", pushAllWork->size());
+  stepLevel(tr, pushAllWork);
+  printf("STEP LEVEL (%ld nodes): push any\n", pushAnyWork->size());
+  stepLevel(tr, pushAnyWork);
+  printf("\n");
+  clearActiveNodes(i);
+  
+  finalizeAll(i, tr);
+
+  //create temporary string
+  MM::String * str = m->createString(10000);
+  
+  //stringify transition
+  str->clear();
+  tr->toString(str);
+  str->print();
+  
+  //stringify state
+  i->toString(str);
+  str->print();
+  str->clear();
+
+  //notify flow
+  notifyFlow(tr);
+  
+  //clean up instances
+  //notify deletions
+  i->sweep(m);
+  
+  //recycle string
+  str->recycle(m);
+}
+
+MM::VOID MM::Evaluator::step (MM::Instance * i, MM::Transition * tr)
+{
   prepare(i);
   printf("STEP LEVEL (%ld nodes): pull all\n", pullAllWork->size());
   stepLevel(tr, pullAllWork);
@@ -144,6 +186,36 @@ MM::VOID MM::Evaluator::step(MM::Transition * tr)
   printf("\n");
   clearActiveNodes(i);
   finalize(i, tr);
+  notifyFlow(tr);  
+}
+
+MM::VOID MM::Evaluator::prepareAll(MM::Instance * instance)
+{
+  prepare(instance);
+  instance->begin(); //does not clear active and disabled
+  
+  //MM::Map<MM::Declaration *, MM::Instance *> * instances =
+  //instance->getInstances();
+  //MM::Map<MM::Declaration *, MM::Instance *>::Iterator instanceIter =
+  //instances->getIterator();
+  
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instanceMap =
+    instance->getInstances();
+  
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator instanceMapIter =
+    instanceMap->getIterator();
+  
+  while(instanceMapIter.hasNext() == MM_TRUE)
+  {
+    MM::Vector<MM::Instance *> * instanceVect = instanceMapIter.getNext();
+    
+    MM::Vector<MM::Instance *>::Iterator instanceVectIter = instanceVect->getIterator();
+    while(instanceVectIter.hasNext() == MM_TRUE)
+    {
+      MM::Instance * instance = instanceVectIter.getNext();
+      prepareAll(instance);
+    }
+  }
 }
 
 MM::VOID MM::Evaluator::prepare(MM::Instance * instance)
@@ -204,19 +276,6 @@ MM::VOID MM::Evaluator::prepare(MM::Instance * instance)
       MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
       pushAnyWork->add(ni);
     }
-  }
-
-  instance->begin(); //does not clear active and disabled
-  
-  MM::Map<MM::Declaration *, MM::Instance *> * instances =
-    instance->getInstances();
-  MM::Map<MM::Declaration *, MM::Instance *>::Iterator instanceIter =
-    instances->getIterator();
-
-  while(instanceIter.hasNext() == MM_TRUE)
-  {
-    MM::Instance * iChild = instanceIter.getNext();
-    prepare(iChild);
   }
 }
 
@@ -346,7 +405,56 @@ MM::VOID MM::Evaluator::stepNodeAll(MM::Transition * tr,
   }
 }*/
 
-MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * i,
+//FIXME: ugly hacky code that seems to work
+/*
+MM::Name * MM::Evaluator::synthesizeInstanceName(MM::Instance * i)
+{
+  MM::Name * name = MM_NULL;
+  MM::Instance * curInstance = i;
+  
+  while(curInstance != MM_NULL)
+  {
+    MM::Element * curDecl = curInstance->getDeclaration();
+    
+    if(curDecl != MM_NULL)
+    {
+      if(curDecl->instanceof(MM::T_Declaration) == MM_TRUE)
+      {
+        MM::Name * curName = curDecl->getName();
+      
+        if(curName != MM_NULL)
+        {
+          MM::Name * n = m->createName(curName);
+          n->setName(name);
+          name = n;
+        }
+      }
+      else
+      {
+        MM::Name * curName = curDecl->getName();
+        
+        if(curName != MM_NULL)
+        {
+          MM::CHAR buf[256] = { 0 };
+          MM::Instance * parentInstance = curInstance->getParent();
+          MM::UINT32 pos = parentInstance->getIndex(curDecl, curInstance);
+          snprintf(buf, 256, "%s[%ld]", curName->getBuffer(), pos);
+          MM::Name * n = m->createName(buf);
+          n->setName(name);
+          name = n;
+        }
+      }
+    }
+    curInstance = curInstance->getParent();
+  }
+ 
+  return name;
+}*/
+
+/*
+MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * instance,
+                                                 MM::Instance * srcInstance,
+                                                 MM::Instance * tgtInstance,
                                                  MM::Node * src,
                                                  MM::UINT32 flow,
                                                  MM::Node * tgt)
@@ -354,35 +462,43 @@ MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * i,
   MM::Name * srcName = src->getName();
   MM::Name * tgtName = tgt->getName();
   
-  MM::Name * edgeName = MM_NULL;
-  MM::Name * curName = MM_NULL;
-  MM::Instance * curInstance = i;
+  MM::Name * srcNodeName = m->createName(srcName);
+  MM::Name * tgtNodeName = m->createName(tgtName);
   
-  while(curInstance != MM_NULL)
+  MM::Name * srcInstName = synthesizeInstanceName(srcInstance);
+  MM::Name * tgtInstName = synthesizeInstanceName(tgtInstance);
+  
+  if(srcInstName != MM_NULL)
   {
-    curName = curInstance->getName();
-    if(curName != MM_NULL)
-    {
-      MM::Name * name = m->createName(curName);
-      name->setName(edgeName);
-      edgeName = name;
-    }
-    curInstance = curInstance->getParent();
+    srcInstName->append(srcNodeName);
+  }
+  else
+  {
+    srcInstName = srcNodeName;
   }
   
-  MM::Name * srcName2 = m->createName(srcName);
-  MM::Name * tgtName2 = m->createName(tgtName);
-  MM::Exp * exp = m->createNumberValExp(flow * 100);
-  MM::FlowEdge * edge = m->createFlowEdge(edgeName, srcName2, exp, tgtName2);
+  if(tgtInstName != MM_NULL)
+  {
+    tgtInstName->append(tgtNodeName);
+  }
+  else
+  {
+    tgtInstName = tgtNodeName;
+  }
   
- //TODO: do this in a cleaner way
+  MM::Exp * exp = m->createNumberValExp(flow * 100);
+  MM::FlowEdge * edge = m->createFlowEdge(MM_NULL, srcInstName, exp, tgtInstName);
+  
+  //TODO: do this in a cleaner way
   edge->setSource(src);
   edge->setTarget(tgt);
-  edge->setInstance(i);
+  edge->setEdgeInstance(instance);
+  edge->setSourceInstance(srcInstance);
+  edge->setTargetInstance(tgtInstance);
   
   return edge;
 }
-
+*/
 
 /*
 //process an any instance node
@@ -473,22 +589,35 @@ MM::VOID MM::Evaluator::stepNodeAny(MM::Transition * tr,
 }
 */
 
+
+MM::VOID MM::Evaluator::finalizeAll(MM::Instance * i, MM::Transition * tr)
+{
+  finalize(i, tr);
+  
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instanceMap =
+    i->getInstances();
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator instanceMapIter =
+    instanceMap->getIterator();
+  while(instanceMapIter.hasNext() == MM_TRUE)
+  {
+    MM::Vector<MM::Instance *> * instanceVect = instanceMapIter.getNext();
+    
+    MM::Vector<MM::Instance *>::Iterator instanceVectIter = instanceVect->getIterator();
+    
+    while(instanceVectIter.hasNext() == MM_TRUE)
+    {
+      MM::Instance * instance = instanceVectIter.getNext();
+      finalizeAll(instance, tr);
+    }
+  }
+}
+
+
 MM::VOID MM::Evaluator::finalize(MM::Instance * i, MM::Transition * tr)
 {
-  MM::Map<MM::Declaration *, MM::Instance *> * instances =
-  i->getInstances();
-  MM::Map<MM::Declaration *, MM::Instance *>::Iterator instanceIter =
-  instances->getIterator();
-  
-  i->commit(); //new values become current values
+  i->finalize(); //new values become current values
   
   setActiveNodes(i, tr);
-  
-  while(instanceIter.hasNext() == MM_TRUE)
-  {
-    MM::Instance * iChild = instanceIter.getNext();
-    finalize(iChild, tr);
-  }
 }
 
 //initialize active nodes in a start state
@@ -520,31 +649,46 @@ MM::VOID MM::Evaluator::initStartState(MM::Instance * i)
     }
   }
   
-  MM::Map<MM::Declaration *, MM::Instance *> * instances =
-  i->getInstances();
-  MM::Map<MM::Declaration *, MM::Instance *>::Iterator instanceIter =
-  instances->getIterator();
-  
-  while(instanceIter.hasNext() == MM_TRUE)
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instanceMap =
+    i->getInstances();
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator instanceMapIter =
+    instanceMap->getIterator();
+  while(instanceMapIter.hasNext() == MM_TRUE)
   {
-    MM::Instance * iChild = instanceIter.getNext();
-    initStartState(iChild);
+    MM::Vector<MM::Instance *> * instanceVect = instanceMapIter.getNext();
+    
+    MM::Vector<MM::Instance *>::Iterator instanceVectIter = instanceVect->getIterator();
+    
+    while(instanceVectIter.hasNext() == MM_TRUE)
+    {
+      MM::Instance * instance = instanceVectIter.getNext();
+      initStartState(instance);
+    }
   }
 }
-
 
 MM::VOID MM::Evaluator::clearActiveNodes(MM::Instance * i)
 {
   i->clearActive();
   i->clearDisabled();
   
-  MM::Map<MM::Declaration *, MM::Instance *> * instances = i->getInstances();
-  MM::Map<MM::Declaration *, MM::Instance *>::Iterator iIter = instances->getIterator();
-  while(iIter.hasNext() == MM_TRUE)
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instanceMap =
+  i->getInstances();
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator instanceMapIter =
+  instanceMap->getIterator();
+  while(instanceMapIter.hasNext() == MM_TRUE)
   {
-    MM::Instance * instance = iIter.getNext();
-    clearActiveNodes(instance);
+    MM::Vector<MM::Instance *> * instanceVect = instanceMapIter.getNext();
+    
+    MM::Vector<MM::Instance *>::Iterator instanceVectIter = instanceVect->getIterator();
+    
+    while(instanceVectIter.hasNext() == MM_TRUE)
+    {
+      MM::Instance * instance = instanceVectIter.getNext();
+      clearActiveNodes(instance);
+    }
   }
+  
 }
 
 //set active nodes for an instance
@@ -564,10 +708,8 @@ MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
       MM::NodeBehavior * behavior = node->getBehavior();
       MM::BOOLEAN activateTriggers = MM_FALSE;
       
-      //fixme RefNode instead of RefNodeBehavior
       if(behavior->Recyclable::instanceof(MM::T_RefNodeBehavior) == MM_FALSE)
       {
-      //fixme
         if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO)
         {
           if(node->isDisabled(i, this, m) == MM_FALSE)
@@ -580,8 +722,8 @@ MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
             i->setDisabled(node);
           }
         }
-      
-        if(node->isSatisfied(i, tr) == MM_TRUE)
+        
+        if(node->isSatisfied(i,tr) == MM_TRUE)
         {
           activateTriggers = MM_TRUE;
         }
@@ -595,6 +737,30 @@ MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
   }
 }
 
+MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
+{
+  MM::Vector<MM::Element *> * elements = tr->getElements();
+  MM::Vector<MM::Element *>::Iterator eIter = elements->getIterator();
+  MM::Element * element;
+  
+  while(eIter.hasNext() == MM_TRUE)
+  {
+    element = eIter.getNext();
+    
+    if(element->instanceof(MM::T_FlowEvent) == MM_TRUE)
+    {
+      MM::FlowEvent * event = (MM::FlowEvent *) element;
+      
+      MM::Instance * srcInstance = event->getSourceInstance();
+      MM::Instance * tgtInstance = event->getTargetInstance();
+      MM::Node * srcNode = event->getSourceNode();
+      MM::Node * tgtNode = event->getTargetNode();
+      MM::UINT32 amount = event->getAmount();
+      srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
+      tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
+    }
+  }
+}
 
 /*
 //perform triggers
@@ -979,13 +1145,46 @@ MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
   
   if(element->instanceof(MM::T_Node) == MM_TRUE)
   {
-    val = i->getValue((MM::Node*)element);
+    MM::Node * curNode = (MM::Node *) element;
+    MM::NodeBehavior * curNodeBehavior = curNode->getBehavior();
+    MM::Instance * curInstance = i;
+    
+    while(curNodeBehavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
+    {
+      MM::Edge * aliasEdge = ((MM::RefNodeBehavior *)curNodeBehavior)->getAlias();
+      if(aliasEdge != MM_NULL)
+      {
+        curNode = aliasEdge->getSource();
+        
+        //internally bound: alias source node is in the same type
+        MM::Definition * def = curInstance->getDefinition();
+        if(def->containsElement(curNode) == MM_TRUE)
+        {
+          curNodeBehavior = curNode->getBehavior();
+        }
+        else
+        {
+          //externally bound: alias source node is in the parent type
+          //ASSUME: parent definition contains curNode
+          curInstance = curInstance->getParent();
+          break;
+        }
+      }
+      else
+      {
+        printf("NodeBehavior Error: %s has unresolved alias!\n",
+               curNode->getName()->getBuffer());
+        break;
+      }
+    }
+    
+    val = curInstance->getValue(curNode);
   }
   
   return m->createNumberValExp(val * 100);
 }
 
-MM::ValExp * MM::Evaluator::eval(MM::AllExp exp,
+MM::ValExp * MM::Evaluator::eval(MM::AllExp * exp,
                                  MM::Instance * i,
                                  MM::Edge * e)
 {

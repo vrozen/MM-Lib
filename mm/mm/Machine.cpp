@@ -14,6 +14,8 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -22,6 +24,7 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "FlowEvent.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Assertion.h"
@@ -31,6 +34,7 @@
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "PoolNodeBehavior.h"
@@ -39,8 +43,6 @@
 #include "GateNodeBehavior.h"
 #include "RefNodeBehavior.h"
 #include "ConverterNodeBehavior.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "InterfaceNode.h"
 #include "Definition.h"
@@ -83,6 +85,8 @@ MM::Machine::Machine() : MM::Recycler()
   //initialize the global scope type
   reflector->init(type);
   
+  delegates = new MM::Vector<MM::Machine::InstanceObserver *>();
+  
   //initialize the start state (set active nodes)
   //evaluator->initStartState(inst);
 }
@@ -90,6 +94,7 @@ MM::Machine::Machine() : MM::Recycler()
 MM::Machine::~Machine()
 {
   delete reflector;
+  delete delegates;
   evaluator->recycle(this);
   inst->recycle(this);
   log->recycle(this);
@@ -113,58 +118,6 @@ MM::BOOLEAN MM::Machine::instanceof(MM::TID tid)
   }
 }
 
-/*
-MM::UINT32 MM::Machine::addInstance (MM::UINT32   inst, //0 -> global scope
-                                     MM::UINT32   type,
-                                     MM::CHAR   * name)
-{
-  MM::UINT32 pools = 0; //defs[def]->getPoolCount();
-  MM::UINT32 gates = 0; //defs[def]->getGateCount();
-  MM::UINT32 insts = 0; //defs[def]->getInstanceCount();
-
-  MM::UINT32 size
-    = sizeof(Instance)
-    + pools * sizeof(MM::INT32)
-    + gates * 2 * sizeof(MM::INT32)
-    + insts * sizeof(MM::UINT32);
-  
-  MM::Instance * i = (MM::Instance*) malloc(size);
-  MM::UINT32 pos = curInst;
-  i->pools = pools;
-  i->gates = gates;
-  i->insts = insts;
-  
-  curInst++;
-  
-  this->insts[pos] = i;
-  return pos;
-}
-*/
-
-/*
-MM::Transition * MM::Machine::step()
-{  
-  //A. prepare
-  //1. set temporary values (new, old) to val
-  //   for each node -> reset()
-  
-  
-  //B. activity
-  //1. pull all nodes
-  //2. pull any nodes
-  //3. push all nodes
-  //4. push any nodes
-  
-  //C. finalize
-  //1. set temporary values (new, old) to zero
-  //2. redistribute gates
-  //3. set active nodes in next state
-  //4. process trigger to activate nodes in next state
-  
-  return NULL;
-}
-*/
-
 extern MM::Program * MM_parse(const MM::CHAR * input);
 extern MM::Program * MM_parseFile(const MM::CHAR * input);
 
@@ -186,6 +139,128 @@ MM::Definition * MM::Machine::getDefinition()
 MM::Instance * MM::Machine::getInstance()
 {
   return inst;
+}
+
+MM::UINT32 MM::Machine::getDefinition(MM::UINT32 definition, //0-> global scope
+                                      MM::CHAR * name)
+{
+  MM::Element * element = MM_NULL;
+  MM::Definition * def = (MM::Definition *) definition;
+  
+  if(def == MM_NULL)
+  {
+    def = type;
+  }
+  
+  MM::Name * n = createName(name);
+  element = def->getElement(n);
+  n->recycle(this);
+  
+  return (MM::UINT32) element;
+}
+
+
+MM::UINT32 MM::Machine::getInstance(MM::UINT32 instance, //0 -> global scope
+                                    MM::CHAR  * name)
+{
+  MM::Instance * r = 0;
+  
+  if(instance == 0)
+  {
+    r = this->inst;
+  }
+  else
+  {
+    MM::Instance * i = (MM::Instance *) instance;
+    MM::Definition * def = i->getDefinition();
+    
+    MM::Name * n = createName(name);
+    MM::Element * e = def->getElement(n);
+    n->recycle(this);
+    
+    if(e->instanceof(MM::T_Declaration) == MM_TRUE)
+    {
+      MM::Declaration * decl = (MM::Declaration *) e;
+      r = i->getInstance(decl);
+    }
+  }
+  return (MM::UINT32) r;
+}
+
+MM::VOID MM::Machine::getName (MM::UINT32   element,
+                               MM::CHAR *   buffer,
+                               MM::UINT32   bufferSize)
+{
+  MM::Element * e = (MM::Element *) element;
+  MM::Name * n = e->getName();  
+  MM::CHAR * buf = n->getBuffer();
+  MM::UINT32 len = n->getLength();
+  
+  if(len <= bufferSize)
+  {
+    snprintf(buffer, bufferSize, "%s", buf);
+  }
+}
+
+MM::VOID MM::Machine::activate(MM::UINT32 node,
+                               MM::UINT32 instance)
+{
+  MM::Node * n = (MM::Node *) node;
+  MM::Instance * i = (MM::Instance *) instance;
+  i->setActive(n);
+}
+
+MM::VOID MM::Machine::step()
+{
+  MM::Transition * tr = createTransition();
+  evaluator->step(tr);
+  tr->recycle(this);
+}
+
+/*
+MM::VOID MM::Machine::step (MM::CHAR * buf,
+                            MM::UINT32 size)
+{
+  MM::Transition * tr = createTransition();
+  evaluator->step(tr);
+  MM::String * str = new MM::String(buf, size);
+  tr->toString(str);  
+  delete str;
+  tr->recycle(this);
+}
+
+MM::VOID MM::Machine::step (MM::UINT32 instance,
+                            MM::CHAR * buf,
+                            MM::UINT32 size)
+{
+  MM::Instance * i = (MM::Instance *) instance;  
+  MM::Transition * tr = createTransition();
+  MM::String * str = new MM::String(buf, size);
+  evaluator->step(i, tr);
+  tr->toString(str);
+  delete str;
+  tr->recycle(this);
+}
+*/
+
+MM::UINT32 MM::Machine::addObserver(MM::UINT32 instance,
+                       //MM::VOID * caller,
+                       MM::CALLBACK callback)
+{
+  MM::Machine::InstanceObserver * io =
+    new MM::Machine::InstanceObserver((MM::Instance*)instance, callback);
+  
+  delegates->add(io);
+  
+  return 0;
+}
+
+MM::VOID MM::Machine::removeObserver (MM::UINT32 observer)
+{
+  MM::Machine::InstanceObserver * io =
+    (MM::Machine::InstanceObserver *) observer;
+  delegates->remove(io);
+  delete io;
 }
 
 MM::String * MM::Machine::getLog()
@@ -214,12 +289,13 @@ MM::VOID MM::Machine::eval (const MM::CHAR * input)
     }
   }
   
-  MM::Instance * inst = reflector->getInstance();
+  /*
+   MM::Instance * inst = reflector->getInstance();
 
   buf->clear();
   inst->toString(buf);
   buf->print();
-  
+
   for(int i = 0; i < 10; i ++)
   {
     MM::Transition * tr = createTransition();
@@ -233,7 +309,7 @@ MM::VOID MM::Machine::eval (const MM::CHAR * input)
   
   printf("\n\nHistory\n\n");
   log->print();
-  
+  */
   buf->recycle(this);
   program->recycle(this);
 }
@@ -304,7 +380,7 @@ MM::Map<MM::Name *, MM::Node *, MM::Name::Compare> * MM::Machine::createName2Nod
 
 MM::String * MM::Machine::createString(MM::UINT32 size)
 {
-  MM::CHAR * buffer = createBuffer(size);
+  MM::CHAR * buffer = createBuffer(size+1);
   MM::String * str = new MM::String(buffer,size);
   MM::Recycler::create(str);
   return str;
@@ -421,7 +497,7 @@ MM::Name * MM::Machine::createName(MM::Name * name)
   MM::CHAR * buf = name->getBuffer();
   MM::UINT32 len = name->getLength();
   
-  MM::CHAR * buf2 = createBuffer(len);
+  MM::CHAR * buf2 = createBuffer(len+1);
   strncpy(buf2, buf, len);
   
   MM::Name * r = new MM::Name(buf2, len);
@@ -434,7 +510,7 @@ MM::Name * MM::Machine::createName(MM::Name * name)
 MM::Name * MM::Machine::createName(MM::CHAR * buf)
 {
   MM::UINT32 len = strlen(buf);
-  MM::CHAR * buf2 = createBuffer(len);
+  MM::CHAR * buf2 = createBuffer(len+1);
   strncpy(buf2, buf, len);
   
   MM::Name * r = new MM::Name(buf2, len);
@@ -515,6 +591,23 @@ MM::Transition * MM::Machine::createTransition(MM::Vector<MM::Element *> *
   return r;
 }
 
+MM::FlowEvent * MM::Machine::createFlowEvent(MM::Instance * actInstance,
+                                             MM::Node     * actNode,
+                                             MM::Edge     * actEdge,
+                                             MM::Instance * srcInstance,
+                                             MM::Node     * srcNode,
+                                             MM::UINT32     amount,
+                                             MM::Instance * tgtInstance,
+                                             MM::Node     * tgtNode)
+{
+  MM::FlowEvent * r = new MM::FlowEvent(actInstance, actNode, actEdge,
+                                        srcInstance, srcNode,
+                                        amount,
+                                        tgtInstance, tgtNode);
+  MM::Recycler::create(r);
+  return r;
+}
+
 MM::Node * MM::Machine::createSourceNode(MM::NodeBehavior::IO   io,
                                          MM::NodeBehavior::When when,
                                          MM::Name             * name)
@@ -560,12 +653,16 @@ MM::Node * MM::Machine::createPoolNode(MM::NodeBehavior::IO    io,
                                        MM::NodeBehavior::Act   act,
                                        MM::NodeBehavior::How   how,
                                        MM::Name      * name,
+                                       MM::Name      * of,
                                        MM::UINT32      at,
                                        MM::UINT32      max,
                                        MM::Exp       * exp)
 {
+  MM::Map<MM::Name *, MM::Node *, MM::Name::Compare> * interfaces =
+  createName2NodeMap();
+  
   MM::PoolNodeBehavior * behavior =
-    new MM::PoolNodeBehavior(io,when,act,how,at,max,exp);
+    new MM::PoolNodeBehavior(io,when,act,how,of,at,max,exp,interfaces);
   MM::Recycler::create(behavior);
   
   MM::Node * r = new MM::Node(name, behavior);
@@ -579,36 +676,13 @@ MM::Node * MM::Machine::createConverterNode(MM::NodeBehavior::IO    io,
                                             MM::Name      * from,
                                             MM::Name      * to)
 {
-  MM::Name * sourceName = createName((MM::CHAR*)"__source");
-  MM::Name * drainName = createName((MM::CHAR*)"__drain");
-
-  MM::Name * sourceEdgeName = createName(name);
-  MM::Name * targetEdgeName = createName(name);
-  
-  MM::Node * sourceNode = createSourceNode(io,
-                   MM::NodeBehavior::WHEN_PASSIVE,
-                   sourceName);
-  MM::Node * drainNode = createDrainNode(io,
-                  when,
-                  MM::NodeBehavior::HOW_ALL,
-                  drainName);
-  MM::Exp * e1 = createOneExp();
-  MM::Exp * e2 = createOneExp();
-  MM::Exp * exp = createBinExp(e1, MM::Operator::OP_MUL, e2);
-  
-  MM::Edge * triggerEdge = createStateEdge(MM_NULL, sourceEdgeName, exp, targetEdgeName);
-  triggerEdge->setSource(drainNode);
-  triggerEdge->setTarget(sourceNode);
-
-  reflector->init(drainNode);
-  reflector->init(sourceNode);
-  drainNode->addTrigger(triggerEdge);
-  
   MM::ConverterNodeBehavior * behavior =
-    new MM::ConverterNodeBehavior(io, when, from, to, sourceNode, drainNode, triggerEdge);
+    new MM::ConverterNodeBehavior(io, when, from, to);
   MM::Recycler::create(behavior);
   
   MM::Node * r = new MM::Node(name, behavior);
+  //converter does not own edges
+  r->setEdgeOwnership(MM_FALSE);
   MM::Recycler::create(r);
   return r;
 }
@@ -624,10 +698,10 @@ MM::Node * MM::Machine::createRefNode(MM::NodeBehavior::IO io, MM::Name * name)
 
 
 MM::InterfaceNode * MM::Machine::createInterfaceNode(MM::Name * name,
-                                                     MM::Declaration * decl,
+                                                     MM::Element * parent,
                                                      MM::Node * ref)
 {
-  MM::InterfaceNode * r = new MM::InterfaceNode(name,decl,ref);
+  MM::InterfaceNode * r = new MM::InterfaceNode(name, parent, ref);
   MM::Recycler::create(r);
   return r;
 }
@@ -640,6 +714,25 @@ MM::StateEdge * MM::Machine::createStateEdge(MM::Name * name,
   MM::StateEdge * r = new MM::StateEdge(name,src,exp,tgt);
   MM::Recycler::create(r);
   return r;
+}
+
+MM::StateEdge * MM::Machine::createAnonymousTriggerEdge(MM::Node * src,
+                                                        MM::Node * tgt)
+{
+  MM::Exp * e1 = createOneExp();
+  MM::Exp * e2 = createOneExp();
+  MM::Exp * exp = createBinExp(e1, MM::Operator::OP_MUL, e2);
+  
+  MM::Name * srcName = src->getName();
+  MM::Name * tgtName = tgt->getName();
+  
+  MM::Name * triggerSrcName = createName(srcName);
+  MM::Name * triggerTgtName = createName(tgtName);
+  
+  MM::StateEdge * triggerEdge = createStateEdge(MM_NULL, triggerSrcName, exp, triggerTgtName);
+  triggerEdge->setSource(src);
+  triggerEdge->setTarget(tgt);
+  return triggerEdge;
 }
 
 MM::FlowEdge * MM::Machine::createFlowEdge(MM::Name * name,
@@ -686,7 +779,8 @@ MM::Assertion * MM::Machine::createAssertion(YYLTYPE  * assertLoc,
 {
   MM::Location * loc = MM::Machine::createLocation(assertLoc);
   MM::UINT32 len = strlen(msg);
-  MM::CHAR * buf = MM::Recycler::createBuffer(len);
+
+  MM::CHAR * buf = MM::Recycler::createBuffer(len+1);
   strncpy(buf, msg, len);
   MM::Assertion * r = new MM::Assertion(name,exp,buf,loc);
   
@@ -699,7 +793,7 @@ MM::Assertion * MM::Machine::createAssertion(MM::Name * name,
                                              MM::CHAR * msg)
 {
   MM::UINT32 len = strlen(msg);
-  MM::CHAR * buf = MM::Recycler::createBuffer(len);
+  MM::CHAR * buf = MM::Recycler::createBuffer(len+1);
   strncpy(buf, msg, len);
   MM::Assertion * r = new MM::Assertion(name,exp,buf);
   
@@ -917,9 +1011,9 @@ MM::VarExp * MM::Machine::createVarExp(MM::Name * name)
 
 MM::Instance * MM::Machine::createInstance(MM::Instance * parent,
                                            MM::Definition * def,
-                                           MM::Name * name)
+                                           MM::Element * decl)
 {
-  MM::Instance * instance = new MM::Instance(parent, def, name);
+  MM::Instance * instance = new MM::Instance(parent, def, decl);
   MM::Recycler::create(instance);
   return instance;
 }

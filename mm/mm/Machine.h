@@ -19,12 +19,64 @@ namespace MM
   public:
     static const MM::UINT32 LOG_SIZE;
 
+  public:
+    class InstanceObserver : MM::Observer
+    {
+    private:
+      MM::Instance * instance;
+      MM::CALLBACK callback;
+    public:
+      InstanceObserver(MM::Instance * instance,
+                       MM::CALLBACK callback) : Observer()
+      {
+        this->instance = instance;
+        this->callback = callback;
+        instance->addObserver(this);
+      }
+      
+      ~InstanceObserver()
+      {
+        instance->removeObserver(this);
+      }
+      
+      MM::TID getTypeId()
+      {
+        return MM::T_InstanceObserver;
+      }
+      
+      MM::BOOLEAN instanceof(MM::TID tid)
+      {
+        if(tid == MM::T_InstanceObserver)
+        {
+          return MM_TRUE;
+        }
+        else
+        {
+          return MM::Observer::instanceof(tid);
+        }
+      }
+      
+      MM::VOID update(MM::Observable * observable, //observable object
+                      MM::VOID * aux,              //auxiliary context
+                      MM::UINT32 message,          //message
+                      MM::VOID * object)           //subject object
+      {
+        this->callback(message,                //message
+                      (MM::UINT32) observable, //instance
+                      (MM::UINT32) object,     //element
+                      (MM::UINT32) aux);       //value
+      }
+    };
+    
+    
   private:
     MM::Reflector  * reflector;
     MM::Evaluator  * evaluator;
     MM::Definition * type;    //global current types
     MM::String     * log;     //global log of what happened
     MM::Instance   * inst;    //global instance
+    
+    MM::Vector<MM::Machine::InstanceObserver *> * delegates;
     
   public:
     Machine();
@@ -50,7 +102,8 @@ namespace MM
     
     //takes a step in an MM model
     MM::VOID step ();
-    MM::VOID step (MM::UINT32 instance);
+    MM::VOID step (MM::CHAR * buf, MM::UINT32 size);
+    MM::VOID step (MM::UINT32 instance, MM::CHAR * buf, MM::UINT32 size);
     
     //resets all instances to definition start values
     MM::VOID reset ();
@@ -67,6 +120,9 @@ namespace MM
     MM::UINT32 getInstance(MM::UINT32 instance, //0 -> global scope
                            MM::CHAR  * name);
     
+    MM::UINT32 getDefinition(MM::UINT32 definition,
+                            MM::CHAR* name); //0 -> global type
+    
     MM::VOID getName (MM::UINT32   element,
                       MM::CHAR *   buffer,
                       MM::UINT32   bufferSize);
@@ -78,7 +134,7 @@ namespace MM
     //                       MM::CALLBACK callback);
    
     MM::UINT32 addObserver(MM::UINT32 instance,
-                           MM::VOID * caller,
+                           //MM::VOID * caller,
                            MM::CALLBACK callback);
     
     //removes an observer from a pools
@@ -146,6 +202,15 @@ namespace MM
     MM::Transition * createTransition(MM::Vector<MM::Element *> * elements,
                                       YYLTYPE * stepLoc);
     
+    MM::FlowEvent * createFlowEvent(MM::Instance * actInstance,
+                                    MM::Node     * actNode,
+                                    MM::Edge     * actEdge,
+                                    MM::Instance * srcInstance,
+                                    MM::Node     * srcNode,
+                                    MM::UINT32     amount,
+                                    MM::Instance * tgtInstance,
+                                    MM::Node     * tgtNode);
+    
     MM::Node * createSourceNode(MM::NodeBehavior::IO    io,
                                 MM::NodeBehavior::When  when,
                                 MM::Name      * name);
@@ -166,6 +231,7 @@ namespace MM
                               MM::NodeBehavior::Act   act,
                               MM::NodeBehavior::How   how,
                               MM::Name      * name,
+                              MM::Name      * of,
                               MM::UINT32      at,
                               MM::UINT32      max,
                               MM::Exp       * exp);
@@ -178,14 +244,17 @@ namespace MM
                                   
     MM::Node * createRefNode(MM::NodeBehavior::IO io, MM::Name * name);
     
-    MM::InterfaceNode * createInterfaceNode(MM::Name * name,
-                                            MM::Declaration * decl,
-                                            MM::Node * ref);
+    MM::InterfaceNode * createInterfaceNode(MM::Name    * name,
+                                            MM::Element * parent,
+                                            MM::Node    * ref);
     
     MM::StateEdge * createStateEdge(MM::Name * name,
                                     MM::Name * src,
                                     MM::Exp  * exp,
                                     MM::Name * tgt);
+    
+    MM::StateEdge * createAnonymousTriggerEdge(MM::Node * src,
+                                               MM::Node * tgt);
     
     MM::FlowEdge * createFlowEdge(MM::Name * name,
                                   MM::Name * src,
@@ -283,7 +352,7 @@ namespace MM
 
     MM::Instance * createInstance(MM::Instance * parent,
                                   MM::Definition * def,
-                                  MM::Name * name);
+                                  MM::Element * decl);
   };
 }
 #endif /* defined(__mm__Machine__) */

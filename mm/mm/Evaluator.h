@@ -49,13 +49,15 @@ namespace MM
     
     MM::Instance * getInitialState(MM::Definition * def);
     
-    MM::VOID step(MM::Transition * buf);
-    
+    MM::VOID step (MM::Transition * tr);
+    MM::VOID step (MM::Instance * i, MM::Transition * tr);
     
     MM::VOID initStartState(MM::Instance * i);
 
   private:
     //phase 1
+    MM::VOID prepareAll(MM::Instance * instance);
+    
     MM::VOID prepare(MM::Instance * instance);
 
     
@@ -81,16 +83,23 @@ namespace MM
     //phase 3
     MM::VOID finalize(MM::Instance * instance, MM::Transition * tr);
     
-  public:
-    MM::FlowEdge * synthesizeFlowEdge(MM::Instance * i,
-                                      MM::Node * src,
-                                      MM::UINT32 flow,
-                                      MM::Node * tgt);
+    MM::VOID finalizeAll(MM::Instance * instance, MM::Transition * tr);
+    
+    
+    //MM::Name * synthesizeInstanceName(MM::Instance * i);
+    //MM::FlowEdge * synthesizeFlowEdge(MM::Instance * edgeInstance,
+    //                                  MM::Instance * srcInstance,
+    //                                  MM::Instance * tgtInstance,
+    //                                  MM::Node * src,
+    //                                  MM::UINT32 flow,
+    //                                  MM::Node * tgt);
   private:
     MM::VOID clearActiveNodes(MM::Instance * i);
     
     MM::VOID setActiveNodes(MM::Instance * i,
                             MM::Transition * tr);
+    
+    MM::VOID notifyFlow(MM::Transition * tr);
     
     //MM::VOID activateTriggerTargets(MM::Instance * i,
     //                        MM::Node * n);
@@ -137,7 +146,7 @@ namespace MM
                       MM::Instance * i,
                       MM::Edge * e);
     
-    MM::ValExp * eval(MM::AllExp exp,
+    MM::ValExp * eval(MM::AllExp * exp,
                       MM::Instance * i,
                       MM::Edge * e);
     

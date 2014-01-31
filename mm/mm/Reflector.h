@@ -113,6 +113,8 @@ namespace  MM
     MM::VOID deinit(MM::Definition * def, MM::Node * node, MM::DrainNodeBehavior * behavior);
     MM::VOID deinit(MM::Definition * def, MM::Node * node, MM::SourceNodeBehavior * behavior);
     MM::VOID deinit(MM::Definition * def, MM::Node * node, MM::RefNodeBehavior * behavior);
+    MM::VOID deinit(MM::Definition * def, MM::Node * node, MM::ConverterNodeBehavior * behavior);
+    
     MM::VOID deinit(MM::Definition * def, MM::Definition * def2);
     MM::VOID deinit(MM::Definition * def, MM::Declaration * decl);
     MM::VOID deinit(MM::Definition * def, MM::FlowEdge * edge);

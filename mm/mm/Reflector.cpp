@@ -15,6 +15,8 @@
 #include "Vector.h"
 #include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
@@ -28,11 +30,13 @@
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
+#include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "FlowEvent.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -40,8 +44,6 @@
 #include "RefNodeBehavior.h"
 #include "GateNodeBehavior.h"
 #include "ConverterNodeBehavior.h"
-#include "Observer.h"
-#include "Observable.h"
 #include "Declaration.h"
 #include "InterfaceNode.h"
 #include "Definition.h"
@@ -119,7 +121,7 @@ MM::VOID MM::Reflector::merge(MM::Modification * modification)
     {
       e->getName()->print();
     }
-    printf(".\n");
+    printf("\n");
     merge(m->getDefinition(), e);
   }
   
@@ -343,7 +345,6 @@ MM::VOID MM::Reflector::init(MM::Definition * def)
     m->createName2ElementMap();
   
   MM::Vector<Element *> * elements = def->getElements();
-  MM::Vector<MM::Element *>::Iterator i = elements->getIterator();
   
   def->setPullAllNodes(pullAllNodes);
   def->setPullAnyNodes(pullAnyNodes);
@@ -351,50 +352,59 @@ MM::VOID MM::Reflector::init(MM::Definition * def)
   def->setPushAnyNodes(pushAnyNodes);
   def->setNameToElementMap(n2e);
   
+  MM::UINT32 size = elements->size();
+  
+  //NOTE: don't use iterator because the number of nodes and edges may increase
+  //      during the initialization... :-S :-)
+  //      however, the new nodes are initialized already (converter sugar)
+  //NOTE: decision: we may never decrease the amount of elements.
+  //NOTE: decision: all initializations initialize extra generated elements
+  
   //init types
-  for(i.reset(); i.hasNext() == MM_TRUE; )
+  for(MM::UINT32 i = 0; i < size; i++)
   {
-    MM::Element * e = i.getNext();
+    MM::Element * e = elements->elementAt(i);
     if(e->getTypeId() == MM::T_Definition)
     {
       init(def, (MM::Definition *) e);
     }
   }
-  
+ 
   //init nodes
-  for(i.reset(); i.hasNext() == MM_TRUE; )
+  for(MM::UINT32 i = 0; i < size; i++)
   {
-    MM::Element * e = i.getNext();
+    MM::Element * e = elements->elementAt(i);
     if(e->instanceof(MM::T_Node) == MM_TRUE)
     {
       init(def, (MM::Node *) e);
     }
   }
   
-  //init edges
-  for(i.reset(); i.hasNext() == MM_TRUE; )
-  {
-    MM::Element * e = i.getNext();
-    if(e->instanceof(MM::T_Edge) == MM_TRUE)
-    {
-      init(def, (MM::Edge *) e);
-    }
-  }
-  
   //init declarations
-  for(i.reset(); i.hasNext() == MM_TRUE; )
+  for(MM::UINT32 i = 0; i < size; i++)
   {
-    MM::Element * e = i.getNext();
+    MM::Element * e = elements->elementAt(i);
+
     if(e->getTypeId() == MM::T_Declaration)
     {
       init(def, (MM::Declaration *) e);
     }
   }
   
-  //init assertions
-  for(i.reset(); i.hasNext() == MM_TRUE; )
+  //init edges
+  for(MM::UINT32 i = 0; i < size; i++)
   {
-    MM::Element * e = i.getNext();
+    MM::Element * e = elements->elementAt(i);
+    if(e->instanceof(MM::T_Edge) == MM_TRUE)
+    {
+      init(def, (MM::Edge *) e);
+    }
+  }
+  
+  //init assertions
+  for(MM::UINT32 i = 0; i < size; i++)
+  {
+    MM::Element * e = elements->elementAt(i);
     if(e->getTypeId() == MM::T_Assertion)
     {
       init(def, (MM::Assertion *) e);
@@ -402,9 +412,9 @@ MM::VOID MM::Reflector::init(MM::Definition * def)
   }
   
   //init deletions (does not make sense but okay let's be thorough)
-  for(i.reset(); i.hasNext() == MM_TRUE; )
+  for(MM::UINT32 i = 0; i < size; i++)
   {
-    MM::Element * e = i.getNext();
+    MM::Element * e = elements->elementAt(i);
     if(e->getTypeId() == MM::T_Deletion)
     {
       init(def, (MM::Deletion *) e);
@@ -457,8 +467,6 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Node * node)
     printf("Error: required simple name, found query\n");
   }
   
-  init(node);
-  
   def->prioritize(node);
   
   MM::NodeBehavior * behavior = node->getBehavior();
@@ -467,18 +475,23 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Node * node)
   switch(behavior->getTypeId())
   {
     case MM::T_PoolNodeBehavior:
+      init(node);
       init(def, node, (PoolNodeBehavior *) behavior);
       break;
     case MM::T_DrainNodeBehavior:
+      init(node);
       init(def, node, (MM::DrainNodeBehavior *) behavior);
       break;
     case MM::T_SourceNodeBehavior:
+      init(node);
       init(def, node, (MM::SourceNodeBehavior *) behavior);
       break;
     case MM::T_RefNodeBehavior:
+      init(node);
       init(def, node, (MM::RefNodeBehavior *) behavior);
       break;
     case MM::T_GateNodeBehavior:
+      init(node);
       init(def, node, (MM::GateNodeBehavior *) behavior);
       break;
     case MM::T_ConverterNodeBehavior:
@@ -491,11 +504,11 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Node * node)
 
 MM::VOID MM::Reflector::init(MM::Node * node)
 {
-  MM::Vector<MM::Edge *> * input = m->createEdgeVector();
-  MM::Vector<MM::Edge *> * output = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * input      = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * output     = m->createEdgeVector();
   MM::Vector<MM::Edge *> * conditions = m->createEdgeVector();
-  MM::Vector<MM::Edge *> * triggers = m->createEdgeVector();
-  MM::Vector<MM::Edge *> * aliases = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * triggers   = m->createEdgeVector();
+  MM::Vector<MM::Edge *> * aliases    = m->createEdgeVector();
   
   node->setInput(input);
   node->setOutput(output);
@@ -508,6 +521,34 @@ MM::VOID MM::Reflector::init(MM::Definition * def,
                              MM::Node * node,
                              MM::PoolNodeBehavior * behavior)
 {
+  MM::Name * of = behavior->getOf();
+  if(of != MM_NULL)
+  {
+    MM::Element * element = def->findDeclaredDefinition(of);
+    if(element != MM_NULL &&
+       element->instanceof(MM::T_Definition) == MM_TRUE)
+    {
+      //initialize interfaces
+      MM::Definition * unitDef = (MM::Definition *) element;
+      MM::Vector<MM::Element *> * elements = unitDef->getElements();
+      MM::Vector<MM::Element *>::Iterator eIter = elements->getIterator();
+      while(eIter.hasNext() == MM_TRUE)
+      {
+        MM::Element * element = eIter.getNext();
+        if(element->instanceof(MM::T_Node) == MM_TRUE)
+        {
+          MM::Node * node = (MM::Node *) element;
+          MM::NodeBehavior * behavior2 = node->getBehavior();
+          MM::UINT32 msg = behavior2->getCreateMessage();
+          behavior->update(unitDef, m, msg, node);
+        }
+      }
+      
+      //add observer
+      ((MM::Definition*)unitDef)->addObserver(behavior);
+    }
+  }
+  
   def->notifyObservers(def, m, MSG_NEW_POOL, node);
 }
 
@@ -544,9 +585,114 @@ MM::VOID MM::Reflector::init(MM::Definition * def,
                              MM::Node * node,
                              MM::ConverterNodeBehavior * behavior)
 {
-  def->notifyObservers(def, m, MSG_NEW_CONVERTER, node);
-}
+  //1. create an anonymous node that behaves like a drain
+  //   that shares with the node that has converter node behavior
+  //   a. inputs with node
+  //   b. conditions
+  //   c. triggers
+  //   d. aliases
+  MM::Node * drainNode = m->createDrainNode(behavior->getIO(),
+                                            behavior->getWhen(),
+                                            MM::NodeBehavior::HOW_ALL,
+                                            MM_NULL);
+  
+  
+  //2. create an anonymous node that behaves like a source
+  //   that shares with thenode that has converter node behavior
+  //   a. outputs  
+  MM::Node * sourceNode = m->createSourceNode(behavior->getIO(),
+                                              MM::NodeBehavior::WHEN_PASSIVE,
+                                              MM_NULL);
+  
+  //create names for drain and source nodes
+  MM::Name * name = node->getName();
+  MM::CHAR * buf = name->getBuffer();
+  //MM::UINT32 len = name->getLength();
+  
+  MM::CHAR sourceName[128] = {0};
+  MM::CHAR drainName[128] = {0};
+  
+  snprintf(sourceName, 128, buf);
+  snprintf(drainName, 128, buf);
+  
+  //drain and converter need the same name
+  
+  //snprintf(drainName+len,128-len, "_drain");
+  //snprintf(sourceName+len, 128-len, "_source");
+  
+  MM::Name * drainNodeName = m->createName(drainName);
+  MM::Name * sourceNodeName = m->createName(sourceName);
+  
+  drainNode->setName(drainNodeName);
+  sourceNode->setName(sourceNodeName);
+  
+  //initialize nodes
+  init(drainNode);
+  init(sourceNode);
+  
+  //3. create a trigger from source to drain
+  MM::StateEdge * triggerEdge = m->createAnonymousTriggerEdge(drainNode, sourceNode);
+  //Node: trigger edge is already created initialized
+    
+  def->addElement(drainNode);
+  def->addElement(sourceNode);
+  def->addElement(triggerEdge);
 
+  def->prioritize(drainNode);
+  def->prioritize(sourceNode);
+  
+  //store source, drain and trigger for deinit and merge/update
+  behavior->setSourceNode(sourceNode);
+  behavior->setDrainNode(drainNode);
+  behavior->setTriggerEdge(triggerEdge);
+
+  //converters share edges with the source and drain nodes they consist of
+  MM::Vector<MM::Edge *> * input      = drainNode->getInput();
+  MM::Vector<MM::Edge *> * conditions = drainNode->getConditions();
+  
+  MM::Vector<MM::Edge *> * output     = sourceNode->getOutput();
+  MM::Vector<MM::Edge *> * triggers   = sourceNode->getTriggers();
+  MM::Vector<MM::Edge *> * aliases    = sourceNode->getAliases();
+  
+  if(node->hasEdgeOwnership() == MM_TRUE)
+  {
+    MM::Vector<MM::Edge *> * oldInput      = node->getInput();
+    MM::Vector<MM::Edge *> * oldConditions = node->getConditions();
+    MM::Vector<MM::Edge *> * oldOutput     = node->getOutput();
+    MM::Vector<MM::Edge *> * oldTriggers   = node->getTriggers();
+    MM::Vector<MM::Edge *> * oldAliases    = node->getAliases();
+    
+    input->addAll(oldInput);
+    output->addAll(oldOutput);
+    conditions->addAll(oldConditions);
+    triggers->addAll(oldTriggers);
+    aliases->addAll(oldAliases);
+    
+    delete oldInput;
+    delete oldOutput;
+    delete oldAliases;
+    delete oldTriggers;
+    delete oldConditions;
+  }
+  
+  node->setInput(input);
+  node->setConditions(conditions);
+  node->setAliases(aliases);
+  node->setTriggers(triggers);
+  node->setOutput(output);
+  
+  //add trigger edge
+  drainNode->addTrigger(triggerEdge);
+  
+
+  
+  //desugaring remains invisible
+  sourceNode->setVisible(MM_FALSE);
+  drainNode->setVisible(MM_FALSE);
+  triggerEdge->setVisible(MM_FALSE);
+  
+  def->notifyObservers(def, m, behavior->getCreateMessage(), node);
+}
 
 MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
 {
@@ -610,9 +756,13 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::StateEdge * edge)
   {
     MM::Node * src = edge->getSource();
     MM::Node * tgt = edge->getTarget();
-    
+
     MM::NodeBehavior * behavior = tgt->getBehavior();
-    
+    //Note: because getBehavior returns the behavior of the referenced node on interfaces
+    //      it can happen that we resolve an alias acros instance borders
+    //      in the NodeBehavior class we rely on that
+    //      we just check if the node is in the definition of the current instance
+    //      and if not, then we resolve it to the parent instead 
     if(behavior->getTypeId() == MM::T_RefNodeBehavior)
     {
       MM::RefNodeBehavior * ref = (MM::RefNodeBehavior *) behavior;
@@ -653,6 +803,13 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::FlowEdge * edge)
   //add flow edges to nodes
   MM::Node * src = edge->getSource();
   MM::Node * tgt = edge->getTarget();
+  
+  MM::Name * name = edge->getName();
+  if(name != MM_NULL)
+  {
+    def->putElement(name, edge);
+  }
+  
   if(src != MM_NULL)
   {
     src->addOutput(edge);    
@@ -693,7 +850,6 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Declaration * decl)
   {
     decl->setDefinition(def2);
     
-    
     MM::Vector<MM::Element *> * elements = def2->getElements();
     MM::Vector<MM::Element *>::Iterator eIter = elements->getIterator();
     while(eIter.hasNext() == MM_TRUE)
@@ -707,7 +863,6 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Declaration * decl)
         decl->update(def2, m, msg, node);
       }
     }
-    
     
     def2->addObserver(decl);
   }
@@ -727,13 +882,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Assertion * assert)
 
 MM::VOID MM::Reflector::init(MM::Definition * def, MM::Deletion * del)
 {
-  //name is a simple name (name->getName() == MM_NULL)
-  MM::Name * name = del->getName();
-  
-  //retrieve the element by name
-  MM::Element * element = def->getElement(name);
-  
-  removeElement(def, element);
+  removeElement(def, del);
 }
 
 //------------------------------------------------------------------------------
@@ -793,50 +942,71 @@ MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Node * node)
   
   def->removeElement(name);
   def->deprioritize(node);
-  
-  MM::Vector<MM::Edge *> * input = node->getInput();
-  MM::Vector<MM::Edge *> * output = node->getOutput();
-  MM::Vector<MM::Edge *> * conditions = node->getConditions();
-  MM::Vector<MM::Edge *> * triggers = node->getTriggers();
-  MM::Vector<MM::Edge *> * aliases = node->getAliases();
+  def->removeElement(node);
   
   //deinit input edges
-  MM::Vector<MM::Edge *>::Iterator inputIter = input->getIterator();
-  while(inputIter.hasNext() == MM_TRUE)
+  MM::Vector<MM::Edge *> * input = node->getInput();
+  if(input != MM_NULL)
   {
-    MM::Edge * edge = inputIter.getNext();
-    deinit(def, edge);
+    MM::Vector<MM::Edge *>::Iterator inputIter = input->getIterator();
+    while(inputIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = inputIter.getNext();
+      //deinit(def, edge);
+      removeElement(def, edge);
+    }
   }
   
   //deinit output edges
-  MM::Vector<MM::Edge *>::Iterator outputIter = output->getIterator();
-  while(outputIter.hasNext() == MM_TRUE)
+  MM::Vector<MM::Edge *> * output = node->getOutput();
+  if(output != MM_NULL)
   {
-    MM::Edge * edge = outputIter.getNext();
-    deinit(def, edge);
+    MM::Vector<MM::Edge *>::Iterator outputIter = output->getIterator();
+    while(outputIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = outputIter.getNext();
+      //deinit(def, edge);
+      removeElement(def, edge);
+    }
   }
   
   //deinit condition edges
-  MM::Vector<MM::Edge *>::Iterator conditionsIter = conditions->getIterator();
-  while(conditionsIter.hasNext() == MM_TRUE)
+  MM::Vector<MM::Edge *> * conditions = node->getConditions();
+  if(conditions != MM_NULL)
   {
-    MM::Edge * edge = conditionsIter.getNext();
-    deinit(def, edge);
+    MM::Vector<MM::Edge *>::Iterator conditionsIter = conditions->getIterator();
+    while(conditionsIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = conditionsIter.getNext();
+      //deinit(def, edge);
+      removeElement(def, edge);
+    }
   }
   
   //deinit trigger edges
-  MM::Vector<MM::Edge *>::Iterator triggersIter = triggers->getIterator();
-  while(triggersIter.hasNext() == MM_TRUE)
+  MM::Vector<MM::Edge *> * triggers = node->getTriggers();
+  if(triggers != MM_NULL)
   {
-    MM::Edge * edge = triggersIter.getNext();
-    deinit(def, edge);
+    MM::Vector<MM::Edge *>::Iterator triggersIter = triggers->getIterator();
+    while(triggersIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = triggersIter.getNext();
+      //deinit(def, edge);
+      removeElement(def, edge);
+    }
   }
   
-  MM::Vector<MM::Edge *>::Iterator aliasesIter = aliases->getIterator();
-  while(aliasesIter.hasNext() == MM_TRUE)
+  //deinit alias edges
+  MM::Vector<MM::Edge *> * aliases = node->getAliases();
+  if(aliases != MM_NULL)
   {
-    MM::Edge * edge = aliasesIter.getNext();
-    deinit(def, edge);
+    MM::Vector<MM::Edge *>::Iterator aliasesIter = aliases->getIterator();
+    while(aliasesIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * edge = aliasesIter.getNext();
+      //deinit(def, edge);
+      removeElement(def, edge);
+    }
   }
   
   MM::NodeBehavior * behavior = node->getBehavior();
@@ -855,6 +1025,9 @@ MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Node * node)
       break;
     case MM::T_RefNodeBehavior:
       deinit(def, node, (MM::RefNodeBehavior *) behavior);
+      break;
+    case MM::T_ConverterNodeBehavior:
+      deinit(def, node, (MM::ConverterNodeBehavior *) behavior);
       break;
     default:
       break;
@@ -889,6 +1062,70 @@ MM::VOID MM::Reflector::deinit(MM::Definition * def,
   def->notifyObservers(def, m, MM::MSG_DEL_REF, node);
 }
 
+MM::VOID MM::Reflector::deinit(MM::Definition * def,
+                               MM::Node * node,
+                               MM::ConverterNodeBehavior * behavior)
+{
+  MM::Node * drainNode = behavior->getDrainNode();
+  MM::Node * sourceNode = behavior->getSourceNode();
+  MM::Edge * triggerEdge = behavior->getTriggerEdge();
+ 
+  //remove ownership of edges from drain and source
+  drainNode->setInput(MM_NULL);
+  drainNode->setConditions(MM_NULL);
+  sourceNode->setTriggers(MM_NULL);
+  sourceNode->setAliases(MM_NULL);
+  sourceNode->setOutput(MM_NULL);
+  
+  removeElement(def, triggerEdge);
+  removeElement(def, drainNode);
+  removeElement(def, sourceNode);
+  
+  node->setEdgeOwnership(MM_TRUE);
+  
+  MM::Vector<MM::Edge *> * input = node->getInput();
+  MM::Vector<MM::Edge *>::Iterator inputIter = input->getIterator();
+  while(inputIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = inputIter.getNext();
+    edge->setTarget(node);
+  }
+  
+  MM::Vector<MM::Edge *> * conditions = node->getConditions();
+  MM::Vector<MM::Edge *>::Iterator conditionsIter = conditions->getIterator();
+  while(conditionsIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = conditionsIter.getNext();
+    edge->setTarget(node);
+  }
+  
+  MM::Vector<MM::Edge *> * triggers = node->getOutput();
+  MM::Vector<MM::Edge *>::Iterator triggerIter = triggers->getIterator();
+  while(triggerIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = triggerIter.getNext();
+    edge->setSource(node);
+  }
+
+  MM::Vector<MM::Edge *> * output = node->getOutput();
+  MM::Vector<MM::Edge *>::Iterator outputIter = output->getIterator();
+  while(outputIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = outputIter.getNext();
+    edge->setSource(node);
+  }
+  
+  MM::Vector<MM::Edge *> * aliases = node->getAliases();
+  MM::Vector<MM::Edge *>::Iterator aliasIter = aliases->getIterator();
+  while(aliasIter.hasNext() == MM_TRUE)
+  {
+    MM::Edge * edge = aliasIter.getNext();
+    edge->setSource(node);
+  }
+  
+  def->notifyObservers(def, m, behavior->getDeleteMessage(), node);
+}
+
 MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Edge * edge)
 {
   MM::Name * name = edge->getName();
@@ -897,6 +1134,8 @@ MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Edge * edge)
     def->removeElement(name);
   }
   
+  //def->removeElement(edge);
+
   switch(edge->getTypeId())
   {
     case MM::T_FlowEdge:
@@ -1026,8 +1265,8 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
 }
 
 MM::VOID MM::Reflector::replace(MM::Definition * def,
-                                MM::Node * node,
-                                MM::Element * element)
+                                MM::Node       * node,
+                                MM::Element    * element)
 {
   //common code for replacing nodes goes here...
   def->deprioritize(node);
@@ -1035,26 +1274,43 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
   if(element->getTypeId() == MM::T_Node)
   {
     MM::Node * node2 = (MM::Node *) element;
-    MM::NodeBehavior * b1 = node->getBehavior();
-    MM::NodeBehavior * b2 = node2->getBehavior();
+    MM::NodeBehavior * behavior = node->getBehavior();
+    MM::NodeBehavior * behavior2 = node2->getBehavior();
     
     //swap behaviors
-    node->setBehavior(b2);
-    node2->setBehavior(b1);
-
+    node->setBehavior(behavior2);
+    node2->setBehavior(behavior);
+    
+    //always deinitialize an old converter
+    if(behavior->getTypeId() == MM::T_ConverterNodeBehavior)
+    {
+      deinit(def, node, (MM::ConverterNodeBehavior*) behavior);
+      
+      //it got removed from n2e... side effect of source and drain with same name
+      
+      def->putElement(node->getName(), node);
+    }
+    
+    //always initialize a new converter
+    if(behavior2->getTypeId() == MM::T_ConverterNodeBehavior)
+    {
+      init(def, node, (MM::ConverterNodeBehavior*) behavior2);
+      node->setEdgeOwnership(MM_TRUE);
+    }
+    
     //reprioritize
     def->prioritize(node);
     
     //notify observers
-    if(b1->getTypeId() == b2->getTypeId())
+    if(behavior->getTypeId() == behavior2->getTypeId())
     {
-      MM::UINT32 updateMessage = b1->getUpdateMessage();
+      MM::UINT32 updateMessage = behavior->getUpdateMessage();
       def->notifyObservers(def, m, updateMessage, node);
     }
     else
     {
-      MM::UINT32 deleteMessage = b1->getDeleteMessage();
-      MM::UINT32 createMessage = b2->getCreateMessage();
+      MM::UINT32 deleteMessage = behavior->getDeleteMessage();
+      MM::UINT32 createMessage = behavior2->getCreateMessage();
       def->notifyObservers(def, m, deleteMessage, node);
       def->notifyObservers(def, m, createMessage, node);
     }
@@ -1069,6 +1325,7 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
     addElement(def, element);
   }
 }
+
 
 MM::VOID MM::Reflector::replace(MM::Definition * def,
                                 MM::Edge * edge,
@@ -1138,12 +1395,16 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
     if(edge->isAlias() == MM_TRUE && edge2->isAlias() == MM_TRUE)
     {
       //cleanup identical element
-      element->recycle(m);
+      //element->recycle(m);
+      
+      //do nothing
     }
     else if(edge->isTrigger() == MM_TRUE && edge2->isTrigger() == MM_TRUE)
     {
       //cleanup identical element
-      element->recycle(m);
+      //element->recycle(m);
+      
+      //do nothing
     }
     else if(edge->isCondition() == MM_TRUE && edge2->isCondition() == MM_TRUE)
     {
@@ -1151,7 +1412,7 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
       MM::Exp * exp2 = edge2->getExp();
       edge->setExp(exp2);
       edge2->setExp(exp);
-      edge2->recycle(m);
+      //edge2->recycle(m);
     }
     else
     {
