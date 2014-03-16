@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestMM", "TestMM\TestMM.csproj", "{778412F7-DBE2-4AFF-9B9E-47E93DC6C988}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{12919E62-784E-4AE0-8ABD-779DD55A4575}"
+	ProjectSection(SolutionItems) = preProject
+		tests\towers\mod1_fig7_tower1.mm = tests\towers\mod1_fig7_tower1.mm
+		tests\towers\mod2_fig8_base1.mm = tests\towers\mod2_fig8_base1.mm
+		tests\towers\mod3_fig6_world.mm = tests\towers\mod3_fig6_world.mm
+		tests\towers\mod4_fig9_tower2.mm = tests\towers\mod4_fig9_tower2.mm
+		tests\towers\mod5_fig10_base2.mm = tests\towers\mod5_fig10_base2.mm
+		tests\towers\mod6_fig11_tower3.mm = tests\towers\mod6_fig11_tower3.mm
+		tests\towers\mod7_fig12_base3.mm = tests\towers\mod7_fig12_base3.mm
+		tests\towers\mod8_fig13_tower4.mm = tests\towers\mod8_fig13_tower4.mm
+		test\test.mm = test\test.mm
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{778412F7-DBE2-4AFF-9B9E-47E93DC6C988}.Debug|x86.ActiveCfg = Debug|x86
+		{778412F7-DBE2-4AFF-9B9E-47E93DC6C988}.Debug|x86.Build.0 = Debug|x86
+		{778412F7-DBE2-4AFF-9B9E-47E93DC6C988}.Release|x86.ActiveCfg = Release|x86
+		{778412F7-DBE2-4AFF-9B9E-47E93DC6C988}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
