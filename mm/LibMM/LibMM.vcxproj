@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{01B4CBD7-20EC-43BA-9E35-29A4EF375BB2}</ProjectGuid>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <Keyword>ManagedCProj</Keyword>
+    <RootNamespace>LibMM</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CLRSupport>true</CLRSupport>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfAtl>Static</UseOfAtl>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CLRSupport>true</CLRSupport>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="FlexBison.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
+    <IncludePath>$(VCInstallDir)include;$(FrameworkSDKDir)\include;</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>call FlexBison.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>WIN32;NDEBUG;%(PreprocessorDefinitions);_CRT_SECURE_NO_WARNINGS; _CRT_SECURE_NO_DEPRECATE</PreprocessorDefinitions>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>
+      </AdditionalDependencies>
+    </Link>
+    <PreBuildEvent>
+      <Command>call FlexBison.bat</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\mm\Message.cs" />
+    <FlexGenerator Include="..\mm\mm.lpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </FlexGenerator>
+    <BisonParser Include="..\mm\mm.ypp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </BisonParser>
+    <None Include="app.ico" />
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\mm\Activation.h" />
+    <ClInclude Include="..\mm\ActiveExp.h" />
+    <ClInclude Include="..\mm\AliasExp.h" />
+    <ClInclude Include="..\mm\AllExp.h" />
+    <ClInclude Include="..\mm\Assertion.h" />
+    <ClInclude Include="..\mm\BinExp.h" />
+    <ClInclude Include="..\mm\BooleanValExp.h" />
+    <ClInclude Include="..\mm\ConverterNodeBehavior.h" />
+    <ClInclude Include="..\mm\Declaration.h" />
+    <ClInclude Include="..\mm\Definition.h" />
+    <ClInclude Include="..\mm\Deletion.h" />
+    <ClInclude Include="..\mm\DieExp.h" />
+    <ClInclude Include="..\mm\DrainNodeBehavior.h" />
+    <ClInclude Include="..\mm\Edge.h" />
+    <ClInclude Include="..\mm\Element.h" />
+    <ClInclude Include="..\mm\Evaluator.h" />
+    <ClInclude Include="..\mm\Exp.h" />
+    <ClInclude Include="..\mm\FlowEdge.h" />
+    <ClInclude Include="..\mm\FlowEvent.h" />
+    <ClInclude Include="..\mm\GateNodeBehavior.h" />
+    <ClInclude Include="..\mm\Instance.h" />
+    <ClInclude Include="..\mm\InterfaceNode.h" />
+    <ClInclude Include="..\mm\Location.h" />
+    <ClInclude Include="..\mm\Machine.h" />
+    <ClInclude Include="..\mm\Map.h" />
+    <ClInclude Include="..\mm\mm.h" />
+    <ClInclude Include="..\mm\mm.tab.hpp" />
+    <ClInclude Include="..\mm\Modification.h" />
+    <ClInclude Include="..\mm\Name.h" />
+    <ClInclude Include="..\mm\Node.h" />
+    <ClInclude Include="..\mm\NodeBehavior.h" />
+    <ClInclude Include="..\mm\NodeWorkItem.h" />
+    <ClInclude Include="..\mm\NumberValExp.h" />
+    <ClInclude Include="..\mm\Observable.h" />
+    <ClInclude Include="..\mm\Observer.h" />
+    <ClInclude Include="..\mm\OneExp.h" />
+    <ClInclude Include="..\mm\Operator.h" />
+    <ClInclude Include="..\mm\OverrideExp.h" />
+    <ClInclude Include="..\mm\PoolNodeBehavior.h" />
+    <ClInclude Include="..\mm\Program.h" />
+    <ClInclude Include="..\mm\RangeValExp.h" />
+    <ClInclude Include="..\mm\Recyclable.h" />
+    <ClInclude Include="..\mm\Recycler.h" />
+    <ClInclude Include="..\mm\Reflector.h" />
+    <ClInclude Include="..\mm\RefNodeBehavior.h" />
+    <ClInclude Include="..\mm\Signal.h" />
+    <ClInclude Include="..\mm\SourceNodeBehavior.h" />
+    <ClInclude Include="..\mm\StateEdge.h" />
+    <ClInclude Include="..\mm\String.h" />
+    <ClInclude Include="..\mm\Transformation.h" />
+    <ClInclude Include="..\mm\Transition.h" />
+    <ClInclude Include="..\mm\TriggerExp.h" />
+    <ClInclude Include="..\mm\Types.h" />
+    <ClInclude Include="..\mm\UnExp.h" />
+    <ClInclude Include="..\mm\ValExp.h" />
+    <ClInclude Include="..\mm\VarExp.h" />
+    <ClInclude Include="..\mm\Vector.h" />
+    <ClInclude Include="..\mm\YYLTYPE.h" />
+    <ClInclude Include="LibMM.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Stdafx.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\mm\Activation.cpp" />
+    <ClCompile Include="..\mm\ActiveExp.cpp" />
+    <ClCompile Include="..\mm\AliasExp.cpp" />
+    <ClCompile Include="..\mm\AllExp.cpp" />
+    <ClCompile Include="..\mm\Assertion.cpp" />
+    <ClCompile Include="..\mm\BinExp.cpp" />
+    <ClCompile Include="..\mm\BooleanValExp.cpp" />
+    <ClCompile Include="..\mm\ConverterNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\Declaration.cpp" />
+    <ClCompile Include="..\mm\Definition.cpp" />
+    <ClCompile Include="..\mm\Deletion.cpp" />
+    <ClCompile Include="..\mm\DieExp.cpp" />
+    <ClCompile Include="..\mm\DrainNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\Edge.cpp" />
+    <ClCompile Include="..\mm\Element.cpp" />
+    <ClCompile Include="..\mm\Evaluator.cpp" />
+    <ClCompile Include="..\mm\Exp.cpp" />
+    <ClCompile Include="..\mm\FlowEdge.cpp" />
+    <ClCompile Include="..\mm\FlowEvent.cpp" />
+    <ClCompile Include="..\mm\GateNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\Instance.cpp" />
+    <ClCompile Include="..\mm\InterfaceNode.cpp" />
+    <ClCompile Include="..\mm\lex.mm.cpp" />
+    <ClCompile Include="..\mm\Location.cpp" />
+    <ClCompile Include="..\mm\Machine.cpp" />
+    <ClCompile Include="..\mm\mm.tab.cpp" />
+    <ClCompile Include="..\mm\Modification.cpp" />
+    <ClCompile Include="..\mm\Name.cpp" />
+    <ClCompile Include="..\mm\Node.cpp" />
+    <ClCompile Include="..\mm\NodeBehavior.cpp" />
+    <ClCompile Include="..\mm\NodeWorkItem.cpp" />
+    <ClCompile Include="..\mm\NumberValExp.cpp" />
+    <ClCompile Include="..\mm\Observable.cpp" />
+    <ClCompile Include="..\mm\Observer.cpp" />
+    <ClCompile Include="..\mm\OneExp.cpp" />
+    <ClCompile Include="..\mm\Operator.cpp" />
+    <ClCompile Include="..\mm\OverrideExp.cpp" />
+    <ClCompile Include="..\mm\PoolNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\Program.cpp" />
+    <ClCompile Include="..\mm\RangeValExp.cpp" />
+    <ClCompile Include="..\mm\Recyclable.cpp" />
+    <ClCompile Include="..\mm\Recycler.cpp" />
+    <ClCompile Include="..\mm\Reflector.cpp" />
+    <ClCompile Include="..\mm\RefNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\Signal.cpp" />
+    <ClCompile Include="..\mm\SourceNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\StateEdge.cpp" />
+    <ClCompile Include="..\mm\String.cpp" />
+    <ClCompile Include="..\mm\Transformation.cpp" />
+    <ClCompile Include="..\mm\Transition.cpp" />
+    <ClCompile Include="..\mm\TriggerExp.cpp" />
+    <ClCompile Include="..\mm\UnExp.cpp" />
+    <ClCompile Include="..\mm\ValExp.cpp" />
+    <ClCompile Include="..\mm\VarExp.cpp" />
+    <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="LibMM.cpp" />
+    <ClCompile Include="Stdafx.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="FlexBison.targets" />
+  </ImportGroup>
+</Project>
