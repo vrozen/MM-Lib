@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/rozen/proj/MM-Lib/mm/mm/test.mmm"
+            argument = "/Users/rozen/proj/MM-Lib/mm/test"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -104,6 +104,7 @@
 		6690CC0F189A9C3F00193E32 /* test_instance */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_instance; sourceTree = "<group>"; };
 		6690CC10189B927300193E32 /* adaptower */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = adaptower; sourceTree = "<group>"; };
 		6690CC11189BA56200193E32 /* tribbles */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tribbles; sourceTree = "<group>"; };
+		6690CC12189BF98600193E32 /* test */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test; sourceTree = "<group>"; };
 		6690F73317F06979001EDFC8 /* mm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mm.h; sourceTree = "<group>"; };
 		6692E47417E092BF0017C9A7 /* Instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
 		6692E47517E092C00017C9A7 /* Instance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Instance.h; sourceTree = "<group>"; };
@@ -213,6 +214,7 @@
 		66E0732616E747B000C65EE9 = {
 			isa = PBXGroup;
 			children = (
+				6690CC12189BF98600193E32 /* test */,
 				6690CC11189BA56200193E32 /* tribbles */,
 				6690CC0B189932AD00193E32 /* test_converter */,
 				6690CC0A1899321500193E32 /* test_self */,
