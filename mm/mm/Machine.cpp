@@ -1,9 +1,40 @@
+/******************************************************************************
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
+ ******************************************************************************/
 //
 //  Machine.cpp
 //  mm
 //
 //  Created by Riemer van Rozen on 7/16/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 #include <stdio.h>
 #include <stdlib.h>
@@ -85,7 +116,7 @@ MM::Machine::Machine() : MM::Recycler()
   //initialize the global scope type
   reflector->init(type);
   
-  delegates = new MM::Vector<MM::Machine::InstanceObserver *>();
+  delegates = new MM::Vector<MM::Machine::Delegate *>();
   
   //initialize the start state (set active nodes)
   //evaluator->initStartState(inst);
@@ -118,8 +149,8 @@ MM::BOOLEAN MM::Machine::instanceof(MM::TID tid)
   }
 }
 
-extern MM::Program * MM_parse(const MM::CHAR * input);
-extern MM::Program * MM_parseFile(const MM::CHAR * input);
+extern MM::Program * MM_parse(MM::Machine * machine, const MM::CHAR * input);
+extern MM::Program * MM_parseFile(MM::Machine * machine, const MM::CHAR * input);
 
 MM::Reflector * MM::Machine::getReflector()
 {
@@ -140,25 +171,6 @@ MM::Instance * MM::Machine::getInstance()
 {
   return inst;
 }
-
-MM::UINT32 MM::Machine::getDefinition(MM::UINT32 definition, //0-> global scope
-                                      MM::CHAR * name)
-{
-  MM::Element * element = MM_NULL;
-  MM::Definition * def = (MM::Definition *) definition;
-  
-  if(def == MM_NULL)
-  {
-    def = type;
-  }
-  
-  MM::Name * n = createName(name);
-  element = def->getElement(n);
-  n->recycle(this);
-  
-  return (MM::UINT32) element;
-}
-
 
 MM::UINT32 MM::Machine::getInstance(MM::UINT32 instance, //0 -> global scope
                                     MM::CHAR  * name)
@@ -243,25 +255,32 @@ MM::VOID MM::Machine::step (MM::UINT32 instance,
 }
 */
 
-MM::UINT32 MM::Machine::addObserver(MM::UINT32 instance,
-                       //MM::VOID * caller,
-                       MM::CALLBACK callback)
+MM::UINT32 MM::Machine::addInstanceObserver(MM::UINT32 instance, MM::UINT32 caller, MM::CALLBACK callback)
 {
-  MM::Machine::InstanceObserver * io =
-    new MM::Machine::InstanceObserver((MM::Instance*)instance, callback);
-  
+  MM::Instance * i = (MM::Instance *) instance;
+  MM::Machine::Delegate * io =
+  new MM::Machine::Delegate(i, caller, callback);  
   delegates->add(io);
-  
-  return 0;
+  return (MM::UINT32) io;
+}
+
+MM::UINT32 MM::Machine::addDefinitionObserver(MM::UINT32 definition, MM::UINT32 caller, MM::CALLBACK callback)
+{
+  MM::Definition * def = (MM::Definition *) definition;
+  MM::Machine::Delegate * io =
+  new MM::Machine::Delegate(def, caller, callback);  
+  delegates->add(io);
+  return (MM::UINT32) io;
 }
 
 MM::VOID MM::Machine::removeObserver (MM::UINT32 observer)
 {
-  MM::Machine::InstanceObserver * io =
-    (MM::Machine::InstanceObserver *) observer;
+  MM::Machine::Delegate * io =
+    (MM::Machine::Delegate *) observer;
   delegates->remove(io);
   delete io;
 }
+
 
 MM::String * MM::Machine::getLog()
 {
@@ -270,7 +289,20 @@ MM::String * MM::Machine::getLog()
 
 MM::VOID MM::Machine::eval (const MM::CHAR * input)
 {
-  MM::Program * program = MM_parseFile(input);
+  MM::Program * program = MM_parse(this, input);
+  reflect(program);
+  program->recycle(this);
+}
+
+MM::VOID MM::Machine::evalFile (const MM::CHAR * file)
+{
+  MM::Program * program = MM_parseFile(this, file);
+  reflect(program);
+  program->recycle(this);
+}
+
+MM::VOID MM::Machine::reflect(MM::Program * program)
+{
   MM::String * buf = createString(1024 * 100 * 32);
   program->toString(log); //store history
   
@@ -288,31 +320,9 @@ MM::VOID MM::Machine::eval (const MM::CHAR * input)
       buf->print();
     }
   }
-  
-  /*
-   MM::Instance * inst = reflector->getInstance();
-
-  buf->clear();
-  inst->toString(buf);
-  buf->print();
-
-  for(int i = 0; i < 10; i ++)
-  {
-    MM::Transition * tr = createTransition();
-    evaluator->step(tr);
-    tr->toString(log);
-    
-    inst->toString(log); //debug
-    
-    tr->recycle(this);
-  }
-  
-  printf("\n\nHistory\n\n");
-  log->print();
-  */
   buf->recycle(this);
-  program->recycle(this);
 }
+
 
 //MM::VOID MM::Machine::setTree (MM::Definition * def)
 //{

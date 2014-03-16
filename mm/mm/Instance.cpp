@@ -1,5 +1,34 @@
 /******************************************************************************
- * Copyright (c) 2013 Riemer van Rozen. All rights reserved.
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
 /*!
  * The Instance abstraction defines instances of type definitions.
@@ -287,10 +316,11 @@ MM::VOID MM::Instance::sweep(MM::Machine * m)
     while(del.isEmpty() == MM_FALSE)
     {
       MM::Instance * instance = del.pop();
+	  MM::Definition * unitDef = instance->getDefinition();
       vector->remove(instance);
 
       //notify observers an instance has been deleted
-      notifyObservers(this, m, MM::MSG_DEL_INST, instance);
+      notifyObservers(this, /*FIX: unitDef was m*/ unitDef, MM::MSG_DEL_INST, instance);
       instance->recycle(m);
     }
   }
@@ -715,7 +745,7 @@ MM::VOID MM::Instance::createInstances(MM::Element    * element,
   }  
   MM::Vector<Instance *> * is = instances->get(element);
   
-  for(int nrOfInstances = 0; nrOfInstances < amount; nrOfInstances++)
+  for(MM::UINT32 nrOfInstances = 0; nrOfInstances < amount; nrOfInstances++)
   {
     MM::Instance * instance = m->createInstance(this, unitDef, element);
     
@@ -744,7 +774,7 @@ MM::VOID MM::Instance::createInstances(MM::Element    * element,
     is->add(instance);
     
     //notify observers a new instance has been created
-    notifyObservers(this, m, MM::MSG_NEW_INST, instance);
+	notifyObservers(this, /*FIX: unitDef was m*/ unitDef, MM::MSG_NEW_INST, instance);
   }
 }
 

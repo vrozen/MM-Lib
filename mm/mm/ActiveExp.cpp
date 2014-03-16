@@ -1,13 +1,42 @@
 /******************************************************************************
- * Copyright (c) 2013 Riemer van Rozen. All rights reserved.
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
 /*!
  * The ActiveExp abstraction expresses that a target of a state edge
  * with an ActiveExp is only active if the source is active.
- * @package MM
- * @file    ActiveExp.h
- * @author  Riemer van Rozen
- * @date    July 21th 2013
+ * \package MM
+ * \file    ActiveExp.h
+ * \author  Riemer van Rozen
+ * \date    July 21th 2013
  */
 /******************************************************************************/
 #include <stdio.h>
@@ -28,10 +57,9 @@ const MM::CHAR * MM::ActiveExp::ACTIVE_STR = "active";
 const MM::UINT32 MM::ActiveExp::ACTIVE_LEN = 6;
 
 /**
- * @fn MM::ActiveExp::ActiveExp(MM::Name * name) : MM::Exp()
  * Constructs a ActiveExp object.
- * @param name name
- * @return new ActiveExp object
+ * \param name name
+ * \return new ActiveExp object
  */
 MM::ActiveExp::ActiveExp(MM::Name * name) : MM::Exp()
 {
@@ -40,11 +68,10 @@ MM::ActiveExp::ActiveExp(MM::Name * name) : MM::Exp()
 }
 
 /**
- * @fn MM::ActiveExp::ActiveExp(MM::Name * name, MM::Location * loc) : MM::Exp()
  * Constructs a ActiveExp object.
- * @param name name
- * @param loc source location
- * @return new ActiveExp object
+ * \param name name
+ * \param loc source location
+ * \return new ActiveExp object
  */
 MM::ActiveExp::ActiveExp(MM::Name * name, MM::Location * loc) : MM::Exp()
 {
@@ -53,7 +80,6 @@ MM::ActiveExp::ActiveExp(MM::Name * name, MM::Location * loc) : MM::Exp()
 }
 
 /**
- * @fn MM::ActiveExp::~ActiveExp()
  * Destructs an ActiveExp object.
  */
 MM::ActiveExp::~ActiveExp()
@@ -63,9 +89,8 @@ MM::ActiveExp::~ActiveExp()
 }
 
 /**
- * @fn MM::VOID MM::ActiveExp::recycle(MM::Recycler *r)
  * Recycles an ActiveExp object in a Recycler.
- * @param r Recycler
+ * \param r Recycler
  */
 MM::VOID MM::ActiveExp::recycle(MM::Recycler *r)
 {
@@ -78,9 +103,8 @@ MM::VOID MM::ActiveExp::recycle(MM::Recycler *r)
 }
 
 /**
- * @fn MM::TID MM::ActiveExp::getTypeId()
- * @brief Retrieves the type id of a ActiveExp object.
- * @return type id
+ * \brief Retrieves the type id of a ActiveExp object.
+ * \return type id
  */
 MM::TID MM::ActiveExp::getTypeId()
 {
@@ -88,10 +112,9 @@ MM::TID MM::ActiveExp::getTypeId()
 }
 
 /**
- * @fn MM::BOOLEAN MM::ActiveExp::instanceof(MM::TID tid)
- * @brief Assesses if an object is an instance of a type tid.
- * @param tid type id
- * @return MM_TRUE if this object is instance of tid, MM_FALSE otherwise
+ * \brief Assesses if an object is an instance of a type tid.
+ * \param tid type id
+ * \return MM_TRUE if this object is instance of tid, MM_FALSE otherwise
  */
 MM::BOOLEAN MM::ActiveExp::instanceof(MM::TID tid)
 {
@@ -106,9 +129,8 @@ MM::BOOLEAN MM::ActiveExp::instanceof(MM::TID tid)
 }
 
 /**
- * @fn MM::Name * MM::ActiveExp::getName()
- * @brief Retrieves the name of an ActiveExp object.
- * @return name
+ * \brief Retrieves the name of an ActiveExp object.
+ * \return name
  */
 MM::Name * MM::ActiveExp::getName()
 {
@@ -116,9 +138,8 @@ MM::Name * MM::ActiveExp::getName()
 }
 
 /**
- * @fn MM::VOID MM::ActiveExp::toString(MM::String * buf)
- * @brief Serializes an ActiveExp object into a String buffer.
- * @param buf String buffer to serialize this object into
+ * \brief Serializes an ActiveExp object into a String buffer.
+ * \param buf String buffer to serialize this object into
  */
 MM::VOID MM::ActiveExp::toString(MM::String * buf)
 {

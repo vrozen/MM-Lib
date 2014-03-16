@@ -1,13 +1,49 @@
-//
-//  Pool.h
-//  mm
-//
-//  Created by Riemer van Rozen on 7/10/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
-//
+/******************************************************************************
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
+ ******************************************************************************/
+/*!
+ * \namespace MM
+ * \class     PoolNodeBehavior
+ * \brief     The PoolNodeBehavior abstraction defines
+ *            the behavior of pool nodes.
+ * \note      Strategy
+ * \file      PoolNodeBehavior.h
+ * \author    Riemer van Rozen
+ * \date      October 7th 2013
+ */
+/******************************************************************************/
 
-#ifndef __mm__Pool__
-#define __mm__Pool__
+#ifndef __mm__PoolNodeBehavior__
+#define __mm__PoolNodeBehavior__
 
 namespace MM
 {
@@ -15,34 +51,31 @@ namespace MM
   class PoolNodeBehavior : public MM::NodeBehavior, public MM::Observer
   {
   private:
-    static const MM::CHAR * POOL_STR;
-    static const MM::CHAR * OF_STR;
-    static const MM::CHAR * AT_STR;
-    static const MM::CHAR * MAX_STR;
-    static const MM::CHAR * ADD_STR;
-    static const MM::CHAR * SELF_STR;
+    static const MM::CHAR * POOL_STR; /**> pool keyword */
+    static const MM::CHAR * OF_STR;   /**> of keyword */
+    static const MM::CHAR * AT_STR;   /**> at keyword */
+    static const MM::CHAR * MAX_STR;  /**> max keyword */
+    static const MM::CHAR * ADD_STR;  /**> add keyword */
+    static const MM::CHAR * SELF_STR; /**> self keyword */
 
-    static const MM::UINT32 POOL_LEN;
-    static const MM::UINT32 OF_LEN;
-    static const MM::UINT32 AT_LEN;
-    static const MM::UINT32 MAX_LEN;
-    static const MM::UINT32 ADD_LEN;
-    static const MM::UINT32 SELF_LEN;
+    static const MM::UINT32 POOL_LEN; /**> pool keyword length */
+    static const MM::UINT32 OF_LEN;   /**> of keyword length */
+    static const MM::UINT32 AT_LEN;   /**> at keyword length */
+    static const MM::UINT32 MAX_LEN;  /**> max keyword length */
+    static const MM::UINT32 ADD_LEN;  /**> add keyword length */
+    static const MM::UINT32 SELF_LEN; /**> self keyword length */
     
-    
-    MM::Name * of;
-    MM::UINT32 at;
-    MM::UINT32 max;
-    MM::Exp * exp;
-    
-    //MM::Name       * type;  /**> type name */
-    MM::Definition * def;   /**> type definition */
+    MM::Name * of;          /**> type name */
+    MM::UINT32 at;          /**> start value */
+    MM::UINT32 max;         /**> maximum value */
+    MM::Exp * exp;          /**> expression added when queried */    
+    MM::Definition * def;   /**> type definition (resolved) */
     
     //declarations observe definitions to spawn and delete interfaces
     //for observable nodes
     MM::Map<MM::Name *, //interface name
     MM::Node *, //interface node
-    MM::Name::Compare> * interfaces;
+    MM::Name::Compare> * interfaces; /**> interfaces resulting from definition */
     
   public:
     PoolNodeBehavior(MM::NodeBehavior::IO   io,
@@ -87,7 +120,7 @@ namespace MM
     MM::UINT32 getUpdateMessage();
     MM::UINT32 getDeleteMessage();
     
-    //pull has inherited behavior
+    //any has inherited behavior
     
     MM::VOID stepPullAll(MM::Node * tgtNode,
                          MM::Instance * tgtInstance,
@@ -111,6 +144,9 @@ namespace MM
     MM::VOID change(MM::Instance * i,
                     MM::Machine  * m,
                     MM::Node     * n);
+
+    //query values on a complete state between steps
+    MM::INT32 getAmount(MM::Instance * i, MM::Machine * m, MM::Node * n);
     
     //instance manipulation during transitions
     MM::VOID add(MM::Instance * i,
@@ -131,4 +167,4 @@ namespace MM
 
   };
 }
-#endif /* defined(__mm__Pool__) */
+#endif /* defined(__mm__PoolNodeBehavior__) */

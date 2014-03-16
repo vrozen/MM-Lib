@@ -1,9 +1,40 @@
+/******************************************************************************
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
+ ******************************************************************************/
 //
 //  Evaluator.cpp
 //  mm
 //
 //  Created by Riemer van Rozen on 9/26/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 
 #include <stdio.h>
@@ -758,6 +789,25 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
       MM::UINT32 amount = event->getAmount();
       srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
       tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
+
+	  //let observers of instances know the current value of a pool...
+      if(srcNode->getBehavior()->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+      {
+	    //MM::Observer * o = srcInstance;
+		//MM::UINT32 oInt = (MM::UINT32) o;
+		//MM::UINT32 iInt = (MM::UINT32) srcInstance;
+		//MM::Instance * oTest = (MM::Instance *) oInt;
+		//MM::Instance * iTest = (MM::Instance *) iInt;
+
+
+        MM::INT32 srcAmount = srcNode->getAmount(srcInstance, m);
+        srcInstance->notifyObservers(srcInstance, (MM::VOID*)srcAmount, MM::MSG_HAS_VALUE, srcNode);
+      }
+      if(tgtNode->getBehavior()->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+      {
+        MM::INT32 tgtAmount = tgtNode->getAmount(tgtInstance, m);
+        tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)tgtAmount, MM::MSG_HAS_VALUE, tgtNode);
+      }
     }
   }
 }
@@ -1648,10 +1698,10 @@ MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * e1,
 {
   MM::ValExp * r = 0;
   MM::TID    rtype = MM::T_NULL;
-  MM::UINT32 rrmin = 0;
-  MM::UINT32 rrmax = 0;
-  MM::UINT32 min = e2->getMin();
-  MM::UINT32 max = e2->getMax();
+  MM::INT32 rrmin = 0;
+  MM::INT32 rrmax = 0;
+  MM::INT32 min = e2->getMin();
+  MM::INT32 max = e2->getMax();
   MM::INT32 val = e1->getIntValue();
   MM::BOOLEAN rbval = MM_FALSE;
   
@@ -1819,11 +1869,11 @@ MM::ValExp * MM::Evaluator::eval(MM::RangeValExp * e1,
 {
   MM::ValExp * r = MM_NULL;
   MM::TID    rtype = MM::T_NULL;
-  MM::UINT32 rrmin = 0;
-  MM::UINT32 rrmax = 0;
+  MM::INT32 rrmin = 0;
+  MM::INT32 rrmax = 0;
   MM::BOOLEAN rbval = MM_FALSE;
-  MM::UINT32 min = e1->getMin();
-  MM::UINT32 max = e1->getMax();
+  MM::INT32 min = e1->getMin();
+  MM::INT32 max = e1->getMax();
   MM::INT32 val = e2->getValue();
   
   switch(op)
@@ -2048,8 +2098,8 @@ MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,
                                  MM::Instance * i,
                                  MM::Edge * e)
 {
-  MM::UINT32 val = exp->getValue();
-  MM::UINT32 nvalr = 0;
+  MM::INT32 val = exp->getValue();
+  MM::INT32 nvalr = 0;
   
   switch(op)
   {

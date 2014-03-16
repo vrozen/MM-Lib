@@ -1,66 +1,43 @@
+/******************************************************************************
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
+ ******************************************************************************/
+
 %{
-  #include <stdio.h>
-  #include <stdlib.h>
   #include "YYLTYPE.h"
-  #include "Types.h"
-  #include "Recyclable.h"
-  #include "Vector.h"
-  #include "Map.h"
-  #include "Recycler.h"
-  #include "Observer.h"
-  #include "Observable.h"
-  #include "Location.h"
-  #include "String.h"
-  #include "Name.h"
-  #include "Element.h"
-  #include "Operator.h"
-  #include "Exp.h"
-  #include "Assertion.h"
-  #include "Deletion.h"
-  #include "Activation.h"
-  #include "Signal.h"
-  #include "Edge.h"
-  #include "StateEdge.h"
-  #include "FlowEdge.h"
-  #include "NodeWorkItem.h"
-  #include "NodeBehavior.h"
-  #include "Node.h"
-  #include "Transformation.h"
-  #include "Transition.h"
-  #include "FlowEvent.h"
-  #include "Modification.h"
-  #include "Program.h"
-  #include "PoolNodeBehavior.h"
-  #include "SourceNodeBehavior.h"
-  #include "DrainNodeBehavior.h"
-  #include "GateNodeBehavior.h"
-  #include "RefNodeBehavior.h"
-  #include "ConverterNodeBehavior.h"
-  #include "Declaration.h"
-  #include "InterfaceNode.h"
-  #include "Definition.h"
-  #include "Instance.h"
-  #include "Operator.h"
-  #include "ValExp.h"
-  #include "UnExp.h"
-  #include "BinExp.h"
-  #include "DieExp.h"
-  #include "RangeValExp.h"
-  #include "BooleanValExp.h"
-  #include "NumberValExp.h"
-  #include "OverrideExp.h"
-  #include "ActiveExp.h"
-  #include "AllExp.h"
-  #include "AliasExp.h"
-  #include "OneExp.h"
-  #include "VarExp.h"
-  #include "Reflector.h"
-  #include "Evaluator.h"
-  #include "Machine.h"
+  #include "mm.h"
   
   //FIXME: globals should be instance data
   //TODO: add a Parser abstraction (a.k.a. re-entrant parsing)
-  extern MM::Machine mm;        //TODO: each machine has a parser
+  extern MM::Machine * mm;      //TODO: each machine has a parser
   extern MM::Program * program; //TODO: attribute of parser
   extern int yylineno;          //TODO: attribute of parser
   extern int yycolumn;          //TODO: attribute of parser
@@ -132,45 +109,45 @@
 %%
 
 program
-: transformationList { program = mm.createProgram($1); $$ = program;  }
+: transformationList { program = mm->createProgram($1); $$ = program;  }
 ;
 
 transformationList
 : transformationList transformation { $1->add($2); $$ = $1;                 }
-| /*epsilon*/                       { $$ = mm.createTransformationVector(); }
+| /*epsilon*/                       { $$ = mm->createTransformationVector(); }
 ;
 
 transformation
-: elementList MODIFY  { $$ = mm.createModification($1); }
-| elementList STEP    { $$ = mm.createTransition($1);   }
+: elementList MODIFY  { $$ = mm->createModification($1); }
+| elementList STEP    { $$ = mm->createTransition($1);   }
 
 elementList
 : elementList element { $1->add($2); $$ = $1;           }
-| /*epsilon*/         { $$ = mm.createElementVector();  }
+| /*epsilon*/         { $$ = mm->createElementVector();  }
 ;
 
 element
-: io when act how SOURCE name of { $$ = mm.createSourceNode($1,$2,$6); }
-| io when act how DRAIN name of  { $$ = mm.createDrainNode($1,$2,$4,$6);  }
-| io when act how GATE name of   { $$ = mm.createGateNode($1,$2,$3,$4,$6); }
+: io when act how SOURCE name of { $$ = mm->createSourceNode($1,$2,$6); }
+| io when act how DRAIN name of  { $$ = mm->createDrainNode($1,$2,$4,$6);  }
+| io when act how GATE name of   { $$ = mm->createGateNode($1,$2,$3,$4,$6); }
 | io when act how POOL name of
-  at max add                     { $$ = mm.createPoolNode($1,$2,$3,$4,$6,$7,$8,$9,$10); }
+  at max add                     { $$ = mm->createPoolNode($1,$2,$3,$4,$6,$7,$8,$9,$10); }
 | io when act how CONVERTER name
-  from to                        { $$ = mm.createConverterNode($1,$2,$6,$7,$8); }
-| io REF name                    { $$ = mm.createRefNode($1,$3); }
-| name name                      { $$ = mm.createDeclaration($1,$2); }
+  from to                        { $$ = mm->createConverterNode($1,$2,$6,$7,$8); }
+| io REF name                    { $$ = mm->createRefNode($1,$3); }
+| name name                      { $$ = mm->createDeclaration($1,$2); }
 | name DOT exp DOT_GT name       { MM::Name * preName = $1->getPreName();
                                    $1->setPreName(MM_NULL); //prevent double free
-                                   $$ = mm.createStateEdge(preName,$1,$3,$5); }
+                                   $$ = mm->createStateEdge(preName,$1,$3,$5); }
 | name SUB exp SUB_GT name       { MM::Name * preName = $1->getPreName();
                                    $1->setPreName(MM_NULL); //prevent double free
-                                   $$ = mm.createFlowEdge(preName,$1,$3,$5);  }
-| name LCURLY elementList RCURLY { $$ = mm.createDefinition($1,$3); }
-| ASSERT name COLON exp STRING   { $$ = mm.createAssertion(&@1,$2,$4,$5); free(yylval.str); }
-| DELETE name                    { $$ = mm.createDeletion(&@1,$2); }
+                                   $$ = mm->createFlowEdge(preName,$1,$3,$5);  }
+| name LCURLY elementList RCURLY { $$ = mm->createDefinition($1,$3); }
+| ASSERT name COLON exp STRING   { $$ = mm->createAssertion(&@1,$2,$4,$5); free(yylval.str); }
+| DELETE name                    { $$ = mm->createDeletion(&@1,$2); }
 ;
-//| ACTIVATE name                  { $$ = mm.createActivation(&@1,$2); }
-//| SIGNAL name                    { $$ = mm.createSignal(&@1,$2); }
+//| ACTIVATE name                  { $$ = mm->createActivation(&@1,$2); }
+//| SIGNAL name                    { $$ = mm->createSignal(&@1,$2); }
 //;
 
 io
@@ -212,7 +189,7 @@ max
 ;
 
 add
-: ADDITION LPAREN exp RPAREN { $$ = mm.createOverrideExp(&@2,$3,&@4);}
+: ADDITION LPAREN exp RPAREN { $$ = mm->createOverrideExp(&@2,$3,&@4);}
 | /*epsilon*/                { $$ = MM_NULL; }
 ;
 
@@ -232,69 +209,73 @@ to
 ;
 
 exp
-:	exp AND exp       { $$ = mm.createBinExp($1,MM::Operator::OP_AND,&@2,$3); }
-| exp OR  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_OR,&@2,$3);  }
-| exp GT  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_GT,&@2,$3);  }
-| exp GE  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_GE,&@2,$3);  }
-| exp LT  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_LT,&@2,$3);  }
-| exp LE  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_LE,&@2,$3);  }
-| exp NE  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_NEQ,&@2,$3); }
-| exp EQ  exp       { $$ = mm.createBinExp($1,MM::Operator::OP_EQ,&@2,$3);  }
-|	exp ADD exp       { $$ = mm.createBinExp($1,MM::Operator::OP_ADD,&@2,$3); }
-|	exp SUB exp       { $$ = mm.createBinExp($1,MM::Operator::OP_SUB,&@2,$3); }
-|	exp MUL exp       { $$ = mm.createBinExp($1,MM::Operator::OP_MUL,&@2,$3); }
-|	exp DIV exp       { $$ = mm.createBinExp($1,MM::Operator::OP_DIV,&@2,$3); }
-| UNM exp           { $$ = mm.createUnExp(MM::Operator::OP_UNM,&@1,$2);     }
-| NOT exp           { $$ = mm.createUnExp(MM::Operator::OP_NOT,&@1,$2);     }
-| exp PERCENT       { $$ = mm.createUnExp(MM::Operator::OP_PERCENT,&@1,$1); }
+: exp AND exp       { $$ = mm->createBinExp($1,MM::Operator::OP_AND,&@2,$3); }
+| exp OR  exp       { $$ = mm->createBinExp($1,MM::Operator::OP_OR,&@2,$3);  }
+| exp GT  exp       { $$ = mm->createBinExp($1,MM::Operator::OP_GT,&@2,$3);  }
+| exp GE  exp       { $$ = mm->createBinExp($1,MM::Operator::OP_GE,&@2,$3);  }
+| exp LT  exp       { $$ = mm->createBinExp($1,MM::Operator::OP_LT,&@2,$3);  }
+| exp LE  exp       { $$ = mm->createBinExp($1,MM::Operator::OP_LE,&@2,$3);  }
+| exp NE  exp       { $$ = mm->createBinExp($1,MM::Operator::OP_NEQ,&@2,$3); }
+| exp EQ  exp       { $$ = mm->createBinExp($1,MM::Operator::OP_EQ,&@2,$3);  }
+| exp ADD exp       { $$ = mm->createBinExp($1,MM::Operator::OP_ADD,&@2,$3); }
+| exp SUB exp       { $$ = mm->createBinExp($1,MM::Operator::OP_SUB,&@2,$3); }
+| exp MUL exp       { $$ = mm->createBinExp($1,MM::Operator::OP_MUL,&@2,$3); }
+| exp DIV exp       { $$ = mm->createBinExp($1,MM::Operator::OP_DIV,&@2,$3); }
+| UNM exp           { $$ = mm->createUnExp(MM::Operator::OP_UNM,&@1,$2);     }
+| NOT exp           { $$ = mm->createUnExp(MM::Operator::OP_NOT,&@1,$2);     }
+| exp PERCENT       { $$ = mm->createUnExp(MM::Operator::OP_PERCENT,&@1,$1); }
 | FPVAL PER FPVAL   { $$ = MM_NULL;                             /* FIXME */ }
-|	LPAREN exp RPAREN { $$ = mm.createOverrideExp(&@1,$2,&@3);                }
-| FPVAL RANGE FPVAL { $$ = mm.createRangeValExp($1,&@1,&@2,$3,&@3);         }
-| FPVAL             { $$ = mm.createNumberValExp($1,&@1);                   }
-| TRUE              { $$ = mm.createBooleanValExp(MM_TRUE,&@1);             }
-| FALSE             { $$ = mm.createBooleanValExp(MM_FALSE,&@1);            }
-| ALL               { $$ = mm.createAllExp(&@1);                            }
-| ACTIVE name       { $$ = mm.createActiveExp(&@1,$2);                      }
-| ALIAS             { $$ = mm.createAliasExp(&@1);                          }
-| name              { $$ = mm.createVarExp($1);                             }
-| /*epsilon: one*/  { $$ = mm.createOneExp(&@0);                            }
+| LPAREN exp RPAREN { $$ = mm->createOverrideExp(&@1,$2,&@3);                }
+| FPVAL RANGE FPVAL { $$ = mm->createRangeValExp($1,&@1,&@2,$3,&@3);         }
+| FPVAL             { $$ = mm->createNumberValExp($1,&@1);                   }
+| TRUE              { $$ = mm->createBooleanValExp(MM_TRUE,&@1);             }
+| FALSE             { $$ = mm->createBooleanValExp(MM_FALSE,&@1);            }
+| ALL               { $$ = mm->createAllExp(&@1);                            }
+| ACTIVE name       { $$ = mm->createActiveExp(&@1,$2);                      }
+| ALIAS             { $$ = mm->createAliasExp(&@1);                          }
+| name              { $$ = mm->createVarExp($1);                             }
+| /*epsilon: one*/  { $$ = mm->createOneExp(&@0);                            }
 ;
 
 name
-: ID { $$ = mm.createName(yylval.str, &@1); free(yylval.str); }
+: ID { $$ = mm->createName(yylval.str, &@1); free(yylval.str); }
 ;
 
 %%
-MM::Machine mm;        //TODO: create an instance and use its parser
+MM::Machine * mm;      //TODO: create an instance and use its parser
 MM::Program * program; //TODO: parser attribute
 
 extern FILE * yyin;
-extern struct yy_buffer_state;
+/*extern*/ struct yy_buffer_state;
 typedef yy_buffer_state *YY_BUFFER_STATE;
 extern int yyparse();
 extern YY_BUFFER_STATE yy_scan_buffer(char *, size_t);
 
 int main(int argc, const char * argv[])
 {
-  mm.eval((MM::CHAR const *)argv[1]);
+  mm = new MM::Machine();
+  mm->evalFile((MM::CHAR const *)argv[1]);
   for(int i =0; i<20; i++)
   {
-    mm.step();
+    mm->step();
   }
+  
+  delete mm;
   return 0;
 }
 
-MM::Program * MM_parse(MM::CHAR * input)
+MM::Program * MM_parse(MM::Machine * machine, const MM::CHAR * input)
 {
-  yy_scan_buffer(input, strlen(input));
-    
-  yyparse();
-  
+  mm = machine;
+  yy_scan_buffer((char*)input, strlen(input));    
+  yyparse();  
   return program;
 }
 
-MM::Program * MM_parseFile(const MM::CHAR * file)
+MM::Program * MM_parseFile(MM::Machine * machine, const MM::CHAR * file)
 {
+  mm = machine;
+
   yyin = fopen(file, "r");
   if(!yyin)
   {
@@ -312,4 +293,3 @@ void yyerror(char * msg)
 {
   fprintf(stderr, "line %d, %d: %s\n", yylineno, yycolumn, msg);
 }
-

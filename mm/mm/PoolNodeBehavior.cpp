@@ -1,9 +1,40 @@
+/******************************************************************************
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
+ ******************************************************************************/
 //
 //  Pool.cpp
 //  mm
 //
 //  Created by Riemer van Rozen on 7/10/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 #include <stdio.h>
 #include <stdlib.h>
@@ -594,6 +625,38 @@ MM::VOID MM::PoolNodeBehavior::change(MM::Instance * i,
   //add or remove instances
 }
 
+
+//query values on a state
+MM::INT32 MM::PoolNodeBehavior::getAmount(MM::Instance * i,
+                    MM::Machine * m,
+                    MM::Node * n)
+{
+  MM::Evaluator * evaluator = m->getEvaluator();
+  MM::INT32 val = 0;
+  //fixme move to val exp method
+  if(exp != MM_NULL)
+  {
+    MM::ValExp * valExp = evaluator->eval(exp, i, MM_NULL);
+    if(valExp->getTypeId() == MM::T_NumberValExp)
+    {
+      val = ((NumberValExp *) valExp)->getIntValue();
+      i->setEvaluatedExp(exp, val);
+    }
+    else if(valExp->getTypeId() == MM::T_RangeValExp)
+    {
+      val = ((RangeValExp *) valExp)->getIntValue();
+      i->setEvaluatedExp(exp, val);
+    }
+    else
+    {
+      //TODO runtime exception
+    }
+  }
+  val = i->getValue(n) + val;
+  
+  return val;
+}
+
 MM::VOID MM::PoolNodeBehavior::add(MM::Instance * i,
                                    MM::Machine  * m,
                                    MM::Node     * n,
@@ -645,17 +708,18 @@ MM::VOID MM::PoolNodeBehavior::sub(MM::Instance * i,
   i->setNewValue(n, newValue);
 
   //check if self is empty, which kills this instance
-  /*MM::Name * poolName = n->getName();
   if(newValue == 0)
   {
+    MM::Name * poolName = n->getName();
     if(poolName->equals((MM::CHAR*)MM::PoolNodeBehavior::SELF_STR,
                       MM::PoolNodeBehavior::SELF_LEN) == MM_TRUE)
     {
       //inform parent instance of the demise of instance
-      MM::Instance * parentInstance = i->getParent();
-      parentInstance->destroyInstance(n, m, i);
+      //MM::Instance * parentInstance = i->getParent();
+      //parentInstance->destroyInstance(n, m, i);
+      i->mark();
     }
-  }*/
+  }
 }
 
 MM::UINT32 MM::PoolNodeBehavior::getCapacity(MM::Instance * i,

@@ -1,9 +1,40 @@
+/******************************************************************************
+ * Copyright (c) 2013-2014, Amsterdam University of Applied Sciences (HvA) and
+ *                          Centrum Wiskunde & Informatica (CWI)
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holder nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Contributors:
+ *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
+ ******************************************************************************/
 //
 //  NodeBehavior.cpp
 //  mm
 //
 //  Created by Riemer van Rozen on 10/9/13.
-//  Copyright (c) 2013 Riemer van Rozen. All rights reserved.
 //
 #include <stdio.h>
 #include <stdlib.h>
@@ -525,6 +556,7 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
     }
     else
     {
+      //FIXME: move to val exp method
       MM::ValExp * valExp = evaluator->eval(i, edge);
       if(valExp->getTypeId() == MM::T_NumberValExp)
       {
@@ -660,6 +692,15 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
     MM::Node * aliasNode = edge->getTarget();
     aliasNode->activateTriggerTargets(i, m);
   }
+}
+
+//retrieve resources from a full state in between steps
+//get the value of a node instance 
+MM::INT32 MM::NodeBehavior::getAmount(MM::Instance * i,
+                            MM::Machine * m,
+                            MM::Node * n)
+{
+  return getResources(i,n); //only overriden for pool nodes
 }
 
 MM::VOID MM::NodeBehavior::toString(MM::String * buf, MM::Name * name)
