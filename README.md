@@ -3,19 +3,22 @@ MM-Lib
 
 Micro-Machinations Library
 
-The MM lib enables game designers to modify economic game mechanics while a game is running.
+The Micro-Machinations (MM) library enables game designers to modify economic game mechanics while a game is running.
 More information will be provided as it becomes available.
-Please note that MM is available under 3-clause BSD license,
-but that MM is not yet mature and using it comes at your own risk.
 
 | Directory | Platform  | Description |
 | --------- | --------- | ----------- |
-| mm        | C++       | Currently requires STL, Flex and Bison |
-| LibMM     | C++ .NET  | Wraps MM for usage with .NET |
-| tests     | MM        | Textual Micro-Machinations examples |
+| mm/mm     | C++       | The MM library currently requires STL, Flex and Bison |
+| mm/LibMM  | C++ .NET  | Wraps the MM library for usage with .NET |
+| mm/tests  | MM        | Contains textual Micro-Machinations examples |
 
-On MacOS please build MM using the XCode project mm.xcodeproj
-On Windows we provide the Visual Studio 2010 LibMM Wrapper project.
+
+* On MacOS please build MM using the XCode project mm.xcodeproj
+* On Windows we provide the Visual Studio 2010 LibMM Wrapper project.
+
+**Warning:**
+Please note that MM is available under 3-clause BSD license,
+but that MM is not yet mature and using it comes at your own risk.
 
 ---
 April 14th 2014 (v0.10):
