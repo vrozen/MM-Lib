@@ -185,8 +185,7 @@ MM::VOID MM::String::clear()
 
 MM::VOID MM::String::print()
 {
-  fprintf(stdout, "%s", buf);
-  fflush(stdout);
+  MM_printf("%s", buf);
 }
 
 MM::UINT32 MM::String::digits(MM::INT32 val)

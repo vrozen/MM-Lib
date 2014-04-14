@@ -55,13 +55,19 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Activation.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Violation.h"
+#include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -246,7 +252,7 @@ MM::VOID MM::PoolNodeBehavior::addInterface(MM::Machine * m, MM::Node * node)
   {
     MM::Name * name = node->getName();
     MM::CHAR * str = name->getBuffer();
-    printf("Pool: Sees interface %s begin\n", str);
+    MM_printf("Pool: Sees interface %s begin\n", str);
     
     MM::Name * clone = m->createName(name);
     
@@ -267,7 +273,7 @@ MM::VOID MM::PoolNodeBehavior::removeInterface(MM::Machine * m, MM::Node * node)
   MM::Name * name = node->getName();
   if(interfaces->contains(name) == MM_TRUE)
   {
-    printf("Pool: Sees interface end\n");
+    MM_printf("Pool: Sees interface end\n");
     MM::InterfaceNode * iNode = (MM::InterfaceNode *) interfaces->get(name);
     
     MM::Reflector * reflector = m->getReflector();
@@ -386,9 +392,9 @@ MM::VOID MM::PoolNodeBehavior::stepPullAll(MM::Node * tgtNode,
   
   MM::INT32 tempTgtCapacity = tgtInstance->getCapacity(tgtNode);
   
-  printf("STEP PULL ALL NODE %s (%ld edges)\n",
-         tgtNode->getName()->getBuffer(),
-         work->size());
+  MM_printf("STEP PULL ALL NODE %s (%ld edges)\n",
+            tgtNode->getName()->getBuffer(),
+            work->size());
   
   while(workIter.hasNext() == MM_TRUE)
   {
@@ -461,7 +467,7 @@ MM::VOID MM::PoolNodeBehavior::stepPullAll(MM::Node * tgtNode,
       MM::Node * srcNode = event->getSourceNode();
       MM::Node * tgtNode = event->getTargetNode();
       MM::UINT32 flow = event->getAmount();
-      printf("Full flow %ld\n", flow);
+      MM_printf("Full flow %ld\n", flow);
       
       srcInstance->sub(srcNode, m, flow);
       tgtInstance->add(tgtNode, m, flow);
@@ -469,6 +475,11 @@ MM::VOID MM::PoolNodeBehavior::stepPullAll(MM::Node * tgtNode,
   }
   else
   {
+    //fail
+	MM::Failure * event = m->createFailure(tgtInstance, tgtNode);
+    tr->addElement(event);
+
+	//clean up
     MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
     while(eIter.hasNext() == MM_TRUE)
     {
@@ -492,9 +503,9 @@ MM::VOID MM::PoolNodeBehavior::stepPushAll(MM::Node * srcNode,
   
   MM::INT32 tempSrcAmount = srcInstance->getValue(srcNode);
   
-  printf("STEP PUSH ALL NODE %s (%ld edges)\n",
-         srcNode->getName()->getBuffer(),
-         work->size());
+  MM_printf("STEP PUSH ALL NODE %s (%ld edges)\n",
+            srcNode->getName()->getBuffer(),
+            work->size());
   
   while(workIter.hasNext() == MM_TRUE)
   {
@@ -567,7 +578,7 @@ MM::VOID MM::PoolNodeBehavior::stepPushAll(MM::Node * srcNode,
       MM::Node * srcNode = event->getSourceNode();
       MM::Node * tgtNode = event->getTargetNode();
       MM::UINT32 flow = event->getAmount();
-      printf("Full flow %ld\n", flow);
+      MM_printf("Full flow %ld\n", flow);
       
       srcInstance->sub(srcNode, m, flow);
       tgtInstance->add(tgtNode, m, flow);
@@ -575,6 +586,11 @@ MM::VOID MM::PoolNodeBehavior::stepPushAll(MM::Node * srcNode,
   }
   else
   {
+    //fail
+	MM::Failure * event = m->createFailure(srcInstance, srcNode);
+    tr->addElement(event);
+
+	//clean up
     MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
     while(eIter.hasNext() == MM_TRUE)
     {
@@ -602,7 +618,7 @@ MM::VOID MM::PoolNodeBehavior::begin(MM::Instance * i,
   
   //hack:
   i->setValue(n, at);     //Begin before step
-  i->setNewValue(n, at);  //Befin during step
+  i->setNewValue(n, at);  //Begin during step
 }
 
 MM::VOID MM::PoolNodeBehavior::end(MM::Instance * i,
@@ -620,11 +636,24 @@ MM::VOID MM::PoolNodeBehavior::change(MM::Instance * i,
                                       MM::Machine * m,
                                       MM::Node * n)
 {
-  //todo
-  
-  //add or remove instances
-}
+  //FIXME: add to previous transition
+  //FIXME: recalculate disabled, enabled and active nodes
 
+   MM::INT32 delta = at - i->getValue(n);
+
+   //FIXME: do it via transitions for messages!
+   if(delta >= 0)
+   {
+      add(i, m, n, delta);
+      i->notifyObservers(i, (MM::VOID*)delta, MM::MSG_ADD_VALUE, n);
+   }
+   else
+   {
+	  sub(i, m, n, (MM::UINT32)-delta);
+      i->notifyObservers(i, (MM::VOID*)((MM::UINT32)-delta), MM::MSG_SUB_VALUE, n);
+   }
+   i->notifyObservers(i, (MM::VOID*)at, MM::MSG_HAS_VALUE, n);
+}
 
 //query values on a state
 MM::INT32 MM::PoolNodeBehavior::getAmount(MM::Instance * i,

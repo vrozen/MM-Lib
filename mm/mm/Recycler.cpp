@@ -193,27 +193,27 @@ MM::VOID MM::Recycler::uncreate(MM::Recyclable * r)
 {
   if(r == MM_NULL)
   {
-    printf("Recycler: Attempt to recycle null\n");
+    MM_printf("Recycler: Attempt to recycle null\n");
   }
   else if(objects->contains(r) == MM_TRUE)
   {
     objects->remove(r);
-    //printf("Recycler: Deleting %s\n",
+    //MM_printf("Recycler: Deleting %s\n",
 	//	(MM::CHAR*)typeid(*r).name());
 
     delete r;
   }
   else
   {
-    printf("Recycler: Attempt to uncreate an unknown object %s\n",
-		(MM::CHAR*)typeid(*r).name());
+    MM_printf("Recycler: Attempt to uncreate an unknown object %s\n",
+		      (MM::CHAR*)typeid(*r).name());
 
   }
 }
 
 MM::CHAR * MM::Recycler::createBuffer(MM::UINT32 size)
 {
-  //printf("CREATE %d\n", size);
+  //MM_printf("CREATE %d\n", size);
   bufferCount++;
   MM::CHAR * buf = (MM::CHAR *) malloc(size);
   memset(buf, 0, size);
@@ -223,6 +223,6 @@ MM::CHAR * MM::Recycler::createBuffer(MM::UINT32 size)
 MM::VOID MM::Recycler::uncreate(MM::CHAR * str)
 {
   bufferCount--;
-  //printf("%p: [%s]  \n", str, str);
+  //MM_printf("%p: [%s]  \n", str, str);
   free(str);
 }

@@ -29,9 +29,10 @@ Base //base definition difference
   release: amplify -2-> essence //add: amplify times two  
   absorb:  essence   --> transmute  //change: consume essence
   cash:    transmute --> gold       //change: produce cash
+  heatUp:  transmute --> heat       //change: produce heat
   
-  overheated: heat .(heat >= 10).> amplify
-  cooled:     heat .(heat < 10).> transmute
+  overheated: heat .(heat >= 100).> amplify
+  cooled:     heat .(heat < 100).> transmute
 }
 
 modify //evaluating this modification changes the game

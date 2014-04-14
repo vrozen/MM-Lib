@@ -22,7 +22,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CLRSupport>true</CLRSupport>
     <CharacterSet>Unicode</CharacterSet>
-    <UseOfAtl>Static</UseOfAtl>
+    <UseOfAtl>false</UseOfAtl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -119,11 +119,15 @@
     <ClInclude Include="..\mm\Definition.h" />
     <ClInclude Include="..\mm\Deletion.h" />
     <ClInclude Include="..\mm\DieExp.h" />
+    <ClInclude Include="..\mm\Disablement.h" />
     <ClInclude Include="..\mm\DrainNodeBehavior.h" />
     <ClInclude Include="..\mm\Edge.h" />
     <ClInclude Include="..\mm\Element.h" />
+    <ClInclude Include="..\mm\Enablement.h" />
     <ClInclude Include="..\mm\Evaluator.h" />
+    <ClInclude Include="..\mm\Event.h" />
     <ClInclude Include="..\mm\Exp.h" />
+    <ClInclude Include="..\mm\Failure.h" />
     <ClInclude Include="..\mm\FlowEdge.h" />
     <ClInclude Include="..\mm\FlowEvent.h" />
     <ClInclude Include="..\mm\GateNodeBehavior.h" />
@@ -146,24 +150,26 @@
     <ClInclude Include="..\mm\Operator.h" />
     <ClInclude Include="..\mm\OverrideExp.h" />
     <ClInclude Include="..\mm\PoolNodeBehavior.h" />
+    <ClInclude Include="..\mm\Prevention.h" />
     <ClInclude Include="..\mm\Program.h" />
     <ClInclude Include="..\mm\RangeValExp.h" />
     <ClInclude Include="..\mm\Recyclable.h" />
     <ClInclude Include="..\mm\Recycler.h" />
     <ClInclude Include="..\mm\Reflector.h" />
     <ClInclude Include="..\mm\RefNodeBehavior.h" />
-    <ClInclude Include="..\mm\Signal.h" />
     <ClInclude Include="..\mm\SourceNodeBehavior.h" />
     <ClInclude Include="..\mm\StateEdge.h" />
     <ClInclude Include="..\mm\String.h" />
     <ClInclude Include="..\mm\Transformation.h" />
     <ClInclude Include="..\mm\Transition.h" />
+    <ClInclude Include="..\mm\TriggerEvent.h" />
     <ClInclude Include="..\mm\TriggerExp.h" />
     <ClInclude Include="..\mm\Types.h" />
     <ClInclude Include="..\mm\UnExp.h" />
     <ClInclude Include="..\mm\ValExp.h" />
     <ClInclude Include="..\mm\VarExp.h" />
     <ClInclude Include="..\mm\Vector.h" />
+    <ClInclude Include="..\mm\Violation.h" />
     <ClInclude Include="..\mm\YYLTYPE.h" />
     <ClInclude Include="LibMM.h" />
     <ClInclude Include="resource.h" />
@@ -182,11 +188,15 @@
     <ClCompile Include="..\mm\Definition.cpp" />
     <ClCompile Include="..\mm\Deletion.cpp" />
     <ClCompile Include="..\mm\DieExp.cpp" />
+    <ClCompile Include="..\mm\Disablement.cpp" />
     <ClCompile Include="..\mm\DrainNodeBehavior.cpp" />
     <ClCompile Include="..\mm\Edge.cpp" />
     <ClCompile Include="..\mm\Element.cpp" />
+    <ClCompile Include="..\mm\Enablement.cpp" />
     <ClCompile Include="..\mm\Evaluator.cpp" />
+    <ClCompile Include="..\mm\Event.cpp" />
     <ClCompile Include="..\mm\Exp.cpp" />
+    <ClCompile Include="..\mm\Failure.cpp" />
     <ClCompile Include="..\mm\FlowEdge.cpp" />
     <ClCompile Include="..\mm\FlowEvent.cpp" />
     <ClCompile Include="..\mm\GateNodeBehavior.cpp" />
@@ -208,22 +218,24 @@
     <ClCompile Include="..\mm\Operator.cpp" />
     <ClCompile Include="..\mm\OverrideExp.cpp" />
     <ClCompile Include="..\mm\PoolNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\Prevention.cpp" />
     <ClCompile Include="..\mm\Program.cpp" />
     <ClCompile Include="..\mm\RangeValExp.cpp" />
     <ClCompile Include="..\mm\Recyclable.cpp" />
     <ClCompile Include="..\mm\Recycler.cpp" />
     <ClCompile Include="..\mm\Reflector.cpp" />
     <ClCompile Include="..\mm\RefNodeBehavior.cpp" />
-    <ClCompile Include="..\mm\Signal.cpp" />
     <ClCompile Include="..\mm\SourceNodeBehavior.cpp" />
     <ClCompile Include="..\mm\StateEdge.cpp" />
     <ClCompile Include="..\mm\String.cpp" />
     <ClCompile Include="..\mm\Transformation.cpp" />
     <ClCompile Include="..\mm\Transition.cpp" />
+    <ClCompile Include="..\mm\TriggerEvent.cpp" />
     <ClCompile Include="..\mm\TriggerExp.cpp" />
     <ClCompile Include="..\mm\UnExp.cpp" />
     <ClCompile Include="..\mm\ValExp.cpp" />
     <ClCompile Include="..\mm\VarExp.cpp" />
+    <ClCompile Include="..\mm\Violation.cpp" />
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="LibMM.cpp" />
     <ClCompile Include="Stdafx.cpp" />

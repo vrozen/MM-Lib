@@ -111,20 +111,28 @@ namespace LibMM
     //instance value messages
     MSG_ADD_VALUE,
     MSG_SUB_VALUE,
-	  MSG_HAS_VALUE,
+    MSG_HAS_VALUE,
     
     //instance trigger message
     MSG_TRIGGER,   //a trigger inside an instance happened
 
-    //instance activated message
-    MSG_ACTIVATED, //a node inside an instance was activated
+    //instance node activated message
+    MSG_ACTIVATE, //a node inside an instance was activated to act in the next step
     
-    //instance disabled message
-    MSG_DISABLED,  //a node inside an instance was not activated
+    //instance node enabled message
+    MSG_ENABLE, //a node inside an instance was enabled to act in the next step (can be activated)
+
+    //instance node disabled message
+    MSG_DISABLE,  //a node inside an instance was not activated
                    //because at least one of its conditions was false
     
     //instance signal condition message
-    MSG_SIGNAL     //an invariant inside an instance was violated
+    MSG_VIOLATE,   //an invariant inside an instance was violated
+
+    MSG_FAIL,
+
+    MSG_PREVENT
+
   };
 
 #if __cplusplus

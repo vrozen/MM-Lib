@@ -49,6 +49,12 @@
 #define snprintf _snprintf
 #endif
 
+#if MM_DEBUG
+  #define MM_printf printf
+#else
+  #define MM_printf
+#endif
+
 namespace MM
 {
   typedef unsigned char UINT8;   /**> unsigned byte type */
@@ -57,7 +63,7 @@ namespace MM
   typedef char          CHAR;    /**> character type */
   typedef void          VOID;    /**> void type */
   typedef bool          BOOLEAN; /**> boolean type */
-  
+
   #define MM_MAX_RESOURCES LONG_MAX
   
   #define MM_TRUE  true  /**> true value */
@@ -101,7 +107,15 @@ namespace MM
     T_Transformation,
     T_Transition,
     T_Modification,
+	T_Event,
     T_FlowEvent,
+	T_TriggerEvent,
+	T_Failure,
+    T_Activation,
+	T_Violation,
+	T_Prevention,
+	T_Enablement,
+	T_Disablement,
     //ast / type
     T_Location,
     T_Name,
@@ -109,9 +123,7 @@ namespace MM
     T_Definition,
     T_Declaration,
     T_Assertion,
-    T_Signal,
     T_Deletion,
-    T_Activation,
     T_Edge,
     T_FlowEdge,
     T_StateEdge,

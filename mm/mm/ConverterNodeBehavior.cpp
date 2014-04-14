@@ -55,8 +55,6 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -66,7 +64,15 @@
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Prevention.h"
+#include "Violation.h"
+#include "Activation.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -356,6 +362,7 @@ MM::VOID MM::ConverterNodeBehavior::activateTriggerTargets(MM::Node * node,
   //trigger the source node
   //i->setActive(sourceNode);
   //MM::NodeBehavior::activateTriggerTargets(node, i, m);
+  return sourceNode->activateTriggerTargets(i, m);
 }
 
 MM::VOID MM::ConverterNodeBehavior::toString(MM::String * buf)

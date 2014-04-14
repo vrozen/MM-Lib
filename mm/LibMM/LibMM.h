@@ -48,6 +48,9 @@
 using namespace System;
 using namespace System::Runtime::InteropServices;
 
+//#include <msclr/marshal.h>
+//using namespace msclr::interop;
+
   /*
 namespace MM
 {
@@ -166,7 +169,7 @@ namespace LibMM
 		                             unsigned long message,
 		                             unsigned long instance,
 									 unsigned long element,
-									 unsigned long value);
+									 long value);
 
 	  
 
@@ -249,13 +252,35 @@ namespace LibMM
 		                       System::String ^ name)
 	  {
 		MM::Definition * def = (MM::Definition *) definition;
-		char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(name);
-		MM::Name * n = m->createName(str);
-		MM::Element * element = def->getElement(n);
-		n->recycle(m);
-		Marshal::FreeHGlobal(IntPtr(str));
+		MM::Element * element = MM_NULL;
+
+		if(def != MM_NULL)
+		{
+		  char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(name);
+		  MM::Name * n = m->createName(str);
+		  element = def->getElement(n);
+		  n->recycle(m);
+		  Marshal::FreeHGlobal(IntPtr(str));
+		}
+		 
 		return (unsigned long) element;
 	  }
+
+	  bool isInteractive(unsigned long node)
+	  {
+		  MM::Node * n = (MM::Node *) node;
+
+		  MM::NodeBehavior * behavior = n->getBehavior();
+
+		  bool isInteractive = false;
+
+		  if(behavior->getWhen() == MM::NodeBehavior::WHEN_USER)
+		  {
+			  isInteractive = true;
+		  }
+		  return isInteractive;
+	  }
+
 
 	  signed long getValue(unsigned long instance,
 		                   unsigned long poolNode)
@@ -268,11 +293,73 @@ namespace LibMM
 
 	  System::String ^ getName(unsigned long element)
 	  {
-		unsigned long size = 1024 * 256 * 8;
+		unsigned long size = 1024 * 256 *  8;
 		char * buf = (char *) malloc(size);
-		m->getName(element, buf, size);
-        return gcnew System::String(buf);
+		memset(buf, 0, size);
+		
+        m->getName(element, buf, size);
+
+		System::String ^ str = gcnew System::String(buf);
+
+ 		free(buf);
+		return str;
 	  }
+
+	  System::String ^ getInstanceName(unsigned long instance)
+	  {
+		unsigned long size = 1024 * 256 * 8;
+	    char * buf = (char *) malloc(size);
+	    memset(buf, 0, size);
+		
+        m->getInstanceName(instance, buf, size);
+	
+		System::String ^ str = gcnew System::String(buf);
+
+ 		free(buf);
+		return str;
+	  }
+
+	  System::String ^ getModel()
+	  {
+		unsigned long size = 1024 * 256 * 8;
+	    char * buf = (char *) malloc(size);
+		memset(buf, 0, size);
+
+		MM::String * str = new MM::String(buf, size);
+
+	    MM::Definition * def = m->getDefinition();
+
+		def->toString(str);
+
+		System::String ^ ret = gcnew System::String(buf);
+
+		delete str;
+		free(buf);
+
+		return ret;
+	  }
+
+	  System::String ^ getState()
+	  {
+		unsigned long size = 1024 * 256 * 8;
+	    char * buf = (char *) malloc(size);
+		memset(buf, 0, size);
+
+		MM::String * str = new MM::String(buf, size);
+
+		MM::Instance * instance = m->getInstance();
+
+		instance->toString(str);
+
+		System::String ^ ret = gcnew System::String(buf);
+
+		delete str;
+		free(buf);
+
+		return ret;
+	  }
+
+
 
 	  void activate(unsigned long node,
 		            unsigned long instance)
@@ -315,6 +402,11 @@ namespace LibMM
 		char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(message);
 	    m->eval(str);
 		Marshal::FreeHGlobal(IntPtr(str));
+
+		//marshal_context ^ context = gcnew marshal_context();
+	    //const char* chars = context->marshal_as<const char*>(str);
+		//m->eval(chars);
+     	//delete context;
 	  }
 
 	  void evalFile(System::String^ file)
@@ -322,6 +414,11 @@ namespace LibMM
 		char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(file);
 	    m->evalFile(str);
 		Marshal::FreeHGlobal(IntPtr(str));
+
+	    //marshal_context ^ context = gcnew marshal_context();
+	    //const char* chars = context->marshal_as<const char*>(str);
+	 	//m->evalFile(chars);
+     	//delete context;
 	  }
 
 	  /*

@@ -30,14 +30,13 @@
  * Contributors:
  *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
-/*!
- * The Event abstraction is the abstract superclass of all transition elements.
- * @package MM
- * @file    Event.cpp
- * @author  Riemer van Rozen
- * @date    March 26th 2013
- */
-/******************************************************************************/
+//
+//  TriggerEvent.cpp
+//  mm
+//
+//  Created by Riemer van Rozen on March 26th 2014
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,62 +45,119 @@
 #include "Recyclable.h"
 #include "Vector.h"
 #include "Map.h"
-#include "Location.h"
-#include "Name.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
+#include "Location.h"
+#include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Transformation.h"
+#include "Program.h"
+#include "Modification.h"
+#include "Transition.h"
 #include "Event.h"
+#include "TriggerEvent.h"
+#include "Operator.h"
+#include "Exp.h"
+#include "Edge.h"
+#include "NodeWorkItem.h"
+#include "NodeBehavior.h"
+#include "Node.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
 
-MM::Event::Event(MM::Name * name, MM::Instance * instance, MM::Element * element) : MM::Element(name)
+const MM::CHAR * MM::TriggerEvent::TRIGGER_STR = "trigger";
+const MM::UINT32 MM::TriggerEvent::TRIGGER_LEN =
+  strlen(MM::TriggerEvent::TRIGGER_STR);
+
+MM::TriggerEvent::TriggerEvent(MM::Name * name) :
+    MM::Event(name, MM_NULL, MM_NULL)
 {
-  this->instance = instance;
-  this->element = element;
+  this->loc = MM_NULL;
 }
 
-MM::Event::~Event()
+MM::TriggerEvent::TriggerEvent(MM::Location * loc, MM::Name * name) :
+    MM::Event(name, MM_NULL, MM_NULL)
 {
-  this->instance = MM_NULL;
-  this->element = MM_NULL;
+  this->loc = loc;
 }
 
-MM::VOID MM::Event::recycle(MM::Recycler * r)
+MM::TriggerEvent::TriggerEvent(MM::Instance * instance,
+                               MM::Edge     * edge) :
+    MM::Event(MM_NULL, instance, edge)
 {
-  this->MM::Element::recycle(r);
+  this->loc = MM_NULL;
 }
 
-MM::TID MM::Event::getTypeId()
+MM::TriggerEvent::~TriggerEvent()
 {
-  return MM::T_Event;
+  this->loc = MM_NULL;
 }
 
-MM::BOOLEAN MM::Event::instanceof(MM::TID tid)
+MM::VOID MM::TriggerEvent::recycle(MM::Recycler * r)
 {
-  if(tid == MM::T_Event)
+  if(loc != MM_NULL)
+  {
+	loc->recycle(r);
+  }
+
+  this->MM::Event::recycle(r);
+}
+
+MM::TID MM::TriggerEvent::getTypeId()
+{
+  return MM::T_TriggerEvent;
+}
+
+MM::BOOLEAN MM::TriggerEvent::instanceof(MM::TID tid)
+{
+  if(tid == MM::T_TriggerEvent)
   {
     return MM_TRUE;
   }
   else
   {
-    return MM::Element::instanceof(tid);
+    return MM::Event::instanceof(tid);
   }
 }
 
-MM::Instance * MM::Event::getInstance()
+MM::Location * MM::TriggerEvent::getLocation()
 {
-  return instance;
+  return loc;
 }
 
-MM::VOID MM::Event::setInstance(MM::Instance * instance)
+MM::MESSAGE MM::TriggerEvent::getMessage()
 {
-  this->instance = instance;
+  return MM::MSG_TRIGGER;
 }
 
-MM::Element * MM::Event::getElement()
+MM::VOID MM::TriggerEvent::toString(MM::String * buf)
 {
-  return element;
+  toString(buf, 0);
 }
 
-MM::VOID MM::Event::setElement(MM::Element * element)
+MM::VOID MM::TriggerEvent::toString(MM::String * buf, MM::UINT32 indent)
 {
-  this->element = element;
+  if(name != MM_NULL)
+  {
+	//parsed
+    buf->append((MM::CHAR*)MM::TriggerEvent::TRIGGER_STR,
+                 MM::TriggerEvent::TRIGGER_LEN);
+    buf->space();
+    name->toString(buf);
+  }
+  else if(instance != MM_NULL && element != MM_NULL)
+  {
+	//synthesized
+    buf->append((MM::CHAR*)MM::TriggerEvent::TRIGGER_STR,
+                 MM::TriggerEvent::TRIGGER_LEN);
+    buf->space();
+    //instance->nameToString(element, buf);
+  }
+  else
+  {
+	  //failure :-)
+  }
 }

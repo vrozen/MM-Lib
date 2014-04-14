@@ -55,13 +55,19 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Violation.h"
+#include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -203,7 +209,7 @@ MM::VOID MM::Declaration::addInterface(MM::Machine * m,
   {
     MM::Name * name = node->getName();
     MM::CHAR * str = name->getBuffer();
-    printf("Declaration: Sees interface %s begin\n", str);
+    MM_printf("Declaration: Sees interface %s begin\n", str);
 
     MM::Name * clone = m->createName(name);
     MM::InterfaceNode * iNode = m->createInterfaceNode(clone, this, node);
@@ -220,7 +226,7 @@ MM::VOID MM::Declaration::removeInterface(MM::Machine * m, MM::Node * node)
   MM::Name * name = node->getName();  
   if(interfaces->contains(name) == MM_TRUE)
   {
-    printf("Declaration: Sees interface end\n");
+    MM_printf("Declaration: Sees interface end\n");
     MM::InterfaceNode * iNode = (MM::InterfaceNode *) interfaces->get(name);
     
     MM::Reflector * reflector = m->getReflector();

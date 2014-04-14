@@ -81,17 +81,14 @@ namespace MM
     MM::BOOLEAN instanceof(MM::TID tid);
 
     MM::VOID toString(MM::String * buf);
-    
-    
-    MM::Instance * getInitialState(MM::Definition * def);
+        
+    //MM::Instance * getInitialState(MM::Definition * def);
     
     MM::VOID step (MM::Transition * tr);
-    MM::VOID step (MM::Instance * i, MM::Transition * tr);
-    
-    MM::VOID initStartState(MM::Instance * i);
+    //MM::VOID step (MM::Instance * i, MM::Transition * tr);
 
   private:
-    //phase 1
+    //phase 1: prepare
     MM::VOID prepareAll(MM::Instance * instance);
     
     MM::VOID prepare(MM::Instance * instance);
@@ -100,55 +97,22 @@ namespace MM
     MM::VOID stepLevel(MM::Transition * transition,
                        MM::Vector<MM::Evaluator::NodeInstance *> * work);
     
-    //MM::VOID stepNode(MM::Transition * transition,
-    //                 MM::Instance * instance,
-    //                  MM::Node * node);
-    
-    //MM::VOID stepNodeAll(MM::Transition * transition,
-    //                     MM::Instance * instance,
-    //                     MM::Node * node,
-    //                     MM::Vector<Edge *> * work);
-
-    //MM::VOID stepNodeAny(MM::Transition * transition,
-    //                     MM::Instance * instance,
-    //                     MM::Node * node,
-    //                     MM::Vector<Edge *> * work);
-    
-    //phase 3
+    //phase 3: finalize
     MM::VOID finalize(MM::Instance * instance, MM::Transition * tr);
     
     MM::VOID finalizeAll(MM::Instance * instance, MM::Transition * tr);
     
-    
-    //MM::Name * synthesizeInstanceName(MM::Instance * i);
-    //MM::FlowEdge * synthesizeFlowEdge(MM::Instance * edgeInstance,
-    //                                  MM::Instance * srcInstance,
-    //                                  MM::Instance * tgtInstance,
-    //                                  MM::Node * src,
-    //                                  MM::UINT32 flow,
-    //                                  MM::Node * tgt);
   private:
     MM::VOID clearActiveNodes(MM::Instance * i);
+
+	MM::VOID setActiveNodes(MM::Instance * i,
+		                    MM::Transition * tr);
     
-    MM::VOID setActiveNodes(MM::Instance * i,
-                            MM::Transition * tr);
+    MM::VOID setEnabledNodes(MM::Instance * i,
+                             MM::Transition * tr);
     
     MM::VOID notifyFlow(MM::Transition * tr);
-    
-    //MM::VOID activateTriggerTargets(MM::Instance * i,
-    //                        MM::Node * n);
-
-    //MM::BOOLEAN isDisabled(MM::Node * node,
-    //                       MM::Instance * i);
-
-    //MM::BOOLEAN isSatisfied(MM::Instance * i,
-    //                        MM::Node *,
-    //                        MM::Transition * tr);
-    
-    //MM::VOID propagateGates(MM::Instance * i,
-    //                        MM::Transition * tr);
-    
-    
+        
     //------------------------------------------------------------
     //Visitor
     //------------------------------------------------------------

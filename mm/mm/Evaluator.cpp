@@ -56,8 +56,6 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -67,7 +65,15 @@
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Activation.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Prevention.h"
+#include "Violation.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -166,16 +172,18 @@ MM::VOID MM::Evaluator::step(MM::Transition * tr)
   MM::Reflector * r = m->getReflector();
   MM::Instance * i = r->getInstance();
   prepareAll(i);
-  printf("STEP LEVEL (%ld nodes): pull all\n", pullAllWork->size());
+  MM_printf("STEP LEVEL (%ld nodes): pull all\n", pullAllWork->size());
   stepLevel(tr, pullAllWork);
-  printf("STEP LEVEL (%ld nodes): pull any\n", pullAnyWork->size());
+  MM_printf("STEP LEVEL (%ld nodes): pull any\n", pullAnyWork->size());
   stepLevel(tr, pullAnyWork);
-  printf("STEP LEVEL (%ld nodes): push all\n", pushAllWork->size());
+  MM_printf("STEP LEVEL (%ld nodes): push all\n", pushAllWork->size());
   stepLevel(tr, pushAllWork);
-  printf("STEP LEVEL (%ld nodes): push any\n", pushAnyWork->size());
+  MM_printf("STEP LEVEL (%ld nodes): push any\n", pushAnyWork->size());
   stepLevel(tr, pushAnyWork);
-  printf("\n");
-  clearActiveNodes(i);
+  MM_printf("\n");
+
+  //FIXME: we need the currently active nodes to calculate 'satisfied'
+  //clearActiveNodes(i);
   
   finalizeAll(i, tr);
 
@@ -201,23 +209,6 @@ MM::VOID MM::Evaluator::step(MM::Transition * tr)
   
   //recycle string
   str->recycle(m);
-}
-
-MM::VOID MM::Evaluator::step (MM::Instance * i, MM::Transition * tr)
-{
-  prepare(i);
-  printf("STEP LEVEL (%ld nodes): pull all\n", pullAllWork->size());
-  stepLevel(tr, pullAllWork);
-  printf("STEP LEVEL (%ld nodes): pull any\n", pullAnyWork->size());
-  stepLevel(tr, pullAnyWork);
-  printf("STEP LEVEL (%ld nodes): push all\n", pushAllWork->size());
-  stepLevel(tr, pushAllWork);
-  printf("STEP LEVEL (%ld nodes): push any\n", pushAnyWork->size());
-  stepLevel(tr, pushAnyWork);
-  printf("\n");
-  clearActiveNodes(i);
-  finalize(i, tr);
-  notifyFlow(tr);  
 }
 
 MM::VOID MM::Evaluator::prepareAll(MM::Instance * instance)
@@ -328,299 +319,6 @@ MM::VOID MM::Evaluator::stepLevel(MM::Transition * tr,
   }
 }
 
-/*
-//process an instance node
-MM::VOID MM::Evaluator::stepNode(MM::Transition * tr,
-                                 MM::Instance * i,
-                                 MM::Node * node)
-{
-  MM::Vector<MM::Edge *> * work = MM_NULL;
-  MM::NodeBehavior * behavior = node->getBehavior();
-  printf("STEP NODE %s\n", node->getName()->getBuffer());
-  
-  if(behavior->getAct() == MM::NodeBehavior::ACT_PULL)
-  {
-    work = node->getInput();
-  }
-  else
-  {
-    work = node->getOutput();
-  }
-  
-  if(behavior->getHow() == MM::NodeBehavior::HOW_ANY)
-  {
-    stepNodeAny(tr, i, node, work);
-  }
-  else
-  {
-    stepNodeAll(tr, i, node, work);
-  }
-}
-*/
-
-/*
-//process an all instance node
-MM::VOID MM::Evaluator::stepNodeAll(MM::Transition * tr,
-                                    MM::Instance * i,
-                                    MM::Node * node,
-                                    MM::Vector<Edge *> * work)
-{
-  MM::Vector<MM::Element *> es;
-  MM::Vector<MM::Edge *>::Iterator edgeIter = work->getIterator();
-  MM::BOOLEAN success = MM_TRUE;
-  printf("STEP ALL NODE %s (%ld edges)\n",
-         node->getName()->getBuffer(),
-         work->size());
-  
-  while(edgeIter.hasNext() == MM_TRUE)
-  {    
-    MM::Edge * edge = edgeIter.getNext();
-    MM::Exp * exp = edge->getExp();
-    MM::ValExp * valExp = eval(exp, i, edge); //chance plays into this!
-    MM::INT32 flow = 0;
-    
-    if(valExp->getTypeId() == MM::T_NumberValExp)
-    {
-      flow = ((NumberValExp *) valExp)->getIntValue();
-    }
-    else if(valExp->getTypeId() == MM::T_RangeValExp)
-    {
-      flow = ((RangeValExp *) valExp)->getIntValue();
-    }
-    
-    valExp->recycle(m);
-    
-    MM::Node * src = edge->getSource();
-    MM::Node * tgt = edge->getTarget();
-    
-    if(flow > 0 &&
-       i->hasResources(src, flow) == MM_TRUE &&
-       i->hasCapacity(tgt, flow) == MM_TRUE)
-    {
-      MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
-      es.add(edge);
-    }
-    else
-    {
-      success = MM_FALSE;
-      break;
-    }
-  }
-  
-  if(success == MM_TRUE)  //if we have computed a succesfull transition
-  {
-    MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
-    while(eIter.hasNext() == MM_TRUE)
-    {
-      //store the transition
-      MM::FlowEdge * edge = (MM::FlowEdge *) eIter.getNext();
-      tr->addElement((MM::Element*)edge);
-
-      //and apply the flow
-      MM::Node * src = edge->getSource();
-      MM::Node * tgt = edge->getTarget();
-      MM::NumberValExp * exp = (MM::NumberValExp *) edge->getExp();
-      MM::UINT32 flow = exp->getValue();
-      i->sub(src, flow);
-      i->add(tgt, flow);
-    }
-  }
-  else
-  {
-    MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
-    while(eIter.hasNext() == MM_TRUE)
-    {
-      MM::Element * element = eIter.getNext();
-      element->recycle(m);
-    }    
-  }
-}*/
-
-//FIXME: ugly hacky code that seems to work
-/*
-MM::Name * MM::Evaluator::synthesizeInstanceName(MM::Instance * i)
-{
-  MM::Name * name = MM_NULL;
-  MM::Instance * curInstance = i;
-  
-  while(curInstance != MM_NULL)
-  {
-    MM::Element * curDecl = curInstance->getDeclaration();
-    
-    if(curDecl != MM_NULL)
-    {
-      if(curDecl->instanceof(MM::T_Declaration) == MM_TRUE)
-      {
-        MM::Name * curName = curDecl->getName();
-      
-        if(curName != MM_NULL)
-        {
-          MM::Name * n = m->createName(curName);
-          n->setName(name);
-          name = n;
-        }
-      }
-      else
-      {
-        MM::Name * curName = curDecl->getName();
-        
-        if(curName != MM_NULL)
-        {
-          MM::CHAR buf[256] = { 0 };
-          MM::Instance * parentInstance = curInstance->getParent();
-          MM::UINT32 pos = parentInstance->getIndex(curDecl, curInstance);
-          snprintf(buf, 256, "%s[%ld]", curName->getBuffer(), pos);
-          MM::Name * n = m->createName(buf);
-          n->setName(name);
-          name = n;
-        }
-      }
-    }
-    curInstance = curInstance->getParent();
-  }
- 
-  return name;
-}*/
-
-/*
-MM::FlowEdge * MM::Evaluator::synthesizeFlowEdge(MM::Instance * instance,
-                                                 MM::Instance * srcInstance,
-                                                 MM::Instance * tgtInstance,
-                                                 MM::Node * src,
-                                                 MM::UINT32 flow,
-                                                 MM::Node * tgt)
-{
-  MM::Name * srcName = src->getName();
-  MM::Name * tgtName = tgt->getName();
-  
-  MM::Name * srcNodeName = m->createName(srcName);
-  MM::Name * tgtNodeName = m->createName(tgtName);
-  
-  MM::Name * srcInstName = synthesizeInstanceName(srcInstance);
-  MM::Name * tgtInstName = synthesizeInstanceName(tgtInstance);
-  
-  if(srcInstName != MM_NULL)
-  {
-    srcInstName->append(srcNodeName);
-  }
-  else
-  {
-    srcInstName = srcNodeName;
-  }
-  
-  if(tgtInstName != MM_NULL)
-  {
-    tgtInstName->append(tgtNodeName);
-  }
-  else
-  {
-    tgtInstName = tgtNodeName;
-  }
-  
-  MM::Exp * exp = m->createNumberValExp(flow * 100);
-  MM::FlowEdge * edge = m->createFlowEdge(MM_NULL, srcInstName, exp, tgtInstName);
-  
-  //TODO: do this in a cleaner way
-  edge->setSource(src);
-  edge->setTarget(tgt);
-  edge->setEdgeInstance(instance);
-  edge->setSourceInstance(srcInstance);
-  edge->setTargetInstance(tgtInstance);
-  
-  return edge;
-}
-*/
-
-/*
-//process an any instance node
-MM::VOID MM::Evaluator::stepNodeAny(MM::Transition * tr,
-                                    MM::Instance * i,
-                                    MM::Node * node,
-                                    MM::Vector<Edge *> * work)
-{
-  MM::Vector<Edge *>::Iterator edgeIter = work->getIterator();
-  //FIXME random
-  printf("STEP ANY NODE %s (%ld edges)\n",
-         node->getName()->getBuffer(),
-         work->size());
-
-  while(edgeIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * edge = edgeIter.getNext();
-    MM::ValExp * valExp = eval(i, edge);
-    
-    MM::INT32 flow = 0;
-    
-    if(valExp->getTypeId() == MM::T_NumberValExp)
-    {
-      flow = ((NumberValExp *) valExp)->getIntValue();
-    }
-    else if(valExp->getTypeId() == MM::T_RangeValExp)
-    {
-      flow = ((RangeValExp *) valExp)->getIntValue();
-    }
-    else
-    {
-      //TODO runtime exception
-    }
-    
-    valExp->recycle(m);
-    
-    MM::Node * src = edge->getSource();
-    MM::Node * tgt = edge->getTarget();
-    
-    if(flow > 0 &&
-       i->hasResources(src, 1) == MM_TRUE &&
-       i->hasCapacity(tgt, 1) == MM_TRUE)
-    {
-      if(i->hasResources(src, flow) == MM_TRUE)
-      {
-        if(i->hasCapacity(tgt, flow) == MM_TRUE)
-        {
-          printf("Full flow %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
-          
-        }
-        else
-        {
-          flow = i->getCapacity(tgt);
-          printf("Flow up to capacity %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
-        }
-      }
-      else
-      {
-        flow = i->getResources(src);
-        if(i->hasCapacity(tgt,flow) == MM_TRUE)
-        {
-          printf("Flow up to availability %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
-        }
-        else
-        {
-          flow = i->getCapacity(tgt);
-          printf("Flow up to capacity %ld\n", flow);
-          i->sub(src, flow);
-          i->add(tgt, flow);
-          MM::FlowEdge * edge = synthesizeFlowEdge(i, src, flow, tgt);
-          tr->addElement(edge);
-        }
-      }
-    }
-  }
-}
-*/
-
-
 MM::VOID MM::Evaluator::finalizeAll(MM::Instance * i, MM::Transition * tr)
 {
   finalize(i, tr);
@@ -637,8 +335,8 @@ MM::VOID MM::Evaluator::finalizeAll(MM::Instance * i, MM::Transition * tr)
     
     while(instanceVectIter.hasNext() == MM_TRUE)
     {
-      MM::Instance * instance = instanceVectIter.getNext();
-      finalizeAll(instance, tr);
+      MM::Instance * iChild = instanceVectIter.getNext();
+      finalizeAll(iChild, tr);
     }
   }
 }
@@ -646,83 +344,20 @@ MM::VOID MM::Evaluator::finalizeAll(MM::Instance * i, MM::Transition * tr)
 
 MM::VOID MM::Evaluator::finalize(MM::Instance * i, MM::Transition * tr)
 {
-  i->finalize(); //new values become current values
-  
+  //set active nodes based on automatic nodes, satisfied nodes and triggers
   setActiveNodes(i, tr);
+
+ //new values become current values
+  i->finalize();
+
+  //check which nodes are enabled based on condition edges
+  //set active nodes disabled if necessary
+  setEnabledNodes(i, tr);
 }
 
-//initialize active nodes in a start state
-MM::VOID MM::Evaluator::initStartState(MM::Instance * i)
-{
-  MM::Definition * def = i->getDefinition();
-  MM::Vector<MM::Element *> * elements = def->getElements();
-  
-  MM::Vector<MM::Element *>::Iterator eIter = elements->getIterator();
-  while(eIter.hasNext() == MM_TRUE)
-  {
-    MM::Element * element = eIter.getNext();
-    if(element->instanceof(MM::T_Node) == MM_TRUE)
-    {
-      MM::Node * node = (MM::Node *) element;
-      MM::NodeBehavior * behavior = node->getBehavior();
-      
-      if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO)
-      {
-        if(node->isDisabled(i, this, m) == MM_FALSE)
-        {
-          i->setActive(node);
-        }
-        else
-        {
-          i->setDisabled(node);
-        }
-      }
-    }
-  }
-  
-  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instanceMap =
-    i->getInstances();
-  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator instanceMapIter =
-    instanceMap->getIterator();
-  while(instanceMapIter.hasNext() == MM_TRUE)
-  {
-    MM::Vector<MM::Instance *> * instanceVect = instanceMapIter.getNext();
-    
-    MM::Vector<MM::Instance *>::Iterator instanceVectIter = instanceVect->getIterator();
-    
-    while(instanceVectIter.hasNext() == MM_TRUE)
-    {
-      MM::Instance * instance = instanceVectIter.getNext();
-      initStartState(instance);
-    }
-  }
-}
-
-MM::VOID MM::Evaluator::clearActiveNodes(MM::Instance * i)
-{
-  i->clearActive();
-  i->clearDisabled();
-  
-  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instanceMap =
-  i->getInstances();
-  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator instanceMapIter =
-  instanceMap->getIterator();
-  while(instanceMapIter.hasNext() == MM_TRUE)
-  {
-    MM::Vector<MM::Instance *> * instanceVect = instanceMapIter.getNext();
-    
-    MM::Vector<MM::Instance *>::Iterator instanceVectIter = instanceVect->getIterator();
-    
-    while(instanceVectIter.hasNext() == MM_TRUE)
-    {
-      MM::Instance * instance = instanceVectIter.getNext();
-      clearActiveNodes(instance);
-    }
-  }
-  
-}
-
-//set active nodes for an instance
+//check in the old state and a transition that has happened
+//if nodes can be made active in the next state
+//since the state is not yet complete it uses setNextActive
 MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
                                        MM::Transition * tr)
 {
@@ -736,33 +371,52 @@ MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
     if(element->instanceof(MM::T_Node) == MM_TRUE)
     {
       MM::Node * node = (MM::Node *) element;
-      MM::NodeBehavior * behavior = node->getBehavior();
-      MM::BOOLEAN activateTriggers = MM_FALSE;
-      
+      MM::NodeBehavior * behavior = node->getBehavior();      
       if(behavior->Recyclable::instanceof(MM::T_RefNodeBehavior) == MM_FALSE)
       {
-        if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO)
-        {
-          if(node->isDisabled(i, this, m) == MM_FALSE)
-          {
-            i->setActive(node);
-            //activateTriggers = MM_TRUE;
-          }
-          else
-          {
-            i->setDisabled(node);
-          }
-        }
-        
-        if(node->isSatisfied(i,tr) == MM_TRUE)
-        {
-          activateTriggers = MM_TRUE;
-        }
-      
-        if(activateTriggers == MM_TRUE)
+        if(node->isSatisfied(i, tr) == MM_TRUE)
         {
           node->activateTriggerTargets(i, m);
         }
+      }
+    }
+  }
+}
+
+
+//set active nodes for a new instance (at the end of the last step)
+//since the state is 'complete' / 'committed' it uses setActive and setDisabled
+//for some reason this is slow... profile and improve
+MM::VOID MM::Evaluator::setEnabledNodes(MM::Instance * i, MM::Transition * tr)
+{
+  MM::Definition * def = i->getDefinition();
+  MM::Vector<MM::Element *> * elements = def->getElements();
+  
+  MM::Vector<MM::Element *>::Iterator eIter = elements->getIterator();
+  while(eIter.hasNext() == MM_TRUE)
+  {
+    MM::Element * element = eIter.getNext();
+    if(element->instanceof(MM::T_Node) == MM_TRUE)
+    {
+      MM::Node * node = (MM::Node *) element;
+      MM::NodeBehavior * behavior = node->getBehavior();
+      
+      if(behavior->Recyclable::instanceof(MM::T_RefNodeBehavior) == MM_FALSE)
+      {
+		if(i->isActive(node) == MM_TRUE)
+		{
+          if(node->isDisabled(i, this, m) == MM_TRUE)
+          {
+            MM::Disablement * event = m->createDisablement(i, node);
+            tr->addElement(event);
+            i->setDisabled(node);
+          }
+          else
+          {
+            MM::Enablement * event = m->createEnablement(i, node);
+            tr->addElement(event);
+          }
+		}
       }
     }
   }
@@ -777,29 +431,34 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
   while(eIter.hasNext() == MM_TRUE)
   {
     element = eIter.getNext();
-    
+    /*TODO: improve this --> */
     if(element->instanceof(MM::T_FlowEvent) == MM_TRUE)
     {
       MM::FlowEvent * event = (MM::FlowEvent *) element;
       
+	  MM::Instance * instance = event->getInstance();
       MM::Instance * srcInstance = event->getSourceInstance();
       MM::Instance * tgtInstance = event->getTargetInstance();
       MM::Node * srcNode = event->getSourceNode();
       MM::Node * tgtNode = event->getTargetNode();
       MM::UINT32 amount = event->getAmount();
-      srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
+      
+	  srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
       tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
 
-	  //let observers of instances know the current value of a pool...
+	  //hack to notify the instance in which the flow occurred
+	  if(srcInstance != tgtInstance)
+	  {
+		  tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
+	  }
+	  if(srcInstance != tgtInstance)
+	  {
+		  srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
+	  }
+
+	  //let observers of instances know the current value of a pool.
       if(srcNode->getBehavior()->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
       {
-	    //MM::Observer * o = srcInstance;
-		//MM::UINT32 oInt = (MM::UINT32) o;
-		//MM::UINT32 iInt = (MM::UINT32) srcInstance;
-		//MM::Instance * oTest = (MM::Instance *) oInt;
-		//MM::Instance * iTest = (MM::Instance *) iInt;
-
-
         MM::INT32 srcAmount = srcNode->getAmount(srcInstance, m);
         srcInstance->notifyObservers(srcInstance, (MM::VOID*)srcAmount, MM::MSG_HAS_VALUE, srcNode);
       }
@@ -809,225 +468,16 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
         tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)tgtAmount, MM::MSG_HAS_VALUE, tgtNode);
       }
     }
+	else if(element->instanceof(MM::T_Event) == MM_TRUE)
+	{
+      MM::Event * event = (MM::Event *) element;
+      MM::Element * e = event->getElement();
+      MM::Instance * i = event->getInstance();
+      MM::MESSAGE msg = event->getMessage();
+      i->notifyObservers(i, (MM::VOID*)0, msg, e); 
+	}
   }
 }
-
-/*
-//perform triggers
-MM::VOID MM::Evaluator::setActiveNodes(MM::Instance * i,
-                                       MM::Node * n)
-{
-  MM::Vector<MM::Edge *> * triggers = n->getTriggers();
-  MM::Vector<MM::Edge *>::Iterator tIter = triggers->getIterator();
-  while(tIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * trigger = tIter.getNext();
-    MM::Node * n2 = trigger->getTarget();
-    
-    //notify observers a trigger happened
-    i->notifyObservers(i, MM_NULL, MM::MSG_TRIGGER, trigger);
-    
-    if(isDisabled(n2, i) == MM_FALSE)
-    {
-      i->setActive(n2);
-    }
-    else
-    {
-      i->setDisabled(n2);
-    }
-  }
-  
-  MM::Vector<MM::Edge *> * aliases = n->getAliases();
-  MM::Vector<MM::Edge *>::Iterator aIter = aliases->getIterator();
-  while(aIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * edge = aIter.getNext();
-    MM::Node * aliasNode = edge->getTarget();
-    setActiveNodes(i, aliasNode);
-  }
-}
-
-
-
-//FIXME: include lias conditions!
-//QUESTION: add to node? override in InterfaceNode and RefNodeBehavior?
-MM::BOOLEAN MM::Evaluator::isDisabled(MM::Node * node,
-                                      MM::Instance * i)
-{
-  //if there exists a condition edge
-  //  for which the condition is false
-  //    then isDisabled is true
-  //    otherwise it is false
-  MM::BOOLEAN r = MM_FALSE;
-  
-  MM::Vector<MM::Edge *> * conditions = node->getConditions();
-  MM::Vector<MM::Edge *>::Iterator cIter = conditions->getIterator();  
-  while(cIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * edge = cIter.getNext();
-    MM::Exp * exp = edge->getExp();
-    MM::ValExp * resultExp = eval(exp, i, edge);
-    
-    if(resultExp->instanceof(MM::T_BooleanValExp) == MM_TRUE)
-    {
-      MM::BOOLEAN value = ((MM::BooleanValExp *) resultExp)->getValue();
-      resultExp->recycle(m);
-      if(value == MM_FALSE)
-      {
-        r = MM_TRUE;
-        break;
-      }
-    }
-    else
-    {
-      resultExp->recycle(m);
-      //FIXME: run-time type error!
-      r = MM_FALSE;
-      break;
-    }
-  }
-  
-  MM::Vector<MM::Edge *> * aliases = node->getAliases();
-  MM::Vector<MM::Edge *>::Iterator aIter = aliases->getIterator();
-  while(aIter.hasNext() == MM_TRUE)
-  {
-    MM::Edge * edge = aIter.getNext();
-    MM::Node * tgtNode = edge->getTarget();
-    MM::BOOLEAN disabled = isDisabled(tgtNode, i);
-    if(disabled == MM_TRUE)
-    {
-      r = MM_TRUE;
-      break;
-    }
-  }
-  
-  return r;
-}
-
-
-//checks if a node is "satisfied" such that its triggers activate other nodes
-//NOTE: call after a flow happens -> transition occurs!
-//NOTE: call after disabled nodes are calculated and stored in the instance!
-//FIXME: include aliases
-MM::BOOLEAN MM::Evaluator::isSatisfied(MM::Instance * i,
-                                       MM::Node * n,
-                                       MM::Transition * t)
-{
-  //calculate which node's inputs are 'satisfied'
-  //this set is the set of node labels for which all flow edges they operate on are satisfied at the same time
-  //this semantics is a bit strange since we also have the 'all' and 'any' modifiers
-  //therefore we might expect any nodes to trigger when any flow is satisfied, but this is not true!
-  
-  //satisfied nodes are
-  //1. pulling nodes
-  //either each inflow is satisfied and it has inflow
-  //or the node has no inflow and it is active (auto or activated)
-  //2. pushing nodes
-  //either each outflow is satisfied and it has outflow
-  //or the node has no outflow and it is active (auto or activated)
-
-  if(i->isDisabled(n) == MM_TRUE)
-  {
-    return MM_FALSE; //diabled nodes are never satisfied
-  }
-  
-  if(t == MM_NULL)
-  {
-    return MM_FALSE; //no transition means never satisfied
-  }
-  
-  MM::BOOLEAN satisfied = MM_TRUE;
-  MM::NodeBehavior * behavior = n->getBehavior();
-  MM::NodeBehavior::Act act = behavior->getAct();
-
-  MM::Vector<MM::Edge *> * edges = MM_NULL;
-
-  if(act == MM::NodeBehavior::ACT_PULL)
-  {
-    edges = n->getInput();
-  }
-  else //act == ACT_PUSH
-  {
-    edges = n->getOutput();
-  }
-  
-  if(edges->isEmpty() == MM_TRUE)
-  {
-    if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO ||
-       i->isActive(n) == MM_TRUE)
-    {
-      satisfied = MM_TRUE;
-    }
-    else
-    {
-      satisfied = MM_FALSE;
-    }
-  }
-  else
-  {
-    MM::Vector<Edge *>::Iterator iIter = edges->getIterator();
-      
-    while(iIter.hasNext() == MM_TRUE)
-    {
-      MM::Edge * iEdge = iIter.getNext();
-      MM::Name * iSrc = iEdge->getSourceName();
-      MM::Name * iTgt = iEdge->getTargetName();
-      MM::ValExp * iValExp = (MM::ValExp *) iEdge->getExp();
-      MM::BOOLEAN found = MM_FALSE;
-      
-      MM::Vector<Element *> * tElements = t->getElements();
-      MM::Vector<Element *>::Iterator tIter = tElements->getIterator();
-      while(tIter.hasNext() == MM_TRUE)
-      {
-        MM::Element * tElement = tIter.getNext();
-        if(tElement->instanceof(MM::T_FlowEdge) == MM_TRUE)
-        {
-          MM::FlowEdge * tEdge = (MM::FlowEdge *) tElement;
-          if(tEdge->getInstance() == i) //added for fast search instead of qualified name
-          {
-            MM::Name * tSrc = tEdge->getSourceName();
-            MM::Name * tTgt = tEdge->getTargetName();
-            
-            while(tSrc->getName() != MM_NULL)
-            {
-              tSrc = tSrc->getName();
-            }
-            
-            while(tTgt->getName() != MM_NULL)
-            {
-              tTgt = tTgt->getName();
-            }
-            
-            
-            MM::NumberValExp * tExp = (MM::NumberValExp *) iEdge->getExp();
-            MM::UINT32 tVal = tExp->getValue();
-          
-            //the final name of the transition must match the name of the node??
-          
-            if(iSrc->equals(tSrc) == MM_TRUE && iTgt->equals(tTgt) == MM_TRUE)
-            {
-              found = MM_TRUE;
-              if(iValExp->greaterEquals(tVal) == MM_FALSE)
-              {
-                satisfied = MM_FALSE;
-                break;
-              }
-            }
-          }
-        }
-      }
-      if(found == MM_FALSE)
-      {
-        satisfied = MM_FALSE;
-        break;
-      }
-    }
-  }
-  
-  printf("SATISFIED %s %d\n", n->getName()->getBuffer(), satisfied);
-  return satisfied;
-}
-*/
 
 /*
 //recursively propagate all gates until no gate contains temp values
@@ -1143,7 +593,7 @@ MM::ValExp * MM::Evaluator::eval(MM::Exp * exp,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("missing case in eval\n");
+      MM_printf("missing case in eval\n");
       return MM_NULL;
     }
   }
@@ -1222,8 +672,8 @@ MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
       }
       else
       {
-        printf("NodeBehavior Error: %s has unresolved alias!\n",
-               curNode->getName()->getBuffer());
+        MM_printf("NodeBehavior Error: %s has unresolved alias!\n",
+                  curNode->getName()->getBuffer());
         break;
       }
     }
@@ -1325,7 +775,7 @@ MM::ValExp * MM::Evaluator::eval(MM::ValExp * e1,
         default:
         {
           //TODO: throw EvaluatorException
-          printf("missing case in eval\n");
+          MM_printf("missing case in eval\n");
           return MM_NULL;
         }
       }
@@ -1349,7 +799,7 @@ MM::ValExp * MM::Evaluator::eval(MM::ValExp * e1,
         default:
         {
           //TODO: throw EvaluatorException
-          printf("missing case in eval\n");
+          MM_printf("missing case in eval\n");
           return MM_NULL;
         }
       }
@@ -1373,7 +823,7 @@ MM::ValExp * MM::Evaluator::eval(MM::ValExp * e1,
         default:
         {
           //TODO: throw EvaluatorException
-          printf("missing case in eval\n");
+          MM_printf("missing case in eval\n");
           return MM_NULL;
         }
       }
@@ -1381,7 +831,7 @@ MM::ValExp * MM::Evaluator::eval(MM::ValExp * e1,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("missing case in eval\n");
+      MM_printf("missing case in eval\n");
       return MM_NULL;
     }
   }
@@ -1450,7 +900,7 @@ MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("unknown operator on boolean");
+      MM_printf("unknown operator on boolean");
       break;
     }
   }
@@ -1481,7 +931,7 @@ MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("unknown operator on boolean");
+      MM_printf("unknown operator on boolean");
       break;
     }
   }
@@ -1512,7 +962,7 @@ MM::ValExp * MM::Evaluator::eval(MM::BooleanValExp * e1,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("unknown operator on boolean");
+      MM_printf("unknown operator on boolean");
       break;
     }
   }
@@ -1543,7 +993,7 @@ MM::ValExp * MM::Evaluator::eval(MM::NumberValExp * e1,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("unknown operator on boolean");
+      MM_printf("unknown operator on boolean");
       break;
     }
   }
@@ -1852,7 +1302,7 @@ MM::ValExp *  MM::Evaluator::eval(MM::RangeValExp * e1,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("unknown operator on boolean");
+      MM_printf("unknown operator on boolean");
       break;
     }
   }
@@ -2022,7 +1472,7 @@ MM::ValExp *  MM::Evaluator::eval(MM::RangeValExp * e1,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("unknown operator on boolean");
+      MM_printf("unknown operator on boolean");
       break;
     }
   }
@@ -2055,7 +1505,7 @@ MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("missing case in eval\n");
+      MM_printf("missing case in eval\n");
       return MM_NULL;
     }
   }
@@ -2085,7 +1535,7 @@ MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("missing operator case in eval");
+      MM_printf("missing operator case in eval");
       break;
     }
   }
@@ -2111,7 +1561,7 @@ MM::ValExp * MM::Evaluator::eval(MM::Operator::OP op,
     default:
     {
       //TODO: throw EvaluatorException
-      printf("missing operator case in eval");
+      MM_printf("missing operator case in eval");
       break;
     }
   }

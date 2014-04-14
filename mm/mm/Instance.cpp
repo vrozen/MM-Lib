@@ -57,13 +57,19 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Violation.h"
+#include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -121,7 +127,8 @@ MM::Instance::Instance(MM::Instance * parent,
   //instances = new MM::Map<MM::Declaration*, MM::Instance *>();
   instances = new MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>();
   disabledNodes = new MM::Vector<MM::Node *>();
-  activeNodes = new MM::Vector<MM::Node *>();  
+  activeNodes = new MM::Vector<MM::Node *>();
+  newActiveNodes = new MM::Vector<MM::Node *>();
   gates = new MM::Map<MM::Node *, MM::Vector<Edge*>::Iterator *>();
   curGateValues = new MM::Map<MM::Node *, MM::UINT32>();
   gateValues = new MM::Map<MM::Node*, MM::UINT32>();
@@ -155,8 +162,8 @@ MM::Instance::~Instance()
   
   delete evaluatedExps;
   delete activeNodes;
+  delete newActiveNodes;
   delete disabledNodes;
-  
   
   values = MM_NULL;
   instances = MM_NULL;
@@ -168,6 +175,7 @@ MM::Instance::~Instance()
   
   evaluatedExps = MM_NULL;
   activeNodes = MM_NULL;
+  newActiveNodes = MM_NULL;
   disabledNodes = MM_NULL;
   
   this->parent = MM_NULL;
@@ -381,17 +389,25 @@ MM::BOOLEAN MM::Instance::isActive(MM::Node * node)
   return activeNodes->contains(node);
 }
 
+//used externally, in between steps
 MM::VOID MM::Instance::setActive(MM::Node * node)
 {
   activeNodes->add(node);
 
   //notify observers a node was activated
-  notifyObservers(this, MM_NULL, MM::MSG_ACTIVATED, node);
+
+  //moved to notify part based on transition
+  //notifyObservers(this, MM_NULL, MM::MSG_ACTIVATE, node);
 }
 
-MM::BOOLEAN MM::Instance::isDisabled(MM::Node * node)
+//used internally, during steps
+MM::VOID MM::Instance::setNextActive(MM::Node * node)
 {
-  return disabledNodes->contains(node);
+  newActiveNodes->add(node);
+  
+  //notify observers a node was activated
+  //moved to notify part based on transition
+  //notifyObservers(this, MM_NULL, MM::MSG_ACTIVATED, node);
 }
 
 MM::VOID MM::Instance::setDisabled(MM::Node * node)
@@ -399,7 +415,13 @@ MM::VOID MM::Instance::setDisabled(MM::Node * node)
   disabledNodes->add(node);
   
   //notify observers a node was disabled
-  notifyObservers(this, MM_NULL, MM::MSG_DISABLED, node);
+  //moved to notify part based on transition
+  //notifyObservers(this, MM_NULL, MM::MSG_DISABLED, node);
+}
+
+MM::BOOLEAN MM::Instance::isDisabled(MM::Node * node)
+{
+  return disabledNodes->contains(node);
 }
 
 MM::UINT32 MM::Instance::getValue(MM::Node * node)
@@ -470,17 +492,17 @@ MM::VOID MM::Instance::update(MM::Observable * observable,
     //creation
     //------------------------------------------------------------------
     case MM::MSG_NEW_POOL:
-      printf("Instance: Sees pool %s begin\n",
+      MM_printf("Instance: Sees pool %s begin\n",
              ((MM::Node*)object)->getName()->getBuffer());
       ((MM::Node *) object)->begin(this, (MM::Machine *) aux);
       break;
     case MM::MSG_NEW_GATE:
-      printf("Instance: Sees gate %s begin\n",
+      MM_printf("Instance: Sees gate %s begin\n",
              ((MM::Node*)object)->getName()->getBuffer());
       ((MM::Node *) object)->begin(this, (MM::Machine *) aux);
       break;
     case MM::MSG_NEW_DECL:
-      printf("Instance: Sees declaration %s begin\n",
+      MM_printf("Instance: Sees declaration %s begin\n",
              ((MM::Declaration*)object)->getName()->getBuffer());
       ((MM::Declaration *) object)->begin(this, (MM::Machine *) aux);
       break;
@@ -489,17 +511,17 @@ MM::VOID MM::Instance::update(MM::Observable * observable,
     //deletion
     //------------------------------------------------------------------
     case MM::MSG_DEL_POOL:
-      printf("Instance: Sees pool %s end\n",
+      MM_printf("Instance: Sees pool %s end\n",
              ((MM::Node*)object)->getName()->getBuffer());
       ((MM::Node *) object)->end(this, (MM::Machine *) aux);
       break;
     case MM::MSG_DEL_GATE:
-      printf("Instance: Sees gate %s end\n",
+      MM_printf("Instance: Sees gate %s end\n",
              ((MM::Node*)object)->getName()->getBuffer());
       ((MM::Node *) object)->end(this, (MM::Machine *) aux);
       break;
     case MM::MSG_DEL_DECL:
-      printf("Instance: Sees declaration %s end\n",
+      MM_printf("Instance: Sees declaration %s end\n",
              ((MM::Declaration*)object)->getName()->getBuffer());
       ((MM::Declaration *) object)->end(this, (MM::Machine *) aux);
       break;
@@ -508,17 +530,17 @@ MM::VOID MM::Instance::update(MM::Observable * observable,
     //mutation
     //------------------------------------------------------------------
     case MM::MSG_UPD_POOL:
-      printf("Instance: Sees pool %s change\n",
+      MM_printf("Instance: Sees pool %s change\n",
              ((MM::Node*)object)->getName()->getBuffer());
       ((MM::Node *) object)->change(this, (MM::Machine *) aux);
       break;
     case MM::MSG_UPD_GATE:
-      printf("Instance: Sees gate %s change\n",
+      MM_printf("Instance: Sees gate %s change\n",
              ((MM::Node*)object)->getName()->getBuffer());
       ((MM::Node *) object)->change(this, (MM::Machine *) aux);
       break;
     case MM::MSG_UPD_DECL:
-      printf("Instance: Sees declaration %s change\n",
+      MM_printf("Instance: Sees declaration %s change\n",
              ((MM::Node*)object)->getName()->getBuffer());
       ((MM::Node *) object)->change(this, (MM::Machine *) aux);
       break;
@@ -775,6 +797,24 @@ MM::VOID MM::Instance::createInstances(MM::Element    * element,
     
     //notify observers a new instance has been created
 	notifyObservers(this, /*FIX: unitDef was m*/ unitDef, MM::MSG_NEW_INST, instance);
+
+    eIter.reset();
+    while(eIter.hasNext() == MM_TRUE)
+    {
+      MM::Element * element = eIter.getNext();
+
+	  if(element->instanceof(MM::T_Node) == MM_TRUE)
+	  {
+	     MM::Node * node = (MM::Node *) element;
+		 MM::NodeBehavior * behavior = node->getBehavior();
+
+		 if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+		 {
+	       MM::INT32 amount = node->getAmount(instance, m);
+           instance->notifyObservers(instance, (MM::VOID*)amount, MM::MSG_HAS_VALUE, node);			 
+		 }
+      }
+    }
   }
 }
 
@@ -849,6 +889,8 @@ MM::VOID MM::Instance::begin()
   gateValues->clear();
   
   evaluatedExps->clear();
+
+  //these remain valid.
   //disabledNodes->clear();
   //activeNodes->clear();
 }
@@ -864,13 +906,23 @@ MM::VOID MM::Instance::finalize()
   values->clear();    //clear current values
   oldValues->clear(); //clear old values
   gateValues->clear(); //clear gate values
-  
+
+  //clear disabled nodes
+  disabledNodes->clear();
+
   //commit new values
-  MM::Map<MM::Node *, MM::UINT32> * temp = values;
+  MM::Map<MM::Node *, MM::UINT32> * tempValues = values;
   values = newValues;
-  newValues = temp;
+  newValues = tempValues;
+
+  //commit active nodes
+  activeNodes->clear(); //clear active nodes
+  MM::Vector<MM::Node *> * tempActiveNodes = activeNodes;
+  activeNodes = newActiveNodes;
+  newActiveNodes = tempActiveNodes;
 }
 
+/*
 MM::VOID MM::Instance::clearActive()
 {
   activeNodes->clear();
@@ -880,6 +932,7 @@ MM::VOID MM::Instance::clearDisabled()
 {
   disabledNodes->clear();
 }
+*/
 
 MM::UINT32 MM::Instance::getResources(MM::Node * node)
 {
@@ -922,8 +975,15 @@ MM::VOID MM::Instance::add(MM::Node * node,
   //notifyObservers(this, (void*) amount, MM::MSG_SUB_VALUE, node);
 }
 
-
 MM::VOID MM::Instance::nameToString(MM::Element * element, MM::String * buf)
+{
+  nameToString(buf);
+  MM::Name * elementName = element->getName();  
+  elementName->toString(buf);
+}
+
+
+MM::VOID MM::Instance::nameToString(MM::String * buf)
 {
   MM::Vector<MM::Instance *> iStack;
   
@@ -958,9 +1018,6 @@ MM::VOID MM::Instance::nameToString(MM::Element * element, MM::String * buf)
       }
     }
   }
-  
-  MM::Name * elementName = element->getName();  
-  elementName->toString(buf);
 }
 
 MM::VOID MM::Instance::toString(MM::String * buf)

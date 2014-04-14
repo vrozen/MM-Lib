@@ -56,9 +56,6 @@
     <ClInclude Include="..\mm\Transition.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\mm\Transformation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\mm\String.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -66,9 +63,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mm\SourceNodeBehavior.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mm\Signal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\mm\RefNodeBehavior.h">
@@ -149,9 +143,6 @@
     <ClInclude Include="..\mm\GateNodeBehavior.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\mm\FlowEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\mm\FlowEdge.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -215,6 +206,33 @@
     <ClInclude Include="Stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\mm\FlowEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\Disablement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\Failure.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\Prevention.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\TriggerEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\Violation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\Event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\Transformation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mm\Enablement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\mm\VarExp.cpp">
@@ -242,9 +260,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mm\SourceNodeBehavior.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mm\Signal.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mm\RefNodeBehavior.cpp">
@@ -386,6 +401,27 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\Disablement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\Failure.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\Violation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\Event.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\Prevention.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\TriggerEvent.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\Enablement.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

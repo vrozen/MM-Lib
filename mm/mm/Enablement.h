@@ -31,77 +31,45 @@
  *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
 /*!
- * The Event abstraction is the abstract superclass of all transition elements.
- * @package MM
- * @file    Event.cpp
- * @author  Riemer van Rozen
- * @date    March 26th 2013
+ * \namespace MM
+ * \class     Enablement
+ * \brief     The Enablement abstraction defines a node instance was enabled
+ *            during a step because all of is conditions are true.
+ * \file      Enablement.h
+ * \author    Riemer van Rozen
+ * \date      March 27th 2014
  */
 /******************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "YYLTYPE.h"
-#include "Types.h"
-#include "Recyclable.h"
-#include "Vector.h"
-#include "Map.h"
-#include "Location.h"
-#include "Name.h"
-#include "Recycler.h"
-#include "Element.h"
-#include "Event.h"
 
-MM::Event::Event(MM::Name * name, MM::Instance * instance, MM::Element * element) : MM::Element(name)
-{
-  this->instance = instance;
-  this->element = element;
-}
+#ifndef __mm__Enablement__
+#define __mm__Enablement__
 
-MM::Event::~Event()
+namespace MM
 {
-  this->instance = MM_NULL;
-  this->element = MM_NULL;
-}
-
-MM::VOID MM::Event::recycle(MM::Recycler * r)
-{
-  this->MM::Element::recycle(r);
-}
-
-MM::TID MM::Event::getTypeId()
-{
-  return MM::T_Event;
-}
-
-MM::BOOLEAN MM::Event::instanceof(MM::TID tid)
-{
-  if(tid == MM::T_Event)
+  class Node;
+  class Instance;
+  class Enablement : public MM::Event
   {
-    return MM_TRUE;
-  }
-  else
-  {
-    return MM::Element::instanceof(tid);
-  }
-}
+  private:
+    static const MM::CHAR * ENABLE_STR; /**> enable keyword */
+    static const MM::UINT32 ENABLE_LEN; /**> enable keyword length */
 
-MM::Instance * MM::Event::getInstance()
-{
-  return instance;
-}
+    MM::Location * loc; /**> enable keyword location (parsed) */
 
-MM::VOID MM::Event::setInstance(MM::Instance * instance)
-{
-  this->instance = instance;
+  public:
+    Enablement(MM::Name * name);
+	Enablement(MM::Location * loc, MM::Name * name);
+    Enablement(MM::Instance * instance, MM::Node * node);
+    ~Enablement();
+    MM::VOID recycle(MM::Recycler * r);
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
+    
+	MM::Location * getLocation();
+	MM::Name * getName();
+	MM::MESSAGE getMessage();    
+    MM::VOID toString(MM::String * buf);
+    MM::VOID toString(MM::String * buf, MM::UINT32 indent);
+  };
 }
-
-MM::Element * MM::Event::getElement()
-{
-  return element;
-}
-
-MM::VOID MM::Event::setElement(MM::Element * element)
-{
-  this->element = element;
-}
+#endif /* defined(__mm__Enablement__) */

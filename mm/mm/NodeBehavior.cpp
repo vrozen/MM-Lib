@@ -55,8 +55,6 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -66,7 +64,15 @@
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Violation.h"
+#include "Prevention.h"
+#include "Activation.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -335,8 +341,8 @@ MM::VOID MM::NodeBehavior::getWork(MM::Node * node, /*edge source node*/
       }
       else
       {
-        printf("NodeBehavior Error: %s has unresolved alias!\n",
-               node->getName()->getBuffer());
+        MM_printf("NodeBehavior Error: %s has unresolved alias!\n",
+                  node->getName()->getBuffer());
         return;
       }
     }
@@ -360,7 +366,7 @@ MM::VOID MM::NodeBehavior::step(MM::Node * node,
 {
   MM::Name * name = node->getName();
   MM::CHAR * buf = name->getBuffer();
-  printf("STEP NODE %s\n", buf);
+  MM_printf("STEP NODE %s\n", buf);
   
   //NOTE: the work should be processed including
   //  1. the edge the node operates on
@@ -527,17 +533,19 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
   
   MM::UINT32 size = work->size();
   
-  printf("STEP ");
+  MM_printf("STEP ");
   if(act == MM::NodeBehavior::ACT_PULL)
   {
-    printf("PULL ");
+    MM_printf("PULL ");
   }
   else
   {
-    printf("PUSH ");
+    MM_printf("PUSH ");
   }
-  printf("ANY NODE (%ld edges)\n", size);
+  MM_printf("ANY NODE (%ld edges)\n", size);
   
+  MM::BOOLEAN success = MM_FALSE;
+
   //process work
   while(size != 0)
   {
@@ -604,7 +612,7 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
       {
         if(tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
         {
-          printf("Full flow %ld\n", val);
+          MM_printf("Full flow %ld\n", val);
           srcInstance->sub(srcNode, m, val);
           tgtInstance->add(tgtNode, m, val);
           MM::FlowEvent * event =
@@ -612,11 +620,13 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
                                srcInstance, srcNode, val, tgtInstance, tgtNode);
 
           tr->addElement(event);
+
+		  success = MM_TRUE;
         }
         else
         {
           val = i->getCapacity(tgtNode);
-          printf("Flow up to capacity %ld\n", val);
+          MM_printf("Flow up to capacity %ld\n", val);
           srcInstance->sub(srcNode, m, val);
           tgtInstance->add(tgtNode, m, val);
           MM::FlowEvent * event =
@@ -624,14 +634,16 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
                                srcInstance, srcNode, val, tgtInstance, tgtNode);
           
           tr->addElement(event);
-        }
+
+          success = MM_TRUE;
+		}
       }
       else
       {
         val = srcInstance->getResources(srcNode);
         if(tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
         {
-          printf("Flow up to availability %ld\n", val);
+          MM_printf("Flow up to availability %ld\n", val);
           srcInstance->sub(srcNode, m, val);
           tgtInstance->add(tgtNode, m, val);
           MM::FlowEvent * event =
@@ -639,11 +651,13 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
                                srcInstance, srcNode, val, tgtInstance, tgtNode);
           
           tr->addElement(event);
+
+		  success = MM_TRUE;
         }
         else
         {
           val = tgtInstance->getCapacity(tgtNode);
-          printf("Flow up to capacity %ld\n", val);
+          MM_printf("Flow up to capacity %ld\n", val);
           srcInstance->sub(srcNode, m, val);
           tgtInstance->add(tgtNode, m, val);
           MM::FlowEvent * event =
@@ -651,10 +665,19 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
                                srcInstance, srcNode, val, tgtInstance, tgtNode);
           
           tr->addElement(event);
+
+          success = MM_TRUE;
         }
       }
     }
   }
+
+  if(success == MM_FALSE)
+  {
+    MM::Failure * event = m->createFailure(i, node);
+    tr->addElement(event);
+  }
+
 }
 
 MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
@@ -670,16 +693,14 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
     MM::Node * tgtNode = trigger->getTarget();
     
     //notify observers a trigger happened
-    i->notifyObservers(i, MM_NULL, MM::MSG_TRIGGER, trigger);
+	//FIXME: if trigger has no name --> error
+    //i->notifyObservers(i, MM_NULL, MM::MSG_TRIGGER, trigger); 
     
     if(tgtNode->isDisabled(i, e, m) == MM_FALSE)
     {
-      i->setActive(tgtNode);
+      i->setNextActive(tgtNode);
     }
-    else
-    {
-      i->setDisabled(tgtNode);
-    }
+	//FIXME: notify when a trigger did not fire
   }
   
   //FIXME: activate trigger targets of aliases

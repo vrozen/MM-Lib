@@ -30,14 +30,13 @@
  * Contributors:
  *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
-/*!
- * The Event abstraction is the abstract superclass of all transition elements.
- * @package MM
- * @file    Event.cpp
- * @author  Riemer van Rozen
- * @date    March 26th 2013
- */
-/******************************************************************************/
+//
+//  Prevention.cpp
+//  mm
+//
+//  Created by Riemer van Rozen on March 26th 2014 
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,62 +45,111 @@
 #include "Recyclable.h"
 #include "Vector.h"
 #include "Map.h"
-#include "Location.h"
-#include "Name.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
+#include "Location.h"
+#include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Transformation.h"
+#include "Program.h"
+#include "Modification.h"
+#include "Transition.h"
 #include "Event.h"
+#include "Prevention.h"
+#include "Operator.h"
+#include "Exp.h"
+#include "Edge.h"
+#include "NodeWorkItem.h"
+#include "NodeBehavior.h"
+#include "Node.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
 
-MM::Event::Event(MM::Name * name, MM::Instance * instance, MM::Element * element) : MM::Element(name)
+const MM::CHAR * MM::Prevention::PREVENT_STR = "prevent";
+const MM::UINT32 MM::Prevention::PREVENT_LEN = strlen(MM::Prevention::PREVENT_STR);
+
+MM::Prevention::Prevention(MM::Name * name) : MM::Event(name, MM_NULL, MM_NULL)
 {
-  this->instance = instance;
-  this->element = element;
+  this->loc = MM_NULL;
 }
 
-MM::Event::~Event()
+MM::Prevention::Prevention(MM::Location * loc, MM::Name * name) : MM::Event(name, MM_NULL, MM_NULL)
 {
-  this->instance = MM_NULL;
-  this->element = MM_NULL;
+  this->loc = loc;
 }
 
-MM::VOID MM::Event::recycle(MM::Recycler * r)
+MM::Prevention::Prevention(MM::Instance * instance, MM::Edge * edge) : MM::Event(MM_NULL, instance, (MM::Element*) edge)
 {
-  this->MM::Element::recycle(r);
+  this->loc = MM_NULL;
 }
 
-MM::TID MM::Event::getTypeId()
+MM::Prevention::~Prevention()
 {
-  return MM::T_Event;
+  loc = MM_NULL;
 }
 
-MM::BOOLEAN MM::Event::instanceof(MM::TID tid)
+MM::VOID MM::Prevention::recycle(MM::Recycler * r)
 {
-  if(tid == MM::T_Event)
+  if(loc != MM_NULL)
+  {
+    loc->recycle(r);
+  }
+  this->Event::recycle(r);
+}
+
+MM::TID MM::Prevention::getTypeId()
+{
+  return MM::T_Prevention;
+}
+
+MM::BOOLEAN MM::Prevention::instanceof(MM::TID tid)
+{
+  if(tid == MM::T_Prevention)
   {
     return MM_TRUE;
   }
   else
   {
-    return MM::Element::instanceof(tid);
+    return MM::Event::instanceof(tid);
   }
 }
 
-MM::Instance * MM::Event::getInstance()
+MM::Location * MM::Prevention::getLocation()
 {
-  return instance;
+  return loc;
 }
 
-MM::VOID MM::Event::setInstance(MM::Instance * instance)
+MM::MESSAGE MM::Prevention::getMessage()
 {
-  this->instance = instance;
+  return MM::MSG_PREVENT;
 }
 
-MM::Element * MM::Event::getElement()
+MM::VOID MM::Prevention::toString(MM::String * buf)
 {
-  return element;
+  toString(buf, 0);
 }
 
-MM::VOID MM::Event::setElement(MM::Element * element)
+MM::VOID MM::Prevention::toString(MM::String * buf, MM::UINT32 indent)
 {
-  this->element = element;
+  if(name != MM_NULL)
+  {
+    buf->space(indent);
+    buf->append((MM::CHAR*)MM::Prevention::PREVENT_STR, MM::Prevention::PREVENT_LEN);
+    buf->space();
+    name->toString(buf);
+  }
+  else if(instance != MM_NULL && element != MM_NULL)
+  {
+    buf->space(indent);
+    buf->append((MM::CHAR*)MM::Prevention::PREVENT_STR, MM::Prevention::PREVENT_LEN);
+    buf->space();
+    //instance->nameToString(element, buf);
+  }
+  else
+  {
+	 //TODO: failure
+  }
 }

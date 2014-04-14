@@ -50,7 +50,7 @@ namespace MM
   private:
     const static MM::CHAR * STEP_STR; /**> step keyword */
     const static MM::UINT32 STEP_LEN; /**> step keyword length */
-    MM::Location * loc;               /**> step source location*/
+    MM::Location * loc;               /**> step keyword source location*/
     MM::String * str;                 /**> we must stringify before instances are deleted */
   public:
     Transition(MM::Vector<MM::Element *> * elements);

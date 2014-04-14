@@ -56,8 +56,6 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -67,7 +65,15 @@
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Violation.h"
+#include "Prevention.h"
+#include "Activation.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -147,12 +153,12 @@ MM::VOID MM::Reflector::merge(MM::Modification * modification)
   {
     MM::Element * e = i.getNext();
     
-    printf("Merge: merging ");
+    MM_printf("Merge: merging ");
     if(e->getName() != MM_NULL)
     {
       e->getName()->print();
     }
-    printf("\n");
+    MM_printf("\n");
     merge(m->getDefinition(), e);
   }
   
@@ -213,24 +219,24 @@ MM::VOID MM::Reflector::merge(MM::Definition * root,
   
   if(element->getTypeId() == MM::T_Definition)
   {    
-    printf("Merge: Merge definition %s into parent type definition\n", buf);
+    MM_printf("Merge: Merge definition %s into parent type definition\n", buf);
     merge(root, (MM::Definition *) element);
   }
   else
   {
-    printf("Merge: Merge element %s into parent type definition\n", buf);
+    MM_printf("Merge: Merge element %s into parent type definition\n", buf);
     if(navigate(root, element, &def, &found) == MM_TRUE)
     {
       if(found == MM_NULL)
       {
-        printf("Merge: Element %s is new in type: add and initialize\n", buf);
+        MM_printf("Merge: Element %s is new in type: add and initialize\n", buf);
         
         def->addElement(element);
         init(def, element);
       }
       else
       {
-        printf("Merge: Element %s exists in type: replace it\n", buf);
+        MM_printf("Merge: Element %s exists in type: replace it\n", buf);
         replace(def, found, element);
       }
     }
@@ -246,18 +252,18 @@ MM::VOID MM::Reflector::merge(MM::Definition * root,
   
   if(navigate(root, type, &def, &found) == MM_TRUE)
   {
-    printf("Merge: Navigated to type definition.\n");
+    MM_printf("Merge: Navigated to type definition.\n");
     if(found == MM_NULL)
     {
-      printf("Merge: Adding new type definition %s to parent definition.\n",
-             type->getName()->getBuffer());
+      MM_printf("Merge: Adding new type definition %s to parent definition.\n",
+                type->getName()->getBuffer());
       def->addElement(type);
       init(root,type);
     }
     else
     {
-      printf("Merge: Merging type definitions %s\n",
-             found->getName()->getBuffer());
+      MM_printf("Merge: Merging type definitions %s\n",
+                found->getName()->getBuffer());
       
       //2b. definition is not new update elements and add elements
       MM::Vector<Element *> * elements = type->getElements();
@@ -299,13 +305,13 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
     
     while(curName != MM_NULL)
     {
-      printf("Navigate: Navigating to %s\n", curName->getBuffer());      
+      MM_printf("Navigate: Navigating to %s\n", curName->getBuffer());      
       curElement = type->getElement(curName);
       
       if(curElement != MM_NULL && curElement->getTypeId() == MM::T_Definition)
       {
-        printf("Navigate: Navigating into type %s\n",
-               curElement->getName()->getBuffer());
+        MM_printf("Navigate: Navigating into type %s\n",
+                  curElement->getName()->getBuffer());
         
         //parent is a definition, keep searching
         type = (MM::Definition *) curElement;
@@ -313,7 +319,7 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
         if(curName->getName() == MM_NULL)
         {
           //we found a definitions
-          printf("Navigate: Found definition %s\n", curName->getBuffer());
+          MM_printf("Navigate: Found definition %s\n", curName->getBuffer());
           success = MM_TRUE;
           break;
         }
@@ -323,7 +329,7 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
         //element is not a definition
         if(curName->getName() == MM_NULL)
         {
-          printf("Navigate: Found element %s\n", curName->getBuffer());
+          MM_printf("Navigate: Found element %s\n", curName->getBuffer());
           
           //e1 == MM_NULL --> name denotes a new element
           //e1 != MM_NULL --> element will be replaced
@@ -345,7 +351,7 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
       lastName->setName(MM_NULL);
       rootName->recycle(m);
     }
-    printf("Navigate: Success\n");
+    MM_printf("Navigate: Success\n");
     element->setName(curName);
     * def = type;
     * found = curElement;
@@ -354,7 +360,7 @@ MM::BOOLEAN MM::Reflector::navigate(MM::Definition  * root,  //type to search in
   else
   {
     //TODO: error
-    printf("Navigate: Error\n");
+    MM_printf("Navigate: Error\n");
   }
   
   return success;
@@ -495,7 +501,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Node * node)
   if(name->getName() != MM_NULL)
   {
     //TODO: error
-    printf("Error: required simple name, found query\n");
+    MM_printf("Error: required simple name, found query\n");
   }
   
   def->prioritize(node);
@@ -743,7 +749,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
   else
   {
     //TODO: error
-    printf("Error: source node of edge not found\n");
+    MM_printf("Error: source node of edge not found\n");
   }
   
   if(tgtNode != MM_NULL)
@@ -753,7 +759,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
   else
   {
     //TODO: error
-    printf("Error: target node of edge not found\n");
+    MM_printf("Error: target node of edge not found\n");
   }
   
   switch(edge->getTypeId())
@@ -815,7 +821,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::StateEdge * edge)
     else
     {
       //TODO: error
-      printf("Error: attempt to alias a node that is not a reference\n");
+      MM_printf("Error: attempt to alias a node that is not a reference\n");
     }
   }
   else
@@ -847,7 +853,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::FlowEdge * edge)
   }
   else
   {
-    printf("Error: edge has unresolved source\n");
+    MM_printf("Error: edge has unresolved source\n");
   }
   
   if(tgt != MM_NULL)
@@ -856,7 +862,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::FlowEdge * edge)
   }
   else
   {
-    printf("Error: edge has unresolved target\n");
+    MM_printf("Error: edge has unresolved target\n");
   }
 }
 
@@ -900,7 +906,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Declaration * decl)
   else
   {
     //TODO: error
-    printf("Error: Declared type not found\n");
+    MM_printf("Error: Declared type not found\n");
   }
   //inform instances of declaration
   def->notifyObservers(def, m, MSG_NEW_DECL, decl);
@@ -968,7 +974,7 @@ MM::VOID MM::Reflector::deinit(MM::Definition * def, MM::Node * node)
   if(name->getName() != MM_NULL)
   {
     //TODO: error
-    printf("Error: expected simple name, found query\n");
+    MM_printf("Error: expected simple name, found query\n");
   }
   
   def->removeElement(name);
@@ -1330,6 +1336,7 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
     }
     
     //reprioritize
+	//def->deprioritize(node);
     def->prioritize(node);
     
     //notify observers
@@ -1337,6 +1344,15 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
     {
       MM::UINT32 updateMessage = behavior->getUpdateMessage();
       def->notifyObservers(def, m, updateMessage, node);
+
+	  if(behavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
+	  {
+         MM::RefNodeBehavior * refBehavior = (RefNodeBehavior *) behavior; 
+		 MM::Edge * alias = refBehavior->getAlias();
+
+		 MM::RefNodeBehavior * refBehavior2 = (RefNodeBehavior *) behavior2;
+		 refBehavior2->setAlias(alias);
+	  }
     }
     else
     {
@@ -1396,7 +1412,7 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
                                 MM::FlowEdge * edge,
                                 MM::Element * element)
 {
-  if(element->getTypeId() == MM::T_FlowEdge)
+  /*if(element->getTypeId() == MM::T_FlowEdge)
   {
     MM::FlowEdge * edge2 = (MM::FlowEdge *) element;
     
@@ -1410,19 +1426,25 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
     edge2->recycle(m);
   }
   else
-  {
+  {*/
     removeElement(def, edge);
     addElement(def, element);
-  }
+  //}
 }
 
 MM::VOID MM::Reflector::replace(MM::Definition * def,
                                 MM::StateEdge * edge,
                                 MM::Element * element)
 {
+    removeElement(def, edge);
+    addElement(def, element);
+
+		/* 
   if(element->getTypeId() == MM::T_StateEdge)
   {
-    MM::StateEdge * edge2 = (MM::StateEdge *) element;
+
+
+	MM::StateEdge * edge2 = (MM::StateEdge *) element;
     if(edge->isAlias() == MM_TRUE && edge2->isAlias() == MM_TRUE)
     {
       //cleanup identical element
@@ -1455,7 +1477,7 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
   {
     removeElement(def, edge);
     addElement(def, element);
-  }
+  }*/
 }
 
 MM::VOID MM::Reflector::replace(MM::Definition * def,

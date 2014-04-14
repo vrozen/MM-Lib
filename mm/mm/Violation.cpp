@@ -30,14 +30,13 @@
  * Contributors:
  *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
-/*!
- * The Event abstraction is the abstract superclass of all transition elements.
- * @package MM
- * @file    Event.cpp
- * @author  Riemer van Rozen
- * @date    March 26th 2013
- */
-/******************************************************************************/
+//
+//  Violation.cpp
+//  mm
+//
+//  Created by Riemer van Rozen on March 26th 2014 
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,62 +45,115 @@
 #include "Recyclable.h"
 #include "Vector.h"
 #include "Map.h"
-#include "Location.h"
-#include "Name.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
+#include "Location.h"
+#include "String.h"
+#include "Name.h"
 #include "Element.h"
+#include "Transformation.h"
+#include "Program.h"
+#include "Modification.h"
+#include "Transition.h"
 #include "Event.h"
+#include "Violation.h"
+#include "Operator.h"
+#include "Exp.h"
+#include "Assertion.h"
+#include "Edge.h"
+#include "NodeWorkItem.h"
+#include "NodeBehavior.h"
+#include "Node.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
 
-MM::Event::Event(MM::Name * name, MM::Instance * instance, MM::Element * element) : MM::Element(name)
+const MM::CHAR * MM::Violation::VIOLATE_STR = "violate";
+const MM::UINT32 MM::Violation::VIOLATE_LEN = strlen(MM::Violation::VIOLATE_STR);
+
+MM::Violation::Violation(MM::Name * name) : MM::Event(name, MM_NULL, MM_NULL)
 {
-  this->instance = instance;
-  this->element = element;
+  this->loc = MM_NULL;
 }
 
-MM::Event::~Event()
+MM::Violation::Violation(MM::Location * loc, MM::Name * name) : MM::Event(name, MM_NULL, MM_NULL)
 {
-  this->instance = MM_NULL;
-  this->element = MM_NULL;
+  this->loc = loc;
 }
 
-MM::VOID MM::Event::recycle(MM::Recycler * r)
+MM::Violation::Violation(MM::Instance  * instance,
+	                     MM::Assertion * assertion) : MM::Event(MM_NULL, instance, (MM::Element*) assertion)
 {
-  this->MM::Element::recycle(r);
+  this->loc = MM_NULL;
 }
 
-MM::TID MM::Event::getTypeId()
+MM::Violation::~Violation()
 {
-  return MM::T_Event;
+  this->loc = MM_NULL;
 }
 
-MM::BOOLEAN MM::Event::instanceof(MM::TID tid)
+MM::VOID MM::Violation::recycle(MM::Recycler * r)
 {
-  if(tid == MM::T_Event)
+  if(loc == MM_NULL)
+  {
+    loc->recycle(r);
+  }
+  if(name == MM_NULL)
+  {
+    name->recycle(r);
+  }
+  MM::Event::recycle(r);
+}
+
+MM::TID MM::Violation::getTypeId()
+{
+  return MM::T_Violation;
+}
+
+MM::BOOLEAN MM::Violation::instanceof(MM::TID tid)
+{
+  if(tid == MM::T_Violation)
   {
     return MM_TRUE;
   }
   else
   {
-    return MM::Element::instanceof(tid);
+    return MM::Event::instanceof(tid);
   }
 }
 
-MM::Instance * MM::Event::getInstance()
+MM::Location * MM::Violation::getLocation()
 {
-  return instance;
+  return loc;
 }
 
-MM::VOID MM::Event::setInstance(MM::Instance * instance)
+MM::MESSAGE MM::Violation::getMessage()
 {
-  this->instance = instance;
+  return MM::MSG_VIOLATE;
 }
 
-MM::Element * MM::Event::getElement()
+MM::VOID MM::Violation::toString(MM::String * buf)
 {
-  return element;
+  return toString(buf, 0);
 }
 
-MM::VOID MM::Event::setElement(MM::Element * element)
+MM::VOID MM::Violation::toString(MM::String * buf, MM::UINT32 indent)
 {
-  this->element = element;
+  if(name != MM_NULL)
+  {
+    buf->append((MM::CHAR*)MM::Violation::VIOLATE_STR, MM::Violation::VIOLATE_LEN);
+    buf->space();
+    getName()->toString(buf);
+  }
+  else if(instance != MM_NULL && element != MM_NULL)
+  {
+    buf->append((MM::CHAR*)MM::Violation::VIOLATE_STR, MM::Violation::VIOLATE_LEN);
+    buf->space();
+	instance->nameToString(element, buf);
+  }
+  else
+  {
+     //TODO: failure
+  }
 }

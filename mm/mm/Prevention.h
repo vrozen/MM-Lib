@@ -31,77 +31,43 @@
  *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
 /*!
- * The Event abstraction is the abstract superclass of all transition elements.
- * @package MM
- * @file    Event.cpp
- * @author  Riemer van Rozen
- * @date    March 26th 2013
+ * \namespace MM
+ * \class     TriggerEvent
+ * \brief     The TriggerEvent abstraction defines a trigger fired.
+ * \file      TriggerEvent.h
+ * \author    Riemer van Rozen
+ * \date      March 24th 2014
  */
 /******************************************************************************/
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "YYLTYPE.h"
-#include "Types.h"
-#include "Recyclable.h"
-#include "Vector.h"
-#include "Map.h"
-#include "Location.h"
-#include "Name.h"
-#include "Recycler.h"
-#include "Element.h"
-#include "Event.h"
 
-MM::Event::Event(MM::Name * name, MM::Instance * instance, MM::Element * element) : MM::Element(name)
-{
-  this->instance = instance;
-  this->element = element;
-}
+#ifndef __mm__Prevention__
+#define __mm__Prevention__
 
-MM::Event::~Event()
+namespace MM
 {
-  this->instance = MM_NULL;
-  this->element = MM_NULL;
-}
-
-MM::VOID MM::Event::recycle(MM::Recycler * r)
-{
-  this->MM::Element::recycle(r);
-}
-
-MM::TID MM::Event::getTypeId()
-{
-  return MM::T_Event;
-}
-
-MM::BOOLEAN MM::Event::instanceof(MM::TID tid)
-{
-  if(tid == MM::T_Event)
+  class Edge;
+  class Instance;
+  class Prevention : public MM::Event
   {
-    return MM_TRUE;
-  }
-  else
-  {
-    return MM::Element::instanceof(tid);
-  }
-}
+  private:
+    static const MM::CHAR * PREVENT_STR; /**> prevent keyword */
+    static const MM::UINT32 PREVENT_LEN; /**> prevent keyword length */
 
-MM::Instance * MM::Event::getInstance()
-{
-  return instance;
-}
+	MM::Location * loc;      /**> prevent keyword location (parsed) */
+  public:
+	Prevention(MM::Name * name);
+    Prevention(MM::Location * loc, MM::Name * name);
+    Prevention(MM::Instance * instance,  MM::Edge * edge);
+    ~Prevention();
+    MM::VOID recycle(MM::Recycler * r);
+    MM::TID getTypeId();
+    MM::BOOLEAN instanceof(MM::TID tid);
+    
+    MM::Location * getLocation();
+	MM::MESSAGE getMessage();
 
-MM::VOID MM::Event::setInstance(MM::Instance * instance)
-{
-  this->instance = instance;
+    MM::VOID toString(MM::String * buf);
+    MM::VOID toString(MM::String * buf, MM::UINT32 indent);
+  };
 }
-
-MM::Element * MM::Event::getElement()
-{
-  return element;
-}
-
-MM::VOID MM::Event::setElement(MM::Element * element)
-{
-  this->element = element;
-}
+#endif /* defined(__mm__Prevention__) */

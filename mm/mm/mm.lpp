@@ -131,7 +131,6 @@
 "|"                 { inID = false; return PER;        }
 "{"                 { inID = false; return LCURLY;     }
 "}"                 { inID = false; return RCURLY;     }
-","                 { inID = false; return COMMA;      }
 ":"                 { inID = false; return COLON;      }
 "%"                 { inID = false; return PERCENT;    }
 "source"/[^a-z]     { inID = false; return SOURCE;     }
@@ -157,26 +156,31 @@
 "active"/[^a-z]     { inID = false; return ACTIVE;     }
 "false"/[^a-z]      { inID = false; return FALSE;      }
 "true"/[^a-z]       { inID = false; return TRUE;       }
-"assert"/[^a-z]     { inID = false; return ASSERT;     }
-"delete"/[^a-z]     { inID = false; return DELETE;     }
-"activate"/[^a-z]   { inID = false; return ACTIVATE;   }
 "private"/[^a-z]    { inID = false; return PRIVATE;    }
 "of"/[^a-z]         { inID = false; return OF;         }
 "add"/[^a-z]        { inID = false; return ADDITION;   }
 "from"/[^a-z]       { inID = false; return FROM;       }
 "to"/[^a-z]         { inID = false; return TO;         }
-"signal"/[^a-z]     { inID = false; return SIGNAL;     }
+"assert"/[^a-z]     { inID = false; return ASSERT;     }
+"delete"/[^a-z]     { inID = false; return DELETE;     }
+"violate"/[^a-z]    { inID = false; return VIOLATE;    }
+"activate"/[^a-z]   { inID = false; return ACTIVATE;   }
+"fail"/[^a-z]       { inID = false; return FAIL;       }
+"prevent"/[^a-z]    { inID = false; return PREVENT;    }
+"disable"/[^a-z]    { inID = false; return DISABLE;    }
+"enable"/[^a-z]     { inID = false; return DISABLE;    }
+"trigger"/[^a-z]    { inID = false; return TRIGGER;    }
 "modify"/[^a-z]     { inID = false; return MODIFY;     }
 "step"/[^a-z]       { inID = false; return STEP;       }
 
 ["][^"]*["] {
   inID = false;
   yylval.str = strdup(yytext);         //copy string in yyval.str
-   printf("line %d col %d endline %d endcol %d : [%s]\n",
-            yylloc.first_line,
-            yylloc.first_column,
-            yylloc.last_line, yylloc.last_column,
-            yylval.str);
+   MM_printf("line %d col %d endline %d endcol %d : [%s]\n",
+              yylloc.first_line,
+              yylloc.first_column,
+              yylloc.last_line, yylloc.last_column,
+              yylval.str);
   return STRING;
 }
 

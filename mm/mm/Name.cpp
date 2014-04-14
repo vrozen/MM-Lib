@@ -269,11 +269,11 @@ MM::VOID MM::Name::print()
 {
   for(MM::UINT32 i=0; i<len; i++)
   {
-    printf("%c",str[i]);
+    MM_printf("%c",str[i]);
   }
   if(name != MM_NULL)
   {
-    printf(".");
+    MM_printf(".");
     name->print();
   }
 }
