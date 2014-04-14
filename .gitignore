@@ -33,3 +33,7 @@ _ReSharper*/
 *.orig
 1minute/1minute/publish/
 *_TemporaryKey.pfx
+*.sdf
+*.opensdf
+
+
