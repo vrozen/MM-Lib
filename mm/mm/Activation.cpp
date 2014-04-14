@@ -34,33 +34,56 @@
 //  Activation.cpp
 //  mm
 //
-//  Created by Riemer van Rozen on 11/22/13.
+//  Created by Riemer van Rozen on March 26th 2014 
 //
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "YYLTYPE.h"
 #include "Types.h"
 #include "Recyclable.h"
 #include "Vector.h"
+#include "Map.h"
 #include "Recycler.h"
+#include "Observer.h"
+#include "Observable.h"
 #include "Location.h"
 #include "String.h"
 #include "Name.h"
 #include "Element.h"
+#include "Transformation.h"
+#include "Program.h"
+#include "Modification.h"
+#include "Transition.h"
+#include "Event.h"
 #include "Activation.h"
+#include "Operator.h"
+#include "Exp.h"
+#include "Edge.h"
+#include "NodeWorkItem.h"
+#include "NodeBehavior.h"
+#include "Node.h"
+#include "Declaration.h"
+#include "Definition.h"
+#include "Instance.h"
 
 const MM::CHAR * MM::Activation::ACTIVATE_STR = "activate";
 const MM::UINT32 MM::Activation::ACTIVATE_LEN = strlen(MM::Activation::ACTIVATE_STR);
 
-MM::Activation::Activation(MM::Name * name) : MM::Element(name)
+MM::Activation::Activation(MM::Name * name) : MM::Event(name, MM_NULL, MM_NULL)
 {
   this->loc = MM_NULL;
 }
 
-MM::Activation::Activation(MM::Location * loc, MM::Name * name) : MM::Element(name)
+MM::Activation::Activation(MM::Location * loc, MM::Name * name) : MM::Event(name, MM_NULL, MM_NULL)
 {
   this->loc = loc;
+}
+
+MM::Activation::Activation(MM::Instance * instance, MM::Node * node) : MM::Event(MM_NULL, instance, (MM::Element *) node)
+{
+  this->loc = MM_NULL;
 }
 
 MM::Activation::~Activation()
@@ -74,7 +97,7 @@ MM::VOID MM::Activation::recycle(MM::Recycler * r)
   {
     loc->recycle(r);
   }
-  this->Element::recycle(r);
+  this->Event::recycle(r);
 }
 
 MM::TID MM::Activation::getTypeId()
@@ -90,13 +113,18 @@ MM::BOOLEAN MM::Activation::instanceof(MM::TID tid)
   }
   else
   {
-    return MM::Element::instanceof(tid);
+    return MM::Event::instanceof(tid);
   }
 }
 
 MM::Location * MM::Activation::getLocation()
 {
   return loc;
+}
+
+MM::MESSAGE MM::Activation::getMessage()
+{
+  return MM::MSG_ACTIVATE;
 }
 
 MM::VOID MM::Activation::toString(MM::String * buf)
@@ -106,8 +134,22 @@ MM::VOID MM::Activation::toString(MM::String * buf)
 
 MM::VOID MM::Activation::toString(MM::String * buf, MM::UINT32 indent)
 {
-  buf->space(indent);
-  buf->append((MM::CHAR*)MM::Activation::ACTIVATE_STR, MM::Activation::ACTIVATE_LEN);
-  buf->space();
-  name->toString(buf);
+  if(name != MM_NULL)
+  {
+    buf->space(indent);
+    buf->append((MM::CHAR*)MM::Activation::ACTIVATE_STR, MM::Activation::ACTIVATE_LEN);
+    buf->space();
+    name->toString(buf);
+  }
+  else if(instance != MM_NULL && element != MM_NULL)
+  {
+    buf->space(indent);
+    buf->append((MM::CHAR*)MM::Activation::ACTIVATE_STR, MM::Activation::ACTIVATE_LEN);
+    buf->space();
+    instance->nameToString(element, buf);
+  }
+  else
+  {
+	 //TODO: failure
+  }
 }

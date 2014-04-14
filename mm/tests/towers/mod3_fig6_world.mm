@@ -17,6 +17,9 @@ user source spawn        //Physics activates spawn source
 pool creeps              //creeps in the world
 create: spawn --> creeps //spawn creates one creep per step
 
+user drain escape
+pass: creeps --> escape  //creeps escape into the void
+
 pool essence             //essence in the world
 user drain missed        //Physics activates missed essence
 miss: essence --> missed //drain one essence per miss

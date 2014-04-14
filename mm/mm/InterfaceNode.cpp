@@ -120,19 +120,19 @@ MM::Node * MM::InterfaceNode::getNode()
 MM::VOID MM::InterfaceNode::add(MM::Instance * i,
                                 MM::UINT32 amount)
 {
-  printf("should not happen anaymore MM::InterfaceNode::add\n");
+  MM_printf("should not happen anaymore MM::InterfaceNode::add\n");
 }
 
 MM::VOID MM::InterfaceNode::sub(MM::Instance * i, MM::UINT32 amount)
 {  
-  printf("should not happen anaymore MM::InterfaceNode::sub\n");
+  MM_printf("should not happen anaymore MM::InterfaceNode::sub\n");
   //MM::Instance * iChild = i->getInstance(decl);
   //ref->sub(iChild, amount);
 }
 
 MM::UINT32 MM::InterfaceNode::getCapacity(MM::Instance * i)
 {
-  printf("should not happen anaymore MM::InterfaceNode::getCapacity\n");
+  MM_printf("should not happen anaymore MM::InterfaceNode::getCapacity\n");
   //MM::Instance * iChild = i->getInstance(decl);
   //return ref->getCapacity(iChild);
   return 0;
@@ -140,7 +140,7 @@ MM::UINT32 MM::InterfaceNode::getCapacity(MM::Instance * i)
 
 MM::UINT32 MM::InterfaceNode::getResources(MM::Instance * i)
 {
-  printf("should not happen anaymore MM::InterfaceNode::getResources\n");
+  MM_printf("should not happen anaymore MM::InterfaceNode::getResources\n");
   //MM::Instance * iChild = i->getInstance(decl);
   //return ref->getResources(iChild);
   return 0;
@@ -149,7 +149,7 @@ MM::UINT32 MM::InterfaceNode::getResources(MM::Instance * i)
 MM::BOOLEAN MM::InterfaceNode::hasCapacity(MM::Instance * i,
                                            MM::UINT32 amount)
 {
-  printf("should not happen anaymore MM::InterfaceNode::hasCapacity");
+  MM_printf("should not happen anaymore MM::InterfaceNode::hasCapacity");
   //MM::Instance * iChild = i->getInstance(decl);
   //return ref->hasCapacity(iChild, amount);
   return MM_FALSE;
@@ -158,7 +158,7 @@ MM::BOOLEAN MM::InterfaceNode::hasCapacity(MM::Instance * i,
 MM::BOOLEAN MM::InterfaceNode::hasResources(MM::Instance * i,
                                             MM::UINT32 amount)
 {
-  printf("should not happen anaymore MM::InterfaceNode::hasResources");
+  MM_printf("should not happen anaymore MM::InterfaceNode::hasResources");
   //MM::Instance * iChild = i->getInstance(decl);
   //return ref->hasResources(iChild, amount);
   return MM_FALSE;
@@ -167,7 +167,7 @@ MM::BOOLEAN MM::InterfaceNode::hasResources(MM::Instance * i,
 MM::VOID MM::InterfaceNode::activateTriggerTargets(MM::Instance * i,
                                                    MM::Machine * m)
 {
-  printf("should not happen anaymore MM::InterfaceNode::activateTriggerTargets\n");
+  MM_printf("should not happen anaymore MM::InterfaceNode::activateTriggerTargets\n");
   //MM::NodeBehavior * behavior = ref->getBehavior(); //HACK
   //behavior->activateTriggerTargets(this, i, m);
 }

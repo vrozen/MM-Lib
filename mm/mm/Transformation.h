@@ -64,5 +64,4 @@ namespace MM
   };
 }
 
-
 #endif /* defined(__mm__Transformation__) */

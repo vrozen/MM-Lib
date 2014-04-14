@@ -89,6 +89,11 @@ namespace MM
     MM::Vector<MM::Node *> * disabledNodes; /**> disabled nodes are
                                                  nodes that are not active
                                                  because a conditions is false*/
+
+    MM::Vector<MM::Node *> * newActiveNodes;   /**> active nodes */
+    MM::Vector<MM::Node *> * newDisabledNodes; /**> disabled nodes are
+                                                    nodes that are not active
+                                                    because a conditions is false*/
     
     MM::Map<MM::Exp *, MM::INT32> * evaluatedExps;
     
@@ -144,6 +149,7 @@ namespace MM
     //Activity:
     MM::BOOLEAN isActive(MM::Node * node);
     MM::VOID setActive(MM::Node * node);
+	MM::VOID setNextActive(MM::Node * node);
 
     //Disabed:
     MM::BOOLEAN isDisabled(MM::Node * node);
@@ -211,7 +217,8 @@ namespace MM
     MM::VOID add(MM::Node * node, MM::Machine * m, MM::UINT32 amount);
     
   public:
-    MM::VOID nameToString(MM::Element * element, MM::String * buf);
+	MM::VOID MM::Instance::nameToString(MM::String * buf);
+	MM::VOID nameToString(MM::Element * element, MM::String * buf);
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };

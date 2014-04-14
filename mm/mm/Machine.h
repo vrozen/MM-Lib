@@ -231,6 +231,10 @@ public:
                       MM::CHAR *   buffer,
                       MM::UINT32   bufferSize);
     
+	MM::VOID MM::Machine::getInstanceName(MM::UINT32 instance,
+                                          MM::CHAR * buffer,
+                                          MM::UINT32 bufferSize);
+    
     //retrieves a definition from a parent element by name
     //MM::UINT32 getDefinition(MM::UINT32   def,  //0 -> global scope type
     //                         MM::CHAR   * name);
@@ -322,8 +326,50 @@ public:
                                     MM::UINT32     amount,
                                     MM::Instance * tgtInstance,
                                     MM::Node     * tgtNode);
-    
-    MM::Node * createSourceNode(MM::NodeBehavior::IO    io,
+
+    MM::TriggerEvent * createTriggerEvent(MM::Instance * instance,
+                                          MM::Edge     * edge);
+
+    MM::TriggerEvent * createTriggerEvent(YYLTYPE * failLoc,
+                                          MM::Name * name);
+
+    MM::Prevention * createPrevention(MM::Instance * instance,
+                                      MM::Edge     * edge);
+
+    MM::Prevention * createPrevention(YYLTYPE * preventLoc,
+                                      MM::Name * name);
+	
+	MM::Failure * createFailure(MM::Instance * instance,
+                                MM::Node     * node);
+
+    MM::Failure * createFailure(YYLTYPE * failLoc,
+                                MM::Name * name);
+
+    MM::Activation * createActivation(MM::Instance * instance,
+                                      MM::Node     * node);
+
+    MM::Activation * createActivation(YYLTYPE * activateLoc,
+                                      MM::Name * name);
+
+	MM::Enablement * createEnablement(MM::Instance * instance,
+                                      MM::Node     * node);
+
+    MM::Enablement * createEnablement(YYLTYPE * disableLoc,
+                                      MM::Name * name);
+
+	MM::Disablement * createDisablement(MM::Instance * instance,
+                                        MM::Node     * node);
+
+    MM::Disablement * createDisablement(YYLTYPE * disableLoc,
+                                        MM::Name * name);
+
+	MM::Violation * createViolation(MM::Instance * instance,
+                                    MM::Assertion * assertion);
+
+    MM::Violation * createViolation(YYLTYPE * deleteLoc,
+                                    MM::Name * name);
+
+	MM::Node * createSourceNode(MM::NodeBehavior::IO    io,
                                 MM::NodeBehavior::When  when,
                                 MM::Name      * name);
     
@@ -394,16 +440,6 @@ public:
     
     MM::Deletion * createDeletion(YYLTYPE * deleteLoc,
                                   MM::Name * name);
-    
-    MM::Activation * createActivation(MM::Name * name);
-    
-    MM::Activation * createActivation(YYLTYPE * deleteLoc,
-                                      MM::Name * name);
-    
-    MM::Signal * createSignal(MM::Name * name);
-
-    MM::Signal * createSignal(YYLTYPE * signalLoc,
-                              MM::Name * name);
                               
     MM::UnExp * createUnExp(MM::Operator::OP  op,
                             YYLTYPE         * opLoc,

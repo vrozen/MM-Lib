@@ -49,12 +49,12 @@ namespace MM
   class Node;
   class Instance;
   class Edge;
-  class FlowEvent : public MM::Element
+  class FlowEvent : public MM::Event
   {
   private:
     //which node instance is responsible?
-    MM::Node     * actNode;     /**> acting node */
-    MM::Instance * actInstance; /**> instance in which the acting node lives */
+    //MM::Node     * actNode;     /**> acting node */
+    //MM::Instance * actInstance; /**> instance in which the acting node lives */
     
     //on which edge did the node act?
     MM::Edge     * actEdge;     /**> edge the node instance acted on*/
@@ -92,6 +92,8 @@ namespace MM
     MM::VOID setSourceInstance(MM::Instance * instance);
     MM::VOID setTargetInstance(MM::Instance * instance);
     
+    MM::MESSAGE getMessage();
+
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };

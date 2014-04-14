@@ -65,22 +65,20 @@
 %locations
 %error-verbose
 %token <str> ID
-%token NEWLINE
 %token <str> PRIVATE IN OUT INOUT
 %token <str> PASSIVE AUTO USER START
 %token <str> PUSH PULL
 %token <str> ALL ANY
 %token <str> FROM TO OF
-%token <str> EQ PRINT NE LT GT LE GE AND OR NOT TRUE FALSE ACTIVE
-%token <str> ASSERT DELETE ACTIVATE MODIFY STEP SIGNAL
+%token <str> EQ NE LT GT LE GE AND OR NOT TRUE FALSE ACTIVE
+%token <str> ASSERT DELETE ACTIVATE DISABLE ENABLE PREVENT TRIGGER FAIL VIOLATE MODIFY STEP
 %token <str> AT MAX DICE
-%token <str> ALIAS DOT PER REF DOT_GT SUB_GT LCURLY RCURLY COMMA COLON ATSIGN RANGE PERCENT
+%token <str> ALIAS DOT PER REF DOT_GT SUB_GT LCURLY RCURLY COLON RANGE PERCENT
 %token <str> SOURCE DRAIN POOL GATE CONVERTER
 %token <str> SUB ADD MUL DIV
 %token <val> FPVAL
 %token <str> STRING
 %token <str> ADDITION
-%token <str> SUBSUB
 
 %left AND OR
 %left LT GT LE GE NE EQ
@@ -139,16 +137,22 @@ element
 | name DOT exp DOT_GT name       { MM::Name * preName = $1->getPreName();
                                    $1->setPreName(MM_NULL); //prevent double free
                                    $$ = mm->createStateEdge(preName,$1,$3,$5); }
+/*NOTE: always parsed as FlowEdge but can be FlowEvent */
 | name SUB exp SUB_GT name       { MM::Name * preName = $1->getPreName();
                                    $1->setPreName(MM_NULL); //prevent double free
                                    $$ = mm->createFlowEdge(preName,$1,$3,$5);  }
 | name LCURLY elementList RCURLY { $$ = mm->createDefinition($1,$3); }
 | ASSERT name COLON exp STRING   { $$ = mm->createAssertion(&@1,$2,$4,$5); free(yylval.str); }
 | DELETE name                    { $$ = mm->createDeletion(&@1,$2); }
+/* transition events --> */
+| ACTIVATE /*node*/ name         { $$ = mm->createActivation(&@1,$2); }
+| VIOLATE /*assertion*/ name     { $$ = mm->createViolation(&@1,$2); }
+| FAIL /*node*/ name             { $$ = mm->createFailure(&@1,$2); }
+| PREVENT /*edge*/ name          { $$ = mm->createPrevention(&@1,$2); }
+| DISABLE /*node*/ name          { $$ = mm->createDisablement(&@1,$2); }
+| ENABLE /*node*/ name           { $$ = mm->createEnablement(&@1,$2); }
+| TRIGGER /*edge*/ name          { $$ = mm->createTriggerEvent(&@1,$2); }
 ;
-//| ACTIVATE name                  { $$ = mm->createActivation(&@1,$2); }
-//| SIGNAL name                    { $$ = mm->createSignal(&@1,$2); }
-//;
 
 io
 : PRIVATE     { $$ = MM::NodeBehavior::IO_PRIVATE;   }
@@ -224,9 +228,10 @@ exp
 | UNM exp           { $$ = mm->createUnExp(MM::Operator::OP_UNM,&@1,$2);     }
 | NOT exp           { $$ = mm->createUnExp(MM::Operator::OP_NOT,&@1,$2);     }
 | exp PERCENT       { $$ = mm->createUnExp(MM::Operator::OP_PERCENT,&@1,$1); }
-| FPVAL PER FPVAL   { $$ = MM_NULL;                             /* FIXME */ }
+| FPVAL PER FPVAL   { $$ = MM_NULL;                             /* FIXME */  }
 | LPAREN exp RPAREN { $$ = mm->createOverrideExp(&@1,$2,&@3);                }
 | FPVAL RANGE FPVAL { $$ = mm->createRangeValExp($1,&@1,&@2,$3,&@3);         }
+| FPVAL DICE        { $$ = mm->createRangeValExp(1,$1);                      }
 | FPVAL             { $$ = mm->createNumberValExp($1,&@1);                   }
 | TRUE              { $$ = mm->createBooleanValExp(MM_TRUE,&@1);             }
 | FALSE             { $$ = mm->createBooleanValExp(MM_FALSE,&@1);            }
@@ -267,6 +272,7 @@ int main(int argc, const char * argv[])
 MM::Program * MM_parse(MM::Machine * machine, const MM::CHAR * input)
 {
   mm = machine;
+  program = MM_NULL;
   yy_scan_buffer((char*)input, strlen(input));    
   yyparse();  
   return program;
@@ -274,12 +280,14 @@ MM::Program * MM_parse(MM::Machine * machine, const MM::CHAR * input)
 
 MM::Program * MM_parseFile(MM::Machine * machine, const MM::CHAR * file)
 {
+  program = MM_NULL;
   mm = machine;
 
   yyin = fopen(file, "r");
   if(!yyin)
   {
-    fprintf(stderr, "error reading file %s\n", file);
+    //fprintf(stderr, "error reading file %s\n", file);
+	MM_printf("error reading file %s\n", file);
   }
   else
   {
@@ -291,5 +299,6 @@ MM::Program * MM_parseFile(MM::Machine * machine, const MM::CHAR * file)
 
 void yyerror(char * msg)
 {
-  fprintf(stderr, "line %d, %d: %s\n", yylineno, yycolumn, msg);
+  //fprintf(stderr, "line %d, %d: %s\n", yylineno, yycolumn, msg);
+  MM_printf("line %d, %d: %s\n", yylineno, yycolumn, msg);
 }

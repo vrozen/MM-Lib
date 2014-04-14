@@ -109,7 +109,7 @@ MM::VOID MM::RefNodeBehavior::setAlias(MM::Edge * edge)
 {
   if(alias != MM_NULL)
   {
-    printf("Warning: reset alias");
+    MM_printf("Warning: reset alias");
   }
   this->alias = edge;
 }
@@ -133,7 +133,7 @@ MM::Node * MM::RefNodeBehavior::getReference()
   else
   {
     //TODO: error
-    printf("Error: unresolved alias");
+    MM_printf("Error: unresolved alias");
     return MM_NULL;
   }
 }
@@ -247,7 +247,7 @@ MM::VOID MM::RefNodeBehavior::add(MM::Instance * i,
                                   MM::Node * n,
                                   MM::UINT32 amount)
 {
-  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::add");
+  MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::add");
   
   //MM::Node * aliasSrc = alias->getSource();
   //MM::Node * aliasTgt = alias->getTarget();
@@ -260,7 +260,7 @@ MM::VOID MM::RefNodeBehavior::sub(MM::Instance * i,
                                   MM::Node * n,
                                   MM::UINT32 amount)
 {
-  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::sub");
+  MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::sub");
 
   //MM::Node * aliasSrc = alias->getSource();
   //MM::Node * aliasTgt = alias->getTarget();
@@ -271,7 +271,7 @@ MM::VOID MM::RefNodeBehavior::sub(MM::Instance * i,
 MM::UINT32 MM::RefNodeBehavior::getCapacity(MM::Instance * i,
                                             MM::Node * n)
 {
-  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getCapacity\n");
+  MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getCapacity\n");
   //MM::Node * aliasSrc = alias->getSource();
   //MM::Node * aliasTgt = alias->getTarget();
   //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
@@ -282,7 +282,7 @@ MM::UINT32 MM::RefNodeBehavior::getCapacity(MM::Instance * i,
 MM::UINT32 MM::RefNodeBehavior::getResources(MM::Instance * i,
                                              MM::Node * n)
 {
-  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getResources\n");
+  MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getResources\n");
   //MM::Node * aliasSrc = alias->getSource();
   //MM::Node * aliasTgt = alias->getTarget();
   //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
@@ -294,7 +294,7 @@ MM::BOOLEAN MM::RefNodeBehavior::hasCapacity(MM::Instance * i,
                                              MM::Node * n,
                                              MM::UINT32 amount)
 {
-  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasCapacity\n");
+  MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasCapacity\n");
   //MM::Node * aliasSrc = alias->getSource();
   //MM::Node * aliasTgt = alias->getTarget();
   //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
@@ -306,7 +306,7 @@ MM::BOOLEAN MM::RefNodeBehavior::hasResources(MM::Instance * i,
                                               MM::Node * n,
                                               MM::UINT32 amount)
 {
-  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasResources\n");
+  MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasResources\n");
   //MM::Node * aliasSrc = alias->getSource();
   //MM::Node * aliasTgt = alias->getTarget();
   //MM::Instance * aliasInstance = resolveInstance(i, aliasSrc, aliasTgt);
@@ -317,7 +317,7 @@ MM::BOOLEAN MM::RefNodeBehavior::hasResources(MM::Instance * i,
 MM::VOID MM::RefNodeBehavior::doTriggers(MM::Instance * i,
                                          MM::Node * n)
 {
-  printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::doTriggers\n");
+  MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::doTriggers\n");
 }
 
 

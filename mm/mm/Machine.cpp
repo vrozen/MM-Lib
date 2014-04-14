@@ -55,13 +55,19 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Activation.h"
+#include "Violation.h"
+#include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -204,14 +210,26 @@ MM::VOID MM::Machine::getName (MM::UINT32   element,
                                MM::UINT32   bufferSize)
 {
   MM::Element * e = (MM::Element *) element;
-  MM::Name * n = e->getName();  
-  MM::CHAR * buf = n->getBuffer();
-  MM::UINT32 len = n->getLength();
-  
-  if(len <= bufferSize)
+  MM::Name * n = e->getName();
+  if(n != MM_NULL)
   {
-    snprintf(buffer, bufferSize, "%s", buf);
+    MM::CHAR * buf = n->getBuffer();
+    MM::UINT32 len = n->getLength();
+    if(len <= bufferSize)
+    {
+      snprintf(buffer, bufferSize, "%s", buf);
+    }
   }
+}
+
+MM::VOID MM::Machine::getInstanceName(MM::UINT32 instance,
+                                      MM::CHAR * buffer,
+                                      MM::UINT32 bufferSize)
+{
+  MM::Instance * i = (MM::Instance *) instance;
+  MM::String * name = new MM::String(buffer, bufferSize);
+  i->nameToString(name);  
+  delete name;
 }
 
 MM::VOID MM::Machine::activate(MM::UINT32 node,
@@ -290,37 +308,46 @@ MM::String * MM::Machine::getLog()
 MM::VOID MM::Machine::eval (const MM::CHAR * input)
 {
   MM::Program * program = MM_parse(this, input);
-  reflect(program);
-  program->recycle(this);
+  if(program != MM_NULL)
+  {
+    reflect(program);
+    program->recycle(this);
+  }
 }
 
 MM::VOID MM::Machine::evalFile (const MM::CHAR * file)
 {
   MM::Program * program = MM_parseFile(this, file);
-  reflect(program);
-  program->recycle(this);
+  if(program != MM_NULL)
+  {
+    reflect(program);
+    program->recycle(this);
+  }
 }
 
 MM::VOID MM::Machine::reflect(MM::Program * program)
 {
-  MM::String * buf = createString(1024 * 100 * 32);
-  program->toString(log); //store history
-  
-  MM::Vector<Transformation *> * ts = program->getTransformations();
-  MM::Vector<Transformation *>::Iterator i = ts->getIterator();
-  while(i.hasNext() == MM_TRUE)
+  if(program != MM_NULL)
   {
-    Transformation * t = i.getNext();
-    if(t->instanceof(MM::T_Modification) == MM_TRUE)
+    MM::String * buf = createString(1024 * 100 * 32);
+    program->toString(log); //store history
+  
+    MM::Vector<Transformation *> * ts = program->getTransformations();
+    MM::Vector<Transformation *>::Iterator i = ts->getIterator();
+    while(i.hasNext() == MM_TRUE)
     {
-      reflector->merge((MM::Modification *) t);
-      MM::Definition * def = reflector->getDefinition();
-      buf->clear();
-      def->toString(buf);
-      buf->print();
+      Transformation * t = i.getNext();
+      if(t->instanceof(MM::T_Modification) == MM_TRUE)
+      {
+        reflector->merge((MM::Modification *) t);
+        MM::Definition * def = reflector->getDefinition();
+        buf->clear();
+        def->toString(buf);
+        buf->print();
+      }
     }
+    buf->recycle(this);
   }
-  buf->recycle(this);
 }
 
 
@@ -618,6 +645,126 @@ MM::FlowEvent * MM::Machine::createFlowEvent(MM::Instance * actInstance,
   return r;
 }
 
+
+MM::TriggerEvent * MM::Machine::createTriggerEvent(MM::Instance * instance,
+                                                   MM::Edge     * edge)
+{
+  MM::TriggerEvent * r = new MM::TriggerEvent(instance, edge);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::TriggerEvent * MM::Machine::createTriggerEvent(YYLTYPE * triggerLoc,
+                                                   MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(triggerLoc);
+  MM::TriggerEvent * r = new MM::TriggerEvent(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Prevention * MM::Machine::createPrevention(MM::Instance * instance,
+                                               MM::Edge     * edge)
+{
+  MM::Prevention * r = new MM::Prevention(instance, edge);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Prevention * MM::Machine::createPrevention(YYLTYPE * preventLoc,
+                                               MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(preventLoc);
+  MM::Prevention * r = new MM::Prevention(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+	
+MM::Failure * MM::Machine::createFailure(MM::Instance * instance,
+                                         MM::Node     * node)
+{
+  MM::Failure * r = new MM::Failure(instance, node);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Failure * MM::Machine::createFailure(YYLTYPE * failLoc,
+                                         MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(failLoc);
+  MM::Failure * r = new MM::Failure(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Activation * MM::Machine::createActivation(MM::Instance * instance,
+                                               MM::Node     * node)
+{
+  MM::Activation * r = new MM::Activation(instance, node);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Activation * MM::Machine::createActivation(YYLTYPE * activateLoc,
+                                               MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(activateLoc);
+  MM::Activation * r = new MM::Activation(loc, name);
+  MM::Recycler::create(r);
+  return r; 
+}
+
+MM::Enablement * MM::Machine::createEnablement(MM::Instance * instance,
+                                               MM::Node     * node)
+{
+  MM::Enablement * r = new MM::Enablement(instance, node);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Enablement * MM::Machine::createEnablement(YYLTYPE * enableLoc,
+                                               MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(enableLoc);
+  MM::Enablement * r = new MM::Enablement(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Disablement * MM::Machine::createDisablement(MM::Instance * instance,
+                                                 MM::Node     * node)
+{
+  MM::Disablement * r = new MM::Disablement(instance, node);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Disablement * MM::Machine::createDisablement(YYLTYPE * disableLoc,
+                                                 MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(disableLoc);
+  MM::Disablement * r = new MM::Disablement(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Violation * MM::Machine::createViolation(MM::Instance * instance,
+                                             MM::Assertion * assertion)
+{
+  MM::Violation * r = new MM::Violation(instance, assertion);
+  MM::Recycler::create(r);
+  return r;
+}
+
+MM::Violation * MM::Machine::createViolation(YYLTYPE * violateLoc,
+                                             MM::Name * name)
+{
+  MM::Location * loc = MM::Machine::createLocation(violateLoc);
+  MM::Violation * r = new MM::Violation(loc, name);
+  MM::Recycler::create(r);
+  return r;
+}
+
 MM::Node * MM::Machine::createSourceNode(MM::NodeBehavior::IO   io,
                                          MM::NodeBehavior::When when,
                                          MM::Name             * name)
@@ -820,44 +967,11 @@ MM::Deletion * MM::Machine::createDeletion(YYLTYPE * deleteLoc,
   return r;
 }
 
-MM::Activation * MM::Machine::createActivation(YYLTYPE * deleteLoc,
-                                             MM::Name * name)
-{
-  MM::Location * loc = MM::Machine::createLocation(deleteLoc);
-  MM::Activation * r = new MM::Activation(loc, name);
-  MM::Recycler::create(r);
-  return r;
-}
-
-MM::Activation * MM::Machine::createActivation(MM::Name * name)
-{
-  MM::Activation * r = new MM::Activation(name);
-  MM::Recycler::create(r);
-  return r;
-}
-
 MM::Deletion * MM::Machine::createDeletion(MM::Name * name)
 {
   MM::Deletion * r = new MM::Deletion(name);
   MM::Recycler::create(r);
   return r;
-}
-
-
-MM::Signal * MM::Machine::createSignal(MM::Name * name)
-{
-  MM::Signal * r = new MM::Signal(name);
-  MM::Recycler::create(r);
-  return r;
-}
-
-MM::Signal * MM::Machine::createSignal(YYLTYPE * signalLoc,
-                                       MM::Name * name)
-{
-  MM::Location * loc = MM::Machine::createLocation(signalLoc);
-  MM::Signal * r = new MM::Signal(loc, name);
-  MM::Recycler::create(r);
-  return r;  
 }
 
 MM::UnExp * MM::Machine::createUnExp(MM::Operator::OP  op,

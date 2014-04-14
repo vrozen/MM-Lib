@@ -56,46 +56,17 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
 #include "Operator.h"
 #include "Exp.h"
-#include "Assertion.h"
-#include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
-#include "StateEdge.h"
-#include "FlowEdge.h"
 #include "NodeWorkItem.h"
 #include "NodeBehavior.h"
 #include "Node.h"
-#include "PoolNodeBehavior.h"
-#include "SourceNodeBehavior.h"
-#include "DrainNodeBehavior.h"
-#include "GateNodeBehavior.h"
-#include "RefNodeBehavior.h"
-#include "ConverterNodeBehavior.h"
 #include "Declaration.h"
-#include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
-#include "Operator.h"
-#include "ValExp.h"
-#include "UnExp.h"
-#include "BinExp.h"
-#include "DieExp.h"
-#include "RangeValExp.h"
-#include "BooleanValExp.h"
-#include "NumberValExp.h"
-#include "OverrideExp.h"
-#include "ActiveExp.h"
-#include "AllExp.h"
-#include "AliasExp.h"
-#include "OneExp.h"
-#include "VarExp.h"
-#include "Reflector.h"
-#include "Evaluator.h"
-#include "Machine.h"
 
 MM::FlowEvent::FlowEvent(MM::Instance * actInstance,
                          MM::Node     * actNode,
@@ -104,10 +75,10 @@ MM::FlowEvent::FlowEvent(MM::Instance * actInstance,
                          MM::Node     * srcNode,
                          MM::UINT32     amount,
                          MM::Instance * tgtInstance,
-                         MM::Node     * tgtNode) : MM::Element(MM_NULL)
+                         MM::Node     * tgtNode) : MM::Event(MM_NULL, actInstance, actNode)
 {
-  this->actInstance = actInstance;
-  this->actNode = actNode,
+  //this->actInstance = actInstance;
+  //this->actNode = actNode,
   this->actEdge = actEdge,
   this->srcInstance = srcInstance;
   this->srcNode = srcNode;
@@ -118,8 +89,8 @@ MM::FlowEvent::FlowEvent(MM::Instance * actInstance,
 
 MM::FlowEvent::~FlowEvent()
 {
-  this->actInstance = MM_NULL;
-  this->actNode = MM_NULL,
+  //this->actInstance = MM_NULL;
+  //this->actNode = MM_NULL,
   this->actEdge = MM_NULL,
   this->srcInstance = MM_NULL;
   this->srcNode = MM_NULL;
@@ -130,7 +101,7 @@ MM::FlowEvent::~FlowEvent()
 
 MM::VOID MM::FlowEvent::recycle(MM::Recycler *r)
 {
-  this->MM::Element::recycle(r);
+  this->MM::Event::recycle(r);
 }
 
 MM::TID MM::FlowEvent::getTypeId()
@@ -146,7 +117,7 @@ MM::BOOLEAN MM::FlowEvent::instanceof(MM::TID tid)
   }
   else
   {
-    return MM::Element::instanceof(tid);
+    return MM::Event::instanceof(tid);
   }
 }
 
@@ -167,17 +138,19 @@ MM::Node * MM::FlowEvent::getTargetNode()
 
 MM::Instance * MM::FlowEvent::getActInstance()
 {
-  return actInstance;
+  //return actInstance;
+  return MM::Event::getInstance();
+}
+
+MM::Node * MM::FlowEvent::getActNode()
+{
+  //return actNode;
+  return (MM::Node*) MM::Event::getElement();
 }
 
 MM::Edge * MM::FlowEvent::getActEdge()
 {
   return actEdge;
-}
-
-MM::Node * MM::FlowEvent::getActNode()
-{
-  return actNode;
 }
 
 MM::Instance * MM::FlowEvent::getSourceInstance()
@@ -188,6 +161,12 @@ MM::Instance * MM::FlowEvent::getSourceInstance()
 MM::Instance * MM::FlowEvent::getTargetInstance()
 {
   return tgtInstance;
+}
+
+MM::MESSAGE MM::FlowEvent::getMessage()
+{
+  //not used yet, multiple messages needed
+  return MM::MSG_ERROR;
 }
 
 MM::VOID MM::FlowEvent::toString(MM::String * buf)

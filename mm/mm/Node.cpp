@@ -55,8 +55,6 @@
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
-#include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -66,7 +64,15 @@
 #include "Transformation.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Violation.h"
+#include "Prevention.h"
+#include "Activation.h"
 #include "Program.h"
 #include "PoolNodeBehavior.h"
 #include "SourceNodeBehavior.h"
@@ -398,7 +404,7 @@ MM::BOOLEAN MM::Node::isDisabled(MM::Instance  * i,
   MM::Vector<MM::Edge *>::Iterator aIter = aliases->getIterator();
   while(aIter.hasNext() == MM_TRUE)
   {
-    MM::Edge * edge = cIter.getNext();
+    MM::Edge * edge = aIter.getNext();
     MM::Node * tgtNode = edge->getTarget();
     //target must be a Node with RefNodeBehavior
     //or InterfaceNode that results from a Node with RefNodeBehavior
@@ -451,13 +457,14 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
   {
     nodeEdges = output;
   }
-  
+
+
   if(nodeEdges->isEmpty() == MM_TRUE)
   {
     if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO ||
        i->isActive(this) == MM_TRUE)
     {
-      satisfied = MM_TRUE;
+      satisfied = MM_TRUE; 
     }
     else
     {
@@ -518,7 +525,7 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
       buf = name->getBuffer();
     }
     
-    printf("SATISFIED %s\n", buf);
+    MM_printf("SATISFIED %s\n", buf);
   }
   
   return satisfied;

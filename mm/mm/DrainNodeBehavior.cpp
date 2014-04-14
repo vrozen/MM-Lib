@@ -55,13 +55,19 @@
 #include "Program.h"
 #include "Modification.h"
 #include "Transition.h"
+#include "Event.h"
 #include "FlowEvent.h"
+#include "TriggerEvent.h"
+#include "Failure.h"
+#include "Enablement.h"
+#include "Disablement.h"
+#include "Violation.h"
+#include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Activation.h"
-#include "Signal.h"
 #include "Edge.h"
 #include "StateEdge.h"
 #include "FlowEdge.h"
@@ -169,9 +175,9 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
   MM::Vector<MM::NodeWorkItem *>::Iterator workIter = work->getIterator();
   MM::BOOLEAN success = MM_TRUE;
   
-  printf("STEP PULL ALL NODE %s (%ld edges)\n",
-         tgtNode->getName()->getBuffer(),
-         work->size());
+  MM_printf("STEP PULL ALL NODE %s (%ld edges)\n",
+            tgtNode->getName()->getBuffer(),
+            work->size());
   
   while(workIter.hasNext() == MM_TRUE)
   {
@@ -242,7 +248,7 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
       MM::Node * srcNode = event->getSourceNode();
       MM::Node * tgtNode = event->getTargetNode();
       MM::UINT32 flow = event->getAmount();
-      printf("Full flow %ld\n", flow);
+      MM_printf("Full flow %ld\n", flow);
       
       srcInstance->sub(srcNode, m, flow);
       tgtInstance->add(tgtNode, m, flow);
@@ -250,7 +256,12 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
   }
   else
   {
-    MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
+    //fail
+	MM::Failure * event = m->createFailure(tgtInstance, tgtNode);
+    tr->addElement(event);
+
+	//clean up
+	MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
     while(eIter.hasNext() == MM_TRUE)
     {
       MM::Element * element = eIter.getNext();

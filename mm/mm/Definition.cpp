@@ -219,20 +219,20 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
               if(nodeName->getName() != MM_NULL)
               {
                 //TODO: error
-                printf("Definition Error: cannot search inside interface\n");
+                MM_printf("Definition Error: cannot search inside interface\n");
               }
               
               //if(behavior->conformsTo(direction) == MM_FALSE)
               // {
               //  //TODO: error
-              //  printf("Definition Error: interface does not accept input\n");
+              //  MM_printf("Definition Error: interface does not accept input\n");
               // }
               
               r = iNode;
             }
             else
             {
-              printf("Definition Error: interface not found\n");
+              MM_printf("Definition Error: interface not found\n");
             }
           }
       }
@@ -257,20 +257,20 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
             if(nodeName->getName() != MM_NULL)
             {
               //TODO: error
-              printf("Definition Error: cannot search inside interface\n");
+              MM_printf("Definition Error: cannot search inside interface\n");
             }
             
             //if(behavior->conformsTo(direction) == MM_FALSE)
             // {
             //  //TODO: error
-            //  printf("Definition Error: interface does not accept input\n");
+            //  MM_printf("Definition Error: interface does not accept input\n");
             //}
             
             r = iNode;
           }
           else
           {
-            printf("Definition Error: interface not found\n");
+            MM_printf("Definition Error: interface not found\n");
           }
         }
       }
@@ -283,7 +283,7 @@ MM::Node * MM::Definition::findNode(MM::Name * name,
       else
       {
         //TODO: error
-        printf("Definition Error: incorrectly defined name, prefix is not a type\n");
+        MM_printf("Definition Error: incorrectly defined name, prefix is not a type\n");
       }
     }
   }
@@ -296,7 +296,7 @@ MM::Definition * MM::Definition::findDeclaredDefinition(MM::Name * name)
 {
   if(name == MM_NULL)
   {
-    printf("Definition Error: cannot retrieve nameless type\n");
+    MM_printf("Definition Error: cannot retrieve nameless type\n");
     return MM_NULL;
   }
   
@@ -304,8 +304,8 @@ MM::Definition * MM::Definition::findDeclaredDefinition(MM::Name * name)
  
   if(name->getName() != MM_NULL)
   {
-    printf("Definition Error: expected simple name, found query %s.\n",
-           name->getBuffer());
+    MM_printf("Definition Error: expected simple name, found query %s.\n",
+              name->getBuffer());
   }
   
   if(element == MM_NULL)
@@ -317,7 +317,7 @@ MM::Definition * MM::Definition::findDeclaredDefinition(MM::Name * name)
     else
     {
       //TODO: error
-      printf("Definition Error: type %s not found\n", name->getBuffer());
+      MM_printf("Definition Error: type %s not found\n", name->getBuffer());
       return MM_NULL;
     }
   }
@@ -328,8 +328,8 @@ MM::Definition * MM::Definition::findDeclaredDefinition(MM::Name * name)
   else
   {
     //TODO: error
-    printf("Definition Error: name %s does not denote a definition\n",
-           name->getBuffer());
+    MM_printf("Definition Error: name %s does not denote a definition\n",
+               name->getBuffer());
     return MM_NULL;
   }
 }

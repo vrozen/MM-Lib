@@ -33,7 +33,7 @@
 /*!
  * \namespace MM
  * \class     Activation
- * \brief     The Activation abstraction is a trace element
+ * \brief     The Activation abstraction is a transition event
  *            that expresses a node instance is activated.
  * \file      ActiveExp.h
  * \author    Riemer van Rozen
@@ -46,20 +46,26 @@
 
 namespace MM
 {
-  class Activation : public MM::Element
+  class Instance;
+  class Node;
+  class Activation : public MM::Event
   {
   private:
     static const MM::CHAR * ACTIVATE_STR; /**> activate keyword */
     static const MM::UINT32 ACTIVATE_LEN; /**> activate keyword length */
     MM::Location * loc; /**> activation source location*/
   public:
-    Activation(MM::Name * name);
-    Activation(MM::Location * loc, MM::Name * name);
+    Activation(MM::Name     * name);
+	Activation(MM::Location * loc,
+		       MM::Name     * name);
+    Activation(MM::Instance * instance,
+               MM::Node     * node);
     ~Activation();
     MM::VOID recycle(MM::Recycler * r);
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
     MM::Location * getLocation();
+	MM::MESSAGE getMessage();
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };

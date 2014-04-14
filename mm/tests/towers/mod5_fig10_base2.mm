@@ -15,7 +15,7 @@
 
 Base //base definition difference
 {
-  auto drain destroyBase   //bases can be destroyed
+  drain destroyBase        //bases can be destroyed
   pool heat                //bases heat up
   user drain tick //Game notifies time passing
   pool HP at 5             //FIXME = new?!
@@ -24,7 +24,9 @@ Base //base definition difference
   heatUp:    hitByEssence --> heat //heat up
   coolDown:  heat --> tick         //time cools bases
   //this changes the way bases are destroyed
+  damage:    HP --> hitByCreep
   destroy:   self --> destroyBase  //change: edge source
+  implode:   hitByCreep .*.> destroyBase
   //changes the way gold is generated
   //is the expression correct?
   cash: hitByEssence -(3-heat)-> gold //change exp
