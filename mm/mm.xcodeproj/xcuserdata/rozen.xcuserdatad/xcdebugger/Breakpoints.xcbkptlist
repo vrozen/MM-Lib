@@ -146,7 +146,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "350"
          endingLineNumber = "350"
-         landmarkName = "MM::NodeBehavior::step(MM::Node * node, MM::Instance * i, MM::Machine * m, MM::Transition * tr)"
+         landmarkName = "MM::NodeBehavior::getWork(MM::Node * node, /*edge source node*/ MM::Instance * instance, MM::Edge * edge, MM::Vector&lt;MM::NodeWorkItem *&gt; * work)"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint

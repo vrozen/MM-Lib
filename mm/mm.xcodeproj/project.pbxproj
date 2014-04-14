@@ -8,13 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		6612C419180ECDD2004B715A /* Program.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6612C417180ECDD2004B715A /* Program.cpp */; };
-		6612C41C180ED9FF004B715A /* Signal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6612C41A180ED9FD004B715A /* Signal.cpp */; };
 		6612C41F180F2E1A004B715A /* GateNodeBehavior.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6612C41D180F2E15004B715A /* GateNodeBehavior.cpp */; };
 		6638123C17F4577800F540BA /* Observable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6638123A17F4577200F540BA /* Observable.cpp */; };
 		6638123F17F4583800F540BA /* Observer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6638123D17F4583200F540BA /* Observer.cpp */; };
 		6638124417F4745400F540BA /* Evaluator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6638124217F4744D00F540BA /* Evaluator.cpp */; };
 		6638125F17F8848400F540BA /* Reflector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6638125D17F8847B00F540BA /* Reflector.cpp */; };
 		6638126217F8889700F540BA /* Deletion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6638126017F8889100F540BA /* Deletion.cpp */; };
+		6678601F18FC084A00579005 /* Disablement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6678601E18FC084A00579005 /* Disablement.cpp */; };
+		6678602318FC085E00579005 /* Enablement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6678602118FC085E00579005 /* Enablement.cpp */; };
+		6678602618FC086B00579005 /* Event.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6678602418FC086B00579005 /* Event.cpp */; };
+		6678602918FC087700579005 /* Failure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6678602718FC087700579005 /* Failure.cpp */; };
+		6678602D18FC089B00579005 /* Prevention.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6678602B18FC089B00579005 /* Prevention.cpp */; };
+		6678603018FC08A900579005 /* TriggerEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6678602E18FC08A900579005 /* TriggerEvent.cpp */; };
+		6678603318FC08B400579005 /* Violation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6678603118FC08B400579005 /* Violation.cpp */; };
 		6690CC091896BCC200193E32 /* NodeWorkItem.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6690CC071896BCBF00193E32 /* NodeWorkItem.cpp */; };
 		6690CC0E189A63D200193E32 /* FlowEvent.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6690CC0C189A63CA00193E32 /* FlowEvent.cpp */; };
 		6692E47617E092C00017C9A7 /* Instance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6692E47417E092BF0017C9A7 /* Instance.cpp */; };
@@ -80,8 +86,6 @@
 /* Begin PBXFileReference section */
 		6612C417180ECDD2004B715A /* Program.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Program.cpp; sourceTree = "<group>"; };
 		6612C418180ECDD2004B715A /* Program.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Program.h; sourceTree = "<group>"; };
-		6612C41A180ED9FD004B715A /* Signal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Signal.cpp; sourceTree = "<group>"; };
-		6612C41B180ED9FE004B715A /* Signal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Signal.h; sourceTree = "<group>"; };
 		6612C41D180F2E15004B715A /* GateNodeBehavior.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GateNodeBehavior.cpp; sourceTree = "<group>"; };
 		6612C41E180F2E17004B715A /* GateNodeBehavior.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GateNodeBehavior.h; sourceTree = "<group>"; };
 		6638123A17F4577200F540BA /* Observable.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Observable.cpp; sourceTree = "<group>"; };
@@ -94,17 +98,25 @@
 		6638125E17F8848000F540BA /* Reflector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reflector.h; sourceTree = "<group>"; };
 		6638126017F8889100F540BA /* Deletion.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Deletion.cpp; sourceTree = "<group>"; };
 		6638126117F8889300F540BA /* Deletion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Deletion.h; sourceTree = "<group>"; };
-		6690CC03188C2AE000193E32 /* test3 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test3; sourceTree = "<group>"; };
+		6678601E18FC084A00579005 /* Disablement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Disablement.cpp; sourceTree = "<group>"; };
+		6678602018FC085400579005 /* Disablement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Disablement.h; sourceTree = "<group>"; };
+		6678602118FC085E00579005 /* Enablement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Enablement.cpp; sourceTree = "<group>"; };
+		6678602218FC085E00579005 /* Enablement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Enablement.h; sourceTree = "<group>"; };
+		6678602418FC086B00579005 /* Event.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Event.cpp; sourceTree = "<group>"; };
+		6678602518FC086B00579005 /* Event.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Event.h; sourceTree = "<group>"; };
+		6678602718FC087700579005 /* Failure.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Failure.cpp; sourceTree = "<group>"; };
+		6678602818FC087700579005 /* Failure.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Failure.h; sourceTree = "<group>"; };
+		6678602A18FC088900579005 /* Message.cs */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Message.cs; sourceTree = "<group>"; };
+		6678602B18FC089B00579005 /* Prevention.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Prevention.cpp; sourceTree = "<group>"; };
+		6678602C18FC089B00579005 /* Prevention.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Prevention.h; sourceTree = "<group>"; };
+		6678602E18FC08A900579005 /* TriggerEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TriggerEvent.cpp; sourceTree = "<group>"; };
+		6678602F18FC08A900579005 /* TriggerEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TriggerEvent.h; sourceTree = "<group>"; };
+		6678603118FC08B400579005 /* Violation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Violation.cpp; sourceTree = "<group>"; };
+		6678603218FC08B400579005 /* Violation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Violation.h; sourceTree = "<group>"; };
 		6690CC071896BCBF00193E32 /* NodeWorkItem.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NodeWorkItem.cpp; sourceTree = "<group>"; };
 		6690CC081896BCC000193E32 /* NodeWorkItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NodeWorkItem.h; sourceTree = "<group>"; };
-		6690CC0A1899321500193E32 /* test_self */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_self; sourceTree = "<group>"; };
-		6690CC0B189932AD00193E32 /* test_converter */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_converter; sourceTree = "<group>"; };
 		6690CC0C189A63CA00193E32 /* FlowEvent.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FlowEvent.cpp; sourceTree = "<group>"; };
 		6690CC0D189A63CE00193E32 /* FlowEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlowEvent.h; sourceTree = "<group>"; };
-		6690CC0F189A9C3F00193E32 /* test_instance */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_instance; sourceTree = "<group>"; };
-		6690CC10189B927300193E32 /* adaptower */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = adaptower; sourceTree = "<group>"; };
-		6690CC11189BA56200193E32 /* tribbles */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = tribbles; sourceTree = "<group>"; };
-		6690CC12189BF98600193E32 /* test */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test; sourceTree = "<group>"; };
 		6690F73317F06979001EDFC8 /* mm.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mm.h; sourceTree = "<group>"; };
 		6692E47417E092BF0017C9A7 /* Instance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Instance.cpp; sourceTree = "<group>"; };
 		6692E47517E092C00017C9A7 /* Instance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Instance.h; sourceTree = "<group>"; };
@@ -214,13 +226,6 @@
 		66E0732616E747B000C65EE9 = {
 			isa = PBXGroup;
 			children = (
-				6690CC12189BF98600193E32 /* test */,
-				6690CC11189BA56200193E32 /* tribbles */,
-				6690CC0B189932AD00193E32 /* test_converter */,
-				6690CC0A1899321500193E32 /* test_self */,
-				6690CC03188C2AE000193E32 /* test3 */,
-				6690CC10189B927300193E32 /* adaptower */,
-				6690CC0F189A9C3F00193E32 /* test_instance */,
 				66E0733116E747B000C65EE9 /* mm */,
 				66E0733016E747B000C65EE9 /* Products */,
 			);
@@ -287,6 +292,21 @@
 		66E751D61805BD81004389C6 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				6678603118FC08B400579005 /* Violation.cpp */,
+				6678603218FC08B400579005 /* Violation.h */,
+				6678602E18FC08A900579005 /* TriggerEvent.cpp */,
+				6678602F18FC08A900579005 /* TriggerEvent.h */,
+				6678602B18FC089B00579005 /* Prevention.cpp */,
+				6678602C18FC089B00579005 /* Prevention.h */,
+				6678602A18FC088900579005 /* Message.cs */,
+				6678602718FC087700579005 /* Failure.cpp */,
+				6678602818FC087700579005 /* Failure.h */,
+				6678602418FC086B00579005 /* Event.cpp */,
+				6678602518FC086B00579005 /* Event.h */,
+				6678602118FC085E00579005 /* Enablement.cpp */,
+				6678602218FC085E00579005 /* Enablement.h */,
+				6678602018FC085400579005 /* Disablement.h */,
+				6678601E18FC084A00579005 /* Disablement.cpp */,
 				6612C418180ECDD2004B715A /* Program.h */,
 				6612C417180ECDD2004B715A /* Program.cpp */,
 				66E751DF180ECB6A004389C6 /* Transformation.h */,
@@ -343,8 +363,6 @@
 				6638126017F8889100F540BA /* Deletion.cpp */,
 				66DD53F6183FCC9A00CBF698 /* Activation.h */,
 				66DD53F5183FCC9900CBF698 /* Activation.cpp */,
-				6612C41B180ED9FE004B715A /* Signal.h */,
-				6612C41A180ED9FD004B715A /* Signal.cpp */,
 				6690CC0D189A63CE00193E32 /* FlowEvent.h */,
 				6690CC0C189A63CA00193E32 /* FlowEvent.cpp */,
 				66A71229178D65DB00F71DC0 /* Edge.h */,
@@ -476,12 +494,18 @@
 				66E751E0180ECB7C004389C6 /* Transformation.cpp in Sources */,
 				66E751E3180ECBF6004389C6 /* Modification.cpp in Sources */,
 				6612C419180ECDD2004B715A /* Program.cpp in Sources */,
-				6612C41C180ED9FF004B715A /* Signal.cpp in Sources */,
 				6612C41F180F2E1A004B715A /* GateNodeBehavior.cpp in Sources */,
 				66DD53F3183EA53600CBF698 /* ConverterNodeBehavior.cpp in Sources */,
 				66DD53F7183FCC9B00CBF698 /* Activation.cpp in Sources */,
 				6690CC091896BCC200193E32 /* NodeWorkItem.cpp in Sources */,
 				6690CC0E189A63D200193E32 /* FlowEvent.cpp in Sources */,
+				6678601F18FC084A00579005 /* Disablement.cpp in Sources */,
+				6678602318FC085E00579005 /* Enablement.cpp in Sources */,
+				6678602618FC086B00579005 /* Event.cpp in Sources */,
+				6678602918FC087700579005 /* Failure.cpp in Sources */,
+				6678602D18FC089B00579005 /* Prevention.cpp in Sources */,
+				6678603018FC08A900579005 /* TriggerEvent.cpp in Sources */,
+				6678603318FC08B400579005 /* Violation.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

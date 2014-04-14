@@ -231,9 +231,9 @@ public:
                       MM::CHAR *   buffer,
                       MM::UINT32   bufferSize);
     
-	MM::VOID MM::Machine::getInstanceName(MM::UINT32 instance,
-                                          MM::CHAR * buffer,
-                                          MM::UINT32 bufferSize);
+    MM::VOID getInstanceName(MM::UINT32 instance,
+                             MM::CHAR * buffer,
+                             MM::UINT32 bufferSize);
     
     //retrieves a definition from a parent element by name
     //MM::UINT32 getDefinition(MM::UINT32   def,  //0 -> global scope type
@@ -249,7 +249,7 @@ public:
                            MM::UINT32 caller,
                            MM::CALLBACK callback);*/
 
-	MM::UINT32 addInstanceObserver(MM::UINT32 instance,  MM::UINT32 caller, MM::CALLBACK callback);
+    MM::UINT32 addInstanceObserver(MM::UINT32 instance,  MM::UINT32 caller, MM::CALLBACK callback);
 
     MM::UINT32 addDefinitionObserver(MM::UINT32 definition,  MM::UINT32 caller,  MM::CALLBACK callback);
 

@@ -217,8 +217,8 @@ namespace MM
     MM::VOID add(MM::Node * node, MM::Machine * m, MM::UINT32 amount);
     
   public:
-	MM::VOID MM::Instance::nameToString(MM::String * buf);
-	MM::VOID nameToString(MM::Element * element, MM::String * buf);
+    MM::VOID nameToString(MM::String * buf);
+    MM::VOID nameToString(MM::Element * element, MM::String * buf);
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };
