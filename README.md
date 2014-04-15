@@ -21,7 +21,9 @@ More information will be provided as it becomes available.
 * For Windows we provide the Visual Studio 2010 *LibMM* wrapper project.
 * Flex and Bison are not required, precompiled sources of the scanner and parser are included.
 
-### Reading
+### Reading about MM
+
+We provide links to selected publications about the Machinations language. Machinations was originally only intended for game design [1] and has evolved into Micro-Machinations [2,3] which is also intended for software development.
 
 **[1]**	J. Dormans. Engineering Emergence. PhD Dissertation. Universiteit van Amsterdam, 2012.
 ([Website](http://www.jorisdormans.nl/article.php?ref=engineering_emergence) / [PDF](http://www.jorisdormans.nl/pdf/dormans_engineering_emergence.pdf))
