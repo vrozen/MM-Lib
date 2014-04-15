@@ -13,6 +13,8 @@ More information will be provided as it becomes available.
 
 ### Building MM
 
+We currently have built MM on MacOS and Windows.
+
 #### MacOS
 * For MacOS we provide the XCode project *mm.xcodeproj*.
 * Flex and Bison are part of XCode, the scanner and the parser are regenerated automatically.
@@ -31,6 +33,16 @@ We provide links to selected publications about the Machinations language. Machi
 **[2]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
 
 **[3]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([to appear on this site](http://www.foundationsofdigitalgames.org))
+
+### Playing with MM
+
+AdapTower is an academic prototype which embeds the MM Lib created for the Foundations of Digital Games paper *"Adapting Game Mechanics with Micro-Machinations"*.
+Its game mechanics can be modified such that it changes the gameplay.
+The paper describes a series of mechanics mods in visual MM.
+Here we provide the [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers)
+which coincide with the paper figures.
+
+**Note:** The sources of AdapTower will be made available later.
 
 ### Using MM
 
