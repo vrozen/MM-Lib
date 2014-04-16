@@ -3,17 +3,45 @@
 ## Introduction
 
 The Micro-Machinations (MM) library enables game designers to modify economic game mechanics while a game is running.
-More information will be provided as it becomes available.
+More information will be provided here as it becomes available.
 
 | Directory | Platform  | Description |
 | --------- | --------- | ----------- |
 | [mm/mm](https://github.com/vrozen/MM-Lib/tree/master/mm/mm)       | C++ | The MM library currently requires [STL](http://en.wikipedia.org/wiki/Standard_Template_Library), [Flex](http://flex.sourceforge.net) and [Bison](http://www.gnu.org/software/bison/). |
 | [mm/LibMM](https://github.com/vrozen/MM-Lib/tree/master/mm/LibMM) | C++ .NET | Wraps the MM library for usage with Microsoft .NET |
+| [mm/doc](https://github.com/vrozen/MM-Lib/tree/master/mm/doc)     |  | Contains an early reference manual and a game prototype |
 | [mm/tests](https://github.com/vrozen/MM-Lib/tree/master/mm/tests) | MM | Contains textual Micro-Machinations examples |
+
+### Playing with MM
+
+![AdapTower](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.png)
+
+AdapTower is an academic game prototype that embeds the MM Libary which was created for the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans. The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
+
+AdapTower runs under Windows and requires the .NET and XNA frameworks.
+
+| Download      | Description |
+| ------------- | ----------- | 
+| [AdapTower.zip](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.zip) | Contains AdapTower binaries, DLLs and MM models.|
+| [Microsoft .NET Framework 4.5](http://www.microsoft.com/en-us/download/details.aspx?id=30653) | AdapTower runs on the Microsoft .NET Framework.|
+| [Microsoft XNA Framework Redistributable 4.0](http://www.microsoft.com/en-us/download/details.aspx?id=27598) | AdapTower is built using the XNA Framework.|
+
+**Note:** The sources of AdapTower will be made available here.
+
+### Reading about MM
+
+We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [2,3] which are also intended for software development.
+
+**[1]**	J. Dormans. Engineering Emergence. PhD Dissertation. Universiteit van Amsterdam, 2012.
+([Website](http://www.jorisdormans.nl/article.php?ref=engineering_emergence) / [PDF](http://www.jorisdormans.nl/pdf/dormans_engineering_emergence.pdf))
+
+**[2]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([Website](http://www.sleconf.org) / [PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
+
+**[3]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([Website](http://www.foundationsofdigitalgames.org) / [PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf))
 
 ### Building MM
 
-We currently have built MM on MacOS and Windows.
+The MM library has been built on MacOS and Windows.
 
 #### MacOS
 * For MacOS we provide the XCode project *mm.xcodeproj*.
@@ -23,33 +51,11 @@ We currently have built MM on MacOS and Windows.
 * For Windows we provide the Visual Studio 2010 *LibMM* wrapper project.
 * Flex and Bison are not required, precompiled sources of the scanner and parser are included.
 
-### Reading about MM
-
-We provide links to selected publications about the Machinations language. Machinations was originally only intended for game design [1] and has evolved into Micro-Machinations [2,3] which is also intended for software development.
-
-**[1]**	J. Dormans. Engineering Emergence. PhD Dissertation. Universiteit van Amsterdam, 2012.
-([Website](http://www.jorisdormans.nl/article.php?ref=engineering_emergence) / [PDF](http://www.jorisdormans.nl/pdf/dormans_engineering_emergence.pdf))
-
-**[2]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
-
-**[3]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([to appear on this site](http://www.foundationsofdigitalgames.org))
-
-### Playing with MM
-
-AdapTower is an academic prototype which embeds the MM Lib created for the Foundations of Digital Games paper *"Adapting Game Mechanics with Micro-Machinations"*.
-Its game mechanics can be modified such that it changes the gameplay.
-The paper describes a series of mechanics mods in visual MM.
-Here we provide the [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers)
-which coincide with the paper figures.
-
-**Note:** The sources of AdapTower will be made available later.
-
 ### Using MM
 
-MM is provided under the 3-clause BSD license.
+The MM Library is provided under the 3-clause BSD license.
 
-**Warning:**
-Please note that MM is not yet mature and using it comes at your own risk.
+**Warning:** Please note that the MM Library is an academic prototype, and as such has not undergone rigorous industrial testing. Using the library comes at your own risk.
 
 #### License
 
@@ -88,12 +94,16 @@ Please note that MM is not yet mature and using it comes at your own risk.
  ******************************************************************************/
 ```
 
+#### API Documentation
+An early reference manual generated by Doxygen is provided here ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/MM_Doxygen_Refman.pdf)).
+
+**Note:** The API is still being improved and a How-To document is not yet available.
+
 ## Changelog
 
-### April 14th 2014 (v0.10):
+### April 16th 2014 (v0.10):
 Status:
 * Made MM available under 3-clause BSD license.
-* Successfully applied MM in the AdapTower game prototype and demonstrated live mods at the Foundations of Digital Games (FDG) conference.
 
 Next steps:
 * Testing
