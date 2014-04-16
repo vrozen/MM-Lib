@@ -18,7 +18,7 @@ More information will be provided here as it becomes available.
 
 AdapTower is an academic game prototype that embeds the MM Libary which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf)). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
 
-AdapTower runs under Windows and requires the .NET and XNA frameworks.
+AdapTower runs on Windows and requires the .NET and XNA frameworks.
 
 | Download      | Description |
 | ------------- | ----------- | 
