@@ -26,6 +26,8 @@ AdapTower runs on Windows and requires the .NET and XNA frameworks.
 | [Microsoft .NET Framework 4.5](http://www.microsoft.com/en-us/download/details.aspx?id=30653) | AdapTower runs on the Microsoft .NET Framework.|
 | [Microsoft XNA Framework Redistributable 4.0](http://www.microsoft.com/en-us/download/details.aspx?id=27598) | AdapTower is built using the XNA Framework.|
 
+When running the game, a right click creates a tower and a left click creates a base. Hit ESC for viewing the MM state, and click the next button to evaluate the next modification. Click on a tower or base to view its MM values. Edit files to make your own modifications.
+
 **Kudos:** AdapTower is based on [Phantom](https://github.com/ludomotion/phantom), an Entity Component based Game Engine for XNA 4.0 developed at Dutch game business [Ludomotion](http://ludomotion.com).
 
 **Note:** We plan to make the sources of AdapTower available here.
