@@ -16,7 +16,7 @@ More information will be provided here as it becomes available.
 
 ![AdapTower](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.png)
 
-AdapTower is an academic game prototype that embeds the MM Libary which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans. The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
+AdapTower is an academic game prototype that embeds the MM Libary which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf)). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
 
 AdapTower runs under Windows and requires the .NET and XNA frameworks.
 
@@ -26,7 +26,7 @@ AdapTower runs under Windows and requires the .NET and XNA frameworks.
 | [Microsoft .NET Framework 4.5](http://www.microsoft.com/en-us/download/details.aspx?id=30653) | AdapTower runs on the Microsoft .NET Framework.|
 | [Microsoft XNA Framework Redistributable 4.0](http://www.microsoft.com/en-us/download/details.aspx?id=27598) | AdapTower is built using the XNA Framework.|
 
-**Kudos:** The game is based on [Phantom](https://github.com/ludomotion/phantom), an Entity Component based Game Engine for XNA 4.0 developed at Dutch game business [Ludomotion](http://ludomotion.com).
+**Kudos:** AdapTower is based on [Phantom](https://github.com/ludomotion/phantom), an Entity Component based Game Engine for XNA 4.0 developed at Dutch game business [Ludomotion](http://ludomotion.com).
 
 **Note:** We plan to make the sources of AdapTower available here.
 
