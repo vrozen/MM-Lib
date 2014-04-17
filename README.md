@@ -25,6 +25,7 @@ AdapTower runs on Windows and requires the .NET and XNA frameworks.
 | [AdapTower.zip](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.zip) | Contains AdapTower binaries, DLLs and MM models.|
 | [Microsoft .NET Framework 4.5](http://www.microsoft.com/en-us/download/details.aspx?id=30653) | AdapTower runs on the Microsoft .NET Framework.|
 | [Microsoft XNA Framework Redistributable 4.0](http://www.microsoft.com/en-us/download/details.aspx?id=27598) | AdapTower is built using the XNA Framework.|
+| [Microsoft DirectX 9c](http://www.microsoft.com/en-us/search/DownloadResults.aspx?q=directx) | DirectX is likely already installed. Run *dxdiag* to be sure. | 
 
 **Running AdapTower.**
 When running the game, a right click creates a tower and a left click creates a base. Hit ESC for viewing the MM state, and click the next button to evaluate the next modification. Click on a tower or base to view its MM values. Edit files for making your own modifications.
@@ -36,7 +37,7 @@ When running the game, a right click creates a tower and a left click creates a 
 ### Modeling MM
 For modeling MM knowledge about the language is required. We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [3,4], which are also intended for software development. Please note that the Flash based Machinations tool [2] relates to the prior work. Since we currently lack a graphical MM editor, writing MM on a whiteboard and then translating manually to textual MM is advised. For now, we provide a [grammar of MM](https://github.com/vrozen/MM-Lib/tree/master/mm/doc/ide), which provides syntax highlighting in [Rascal](http://www.rascal-mpl.org), a meta-programming language and language workbench based on Eclipse. A more comprehensive IDE called Micro-Machinations Analysis in Rascal (MM AiR) will become available later.
 
-Below is the Machinations logo, the textual MM in the Rascal IDE that encode the logo diagram and a table showing resource amounts progressing over time.
+Below is the Machinations logo, textual MM in a Rascal IDE that encode the logo diagram and a table showing resource amounts progressing over time.
 
 <img src="https://github.com/vrozen/MM-Lib/raw/master/mm/doc/machinations_logo.png" width="140px"/>
 
@@ -50,7 +51,7 @@ Below is the Machinations logo, the textual MM in the Rascal IDE that encode the
 |     3 |              56 |              56 |
 |     4 |             112 |             112 |
 
-Table showing logo diagram resource amounts in pool *p* and flow *f* progressing over time steps.
+Table showing the resource amounts in pool *p* and flow *f* of the logo diagram progressing over time steps.
 
 ### Building MM
 
