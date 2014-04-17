@@ -15,7 +15,7 @@ More information will be provided here as it becomes available.
 ### Playing with MM
 ![AdapTower](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.png)
 
-AdapTower is an academic game prototype that embeds the MM Libary which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf)). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
+AdapTower is an academic game prototype that embeds the MM Libary, which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf)). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
 
 **Installing AdapTower.**
 AdapTower runs on Windows and requires the .NET and XNA frameworks.
@@ -34,7 +34,7 @@ When running the game, a right click creates a tower and a left click creates a 
 **Note:** We plan to make the sources of AdapTower available here.
 
 ### Modeling MM
-For modeling MM knowledge about the language is required. We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [3,4] which are also intended for software development. Please note that the Flash based Machinations tool [2] relates to the prior work. Since we currently lack a graphical MM editor, writing MM on a whiteboard and then translating manually to textual MM is advised. For now, we provide a [grammar of MM](https://github.com/vrozen/MM-Lib/tree/master/mm/doc/ide) which provides syntax highlighting in [Rascal](http://www.rascal-mpl.org), a meta-programming language and language workbench based on Eclipse. A more comprehensive IDE called Micro-Machinations Analysis in Rascal (MM AiR) will become available later.
+For modeling MM knowledge about the language is required. We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [3,4], which are also intended for software development. Please note that the Flash based Machinations tool [2] relates to the prior work. Since we currently lack a graphical MM editor, writing MM on a whiteboard and then translating manually to textual MM is advised. For now, we provide a [grammar of MM](https://github.com/vrozen/MM-Lib/tree/master/mm/doc/ide), which provides syntax highlighting in [Rascal](http://www.rascal-mpl.org), a meta-programming language and language workbench based on Eclipse. A more comprehensive IDE called Micro-Machinations Analysis in Rascal (MM AiR) will become available later.
 
 Below is the Machinations logo, the textual MM in the Rascal IDE that encode the logo diagram and a table showing resource amounts progressing over time.
 
