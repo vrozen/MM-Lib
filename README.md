@@ -15,7 +15,7 @@ More information will be provided here as it becomes available.
 ## Playing with MM
 ![AdapTower](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.png)
 
-AdapTower is an academic game prototype that embeds the MM Libary, which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf)). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
+AdapTower is an academic game prototype in the tower defense genre that embeds the MM Libary. It was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* [\[4\]](#Rozen2014). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
 
 **Installing AdapTower.**
 AdapTower runs on Windows and requires the .NET and XNA frameworks.
@@ -35,7 +35,7 @@ When running the game, a right click creates a tower and a left click creates a 
 **Note:** We plan to make the sources of AdapTower available here.
 
 ## Modeling MM
-For modeling MM knowledge about the language is required. We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [3,4], which are also intended for software development. Please note that the Flash based Machinations tool [2] relates to the prior work. Since we currently lack a graphical MM editor, writing MM on a whiteboard and then translating manually to textual MM is advised. For now, we provide a [grammar of MM](https://github.com/vrozen/MM-Lib/tree/master/mm/doc/ide), which provides syntax highlighting in [Rascal](http://www.rascal-mpl.org), a meta-programming language and language workbench based on Eclipse. A more comprehensive IDE called Micro-Machinations Analysis in Rascal (MM AiR) will be made available here later.
+For modeling MM knowledge about the language is required. Machinations were originally only intended for game design [\[1\]](#Dormans2012a) and have evolved into Micro-Machinations [\[3](#Klint2013),[4\]](#Rozen2014), which are also intended for software development. Please note that the Flash based Machinations tool [\[2\]](#Dormans2012b) relates to the prior work. Since we currently lack a graphical MM editor, writing MM on a whiteboard and then translating manually to textual MM is advised. For now, we provide a [grammar of MM](https://github.com/vrozen/MM-Lib/tree/master/mm/doc/ide), which provides syntax highlighting in [Rascal](http://www.rascal-mpl.org), a meta-programming language and language workbench based on Eclipse. A more comprehensive IDE called Micro-Machinations Analysis in Rascal (MM AiR) will be made available here later.
 
 Below is the Machinations logo, textual MM in a Rascal IDE that encode the logo diagram and a table showing resource amounts progressing over time.
 
@@ -55,15 +55,14 @@ Table showing the resource amounts in pool *p* and flow *f* of the logo diagram 
 
 ### References
 
-**[1]**	J. Dormans. Engineering Emergence. PhD Dissertation. Universiteit van Amsterdam, 2012.
+<a name="Dormans2012a"></a>**[1]**	J. Dormans. Engineering Emergence. PhD Dissertation. Universiteit van Amsterdam, 2012.
 ([Website](http://www.jorisdormans.nl/article.php?ref=engineering_emergence) / [PDF](http://www.jorisdormans.nl/pdf/dormans_engineering_emergence.pdf))
 
-**[2]** J. Dormans. Machinations: Game Feedback Diagrams ([Website](http://www.jorisdormans.nl/machinations/))
+<a name="Dormans2012b"></a>**[2]** J. Dormans. Machinations: Game Feedback Diagrams ([Website](http://www.jorisdormans.nl/machinations/))
 
-**[3]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([Website](http://www.sleconf.org) / [PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
+<a name="Klint2013"></a>**[3]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([Website](http://www.sleconf.org) / [PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
 
-**[4]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([Website](http://www.foundationsofdigitalgames.org) / [PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf))
-
+<a name="Rozen2014"></a>**[4]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([Website](http://www.foundationsofdigitalgames.org) / [PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf))
 
 ## Building MM
 
