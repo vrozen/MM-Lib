@@ -40,7 +40,7 @@ Below is the Machinations logo, the textual MM that encode the diagram and a tab
 
 <img src="https://github.com/vrozen/MM-Lib/raw/master/mm/doc/machinations_logo.png" width="140px"/>
 
-<img src="https://github.com/vrozen/MM-Lib/raw/master/mm/doc/MM_IDE.png" width="800px"/>
+![IDE](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/MM_IDE.png)
 
 | state | pool *p* amount | flow *f* amount |
 | -----:| ---------------:| ---------------:|
@@ -49,7 +49,6 @@ Below is the Machinations logo, the textual MM that encode the diagram and a tab
 |     2 |              28 |              28 |
 |     3 |              56 |              56 |
 |     4 |             112 |             112 |
-
 Table showing logo diagram resource amounts progressing over time.
 
 ### Building MM
