@@ -16,9 +16,9 @@ More information will be provided here as it becomes available.
 
 ![AdapTower](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.png)
 
-AdapTower is an academic game prototype that embeds the MM Libary which was created for the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans. The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
+AdapTower is an academic game prototype that embeds the MM Libary which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf)). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
 
-AdapTower runs under Windows and requires the .NET and XNA frameworks.
+AdapTower runs on Windows and requires the .NET and XNA frameworks.
 
 | Download      | Description |
 | ------------- | ----------- | 
@@ -26,18 +26,24 @@ AdapTower runs under Windows and requires the .NET and XNA frameworks.
 | [Microsoft .NET Framework 4.5](http://www.microsoft.com/en-us/download/details.aspx?id=30653) | AdapTower runs on the Microsoft .NET Framework.|
 | [Microsoft XNA Framework Redistributable 4.0](http://www.microsoft.com/en-us/download/details.aspx?id=27598) | AdapTower is built using the XNA Framework.|
 
-**Note:** The sources of AdapTower will be made available here.
+When running the game, a right click creates a tower and a left click creates a base. Hit ESC for viewing the MM state, and click the next button to evaluate the next modification. Click on a tower or base to view its MM values. Edit files to make your own modifications.
+
+**Kudos:** AdapTower is based on [Phantom](https://github.com/ludomotion/phantom), an Entity Component based Game Engine for XNA 4.0 developed at Dutch game business [Ludomotion](http://ludomotion.com).
+
+**Note:** We plan to make the sources of AdapTower available here.
 
 ### Reading about MM
 
-We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [2,3] which are also intended for software development.
+We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [3,4] which are also intended for software development. Please note that the Flash based Machinations tool [2] relates to the prior work.
 
 **[1]**	J. Dormans. Engineering Emergence. PhD Dissertation. Universiteit van Amsterdam, 2012.
 ([Website](http://www.jorisdormans.nl/article.php?ref=engineering_emergence) / [PDF](http://www.jorisdormans.nl/pdf/dormans_engineering_emergence.pdf))
 
-**[2]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([Website](http://www.sleconf.org) / [PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
+**[2]** J. Dormans. Machinations: Game Feedback Diagrams ([Website](http://www.jorisdormans.nl/machinations/))
 
-**[3]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([Website](http://www.foundationsofdigitalgames.org) / [PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf))
+**[3]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([Website](http://www.sleconf.org) / [PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
+
+**[4]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([Website](http://www.foundationsofdigitalgames.org) / [PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf))
 
 ### Building MM
 
