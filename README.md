@@ -1,9 +1,7 @@
 # Micro-Machinations Library (MM-Lib)
 
 ## Introduction
-
-The Micro-Machinations (MM) library enables game designers to modify economic game mechanics while a game is running.
-More information will be provided here as it becomes available.
+Micro-Machinations (MM) is a game design language for describing economic game mechanics. The Micro-Machinations Library (MM Lib) enables game designers to modify game mechanics while a game is running. Here you can learn about [playing with MM](#play), [modeling MM](#model), [using MM Lib](#use) and [building MM Lib](#build). More information will be provided here as it becomes available.
 
 | Directory | Platform  | Description |
 | --------- | --------- | ----------- |
@@ -12,10 +10,10 @@ More information will be provided here as it becomes available.
 | [mm/doc](https://github.com/vrozen/MM-Lib/tree/master/mm/doc)     |  | Contains an early reference manual and a game prototype |
 | [mm/tests](https://github.com/vrozen/MM-Lib/tree/master/mm/tests) | MM | Contains textual Micro-Machinations examples |
 
-### Playing with MM
+## <a name="play"></a>Playing with MM
 ![AdapTower](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/AdapTower.png)
 
-AdapTower is an academic game prototype that embeds the MM Libary, which was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* by Riemer van Rozen and Joris Dormans ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf)). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
+AdapTower is an academic game prototype in the tower defense genre that embeds the MM Libary. It was created with the Foundations of Digital Games (FDG) paper *"Adapting Game Mechanics with Micro-Machinations"* [\[4\]](#Rozen2014). The paper describes a series of modifications to the game's mechanics using visual MM. Here we provide the game and the equivalent [textual MM](https://github.com/vrozen/MM-Lib/tree/master/mm/tests/towers) it interprets. The game and its mods were demoed live at FDG. You can download the game and try it out for yourself.
 
 **Installing AdapTower.**
 AdapTower runs on Windows and requires the .NET and XNA frameworks.
@@ -34,10 +32,10 @@ When running the game, a right click creates a tower and a left click creates a 
 
 **Note:** We plan to make the sources of AdapTower available here.
 
-### Modeling MM
-For modeling MM knowledge about the language is required. We provide links to selected publications about the Machinations language. Machinations were originally only intended for game design [1] and have evolved into Micro-Machinations [3,4], which are also intended for software development. Please note that the Flash based Machinations tool [2] relates to the prior work. Since we currently lack a graphical MM editor, writing MM on a whiteboard and then translating manually to textual MM is advised. For now, we provide a [grammar of MM](https://github.com/vrozen/MM-Lib/tree/master/mm/doc/ide), which provides syntax highlighting in [Rascal](http://www.rascal-mpl.org), a meta-programming language and language workbench based on Eclipse. A more comprehensive IDE called Micro-Machinations Analysis in Rascal (MM AiR) will become available later.
+## <a name="model"></a>Modeling MM
+For modeling MM knowledge about the language is required. Machinations were originally only intended for game design [\[1\]](#Dormans2012) and have evolved into Micro-Machinations [\[3](#Klint2013),[4\]](#Rozen2014), which are also intended for software development. Please note that the Flash based Machinations tool [\[2\]](#Dormans2013) relates to the prior work. Since we currently lack a graphical MM editor, writing MM on a whiteboard and then translating manually to textual MM is advised. For now, we provide a [grammar of MM](https://github.com/vrozen/MM-Lib/tree/master/mm/doc/ide), which provides syntax highlighting in [Rascal](http://www.rascal-mpl.org), a meta-programming language and language workbench based on Eclipse [\[5\]](#Rascal). A more comprehensive IDE called Micro-Machinations Analysis in Rascal (MM AiR) will be made available here later.
 
-Below is the Machinations logo, textual MM in a Rascal IDE that encode the logo diagram and a table showing resource amounts progressing over time.
+Below is the Machinations logo, textual MM in a Rascal IDE that encode the logo diagram and a table showing the resource amounts in pool *p* and flow *f* over time steps.
 
 <img src="https://github.com/vrozen/MM-Lib/raw/master/mm/doc/machinations_logo.png" width="140px"/>
 
@@ -49,29 +47,14 @@ Below is the Machinations logo, textual MM in a Rascal IDE that encode the logo 
 |     1 |              14 |              14 |
 |     2 |              28 |              28 |
 |     3 |              56 |              56 |
-|     4 |             112 |             112 |
 
-Table showing the resource amounts in pool *p* and flow *f* of the logo diagram progressing over time steps.
-
-### Building MM
-
-The MM library has been built on MacOS and Windows.
-
-**MacOS**
-* For MacOS we provide the XCode project *mm.xcodeproj*.
-* Flex and Bison are part of XCode, the scanner and the parser are regenerated automatically.
-
-**Windows**
-* For Windows we provide the Visual Studio 2010 *LibMM* wrapper project.
-* Flex and Bison are not required, precompiled sources of the scanner and parser are included.
-
-### Using MM
+## <a name="use"></a>Using MM Lib
 
 The MM Library is provided under the 3-clause BSD license.
 
 **Warning:** Please note that the MM Library is an academic prototype, and as such has not undergone rigorous industrial testing. Using the library comes at your own risk.
 
-#### License
+### License
 
 ```
 /******************************************************************************
@@ -108,10 +91,37 @@ The MM Library is provided under the 3-clause BSD license.
  ******************************************************************************/
 ```
 
-#### API Documentation
-An early reference manual generated by Doxygen is provided here ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/MM_Doxygen_Refman.pdf)).
+### API Documentation
+An early reference manual generated by Doxygen is provided here [\[6\]](#Rozen2014b).
 
 **Note:** The API is still being improved and a How-To document is not yet available.
+
+## <a name="build"></a>Building MM Lib
+
+Users can build the MM Library on MacOS and Windows.
+
+**MacOS**
+* For MacOS we provide the XCode project *mm.xcodeproj*.
+* Flex and Bison are part of XCode, the scanner and the parser are regenerated automatically.
+
+**Windows**
+* For Windows we provide the Visual Studio 2010 *LibMM* wrapper project.
+* Flex and Bison are not required, precompiled sources of the scanner and parser are included.
+
+## References
+
+<a name="Dormans2012"></a>**[1]**	J. Dormans. Engineering Emergence. PhD Dissertation. Universiteit van Amsterdam, 2012.
+([Website](http://www.jorisdormans.nl/article.php?ref=engineering_emergence) / [PDF](http://www.jorisdormans.nl/pdf/dormans_engineering_emergence.pdf))
+
+<a name="Dormans2013"></a>**[2]** J. Dormans. Machinations: Game Feedback Diagrams. [http://www.jorisdormans.nl/machinations](http://www.jorisdormans.nl/machinations), 2013.
+
+<a name="Klint2013"></a>**[3]**	P. Klint and R. van Rozen. Micro-Machinations -A DSL for Game Economies. In M. Erwig, R. Paige, and E. Wyk, editors, Software Language Engineering, volume 8225 of Lecture Notes in Computer Science, pages 36–55. Springer International Publishing, 2013. ([Website](http://www.sleconf.org) / [PDF](http://193.23.143.188/~equaprojec/media/Uploaded_documents/SLE_2013_paper.pdf))
+
+<a name="Rozen2014"></a>**[4]**	R. van Rozen and J. Dormans. Adapting Game Mechanics with Micro-Machinations. In Foundations of Digital Games, 2014. ([Website](http://www.foundationsofdigitalgames.org) / [PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/fdg2014_paper_34.pdf))
+
+<a name="Rascal"></a>**[5]** CWI SWAT group. Rascal MPL. [http://www.rascal-mpl.org](http://www.rascal-mpl.org), 2014.
+
+<a name="Rozen2014b"></a>**[6]** R. van Rozen. Micro-Machinations Manual. GitHub, 2014. ([PDF](https://github.com/vrozen/MM-Lib/raw/master/mm/doc/MM_Doxygen_Refman.pdf))
 
 ## Changelog
 
