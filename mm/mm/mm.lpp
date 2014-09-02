@@ -58,6 +58,10 @@
   int yyidpos = 0;           //TODO: attribute of parser
   bool inID = false;         //TODO: attribute of parser
 
+  //added for missing line-break at end of file
+  bool _t = false;
+  #define yyterminate() return (_t = !_t) ? END : YY_NULL
+
   #define YY_USER_ACTION \
   if(inID == false) \
   { \

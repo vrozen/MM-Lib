@@ -38,6 +38,7 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
+     END = 0,
      ID = 258,
      PRIVATE = 259,
      IN = 260,
@@ -135,7 +136,7 @@ typedef union YYSTYPE
 
 
 /* Line 1685 of yacc.c  */
-#line 139 "mm.tab.hpp"
+#line 140 "mm.tab.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

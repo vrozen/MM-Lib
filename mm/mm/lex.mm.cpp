@@ -1149,6 +1149,10 @@ char *yytext;
   int yyidpos = 0;           //TODO: attribute of parser
   bool inID = false;         //TODO: attribute of parser
 
+  //added for missing line-break at end of file
+  bool _t = false;
+  #define yyterminate() return (_t = !_t) ? END : YY_NULL
+
   #define YY_USER_ACTION \
   if(inID == false) \
   { \
@@ -1160,7 +1164,7 @@ char *yytext;
   yycolumn += yyleng;
 
   //%option yylineno
-#line 77 "mm.lpp"
+#line 81 "mm.lpp"
   /* * * * * * * * * *
    * * * STATES  * * *
    * * * * * * * * * */
@@ -1169,7 +1173,7 @@ char *yytext;
 
 
 
-#line 1173 "lex.mm.cpp"
+#line 1177 "lex.mm.cpp"
 
 #define INITIAL 0
 #define ERROR 1
@@ -1361,7 +1365,7 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 87 "mm.lpp"
+#line 91 "mm.lpp"
 
 
 
@@ -1370,7 +1374,7 @@ YY_DECL
  * * * * * * * * */
 
 
-#line 1374 "lex.mm.cpp"
+#line 1378 "lex.mm.cpp"
 
 	if ( !(yy_init) )
 		{
@@ -1455,192 +1459,192 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 95 "mm.lpp"
+#line 99 "mm.lpp"
 { inID = false; /*ignore*/                }
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 96 "mm.lpp"
+#line 100 "mm.lpp"
 { inID = false; yylineno++; yycolumn = 1; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 98 "mm.lpp"
+#line 102 "mm.lpp"
 { inID = false; BEGIN(IN_S_COMMENT);      }
 	YY_BREAK
 case 4:
 /* rule 4 can match eol */
 YY_RULE_SETUP
-#line 99 "mm.lpp"
+#line 103 "mm.lpp"
 { inID = false; yylineno++; yycolumn = 1; BEGIN(INITIAL); }
 	YY_BREAK
 case 5:
 /* rule 5 can match eol */
 YY_RULE_SETUP
-#line 100 "mm.lpp"
+#line 104 "mm.lpp"
 { inID = false;                           }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 101 "mm.lpp"
+#line 105 "mm.lpp"
 { inID = false;                           }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 104 "mm.lpp"
+#line 108 "mm.lpp"
 { inID = false; BEGIN(IN_M_COMMENT);      }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 105 "mm.lpp"
+#line 109 "mm.lpp"
 { inID = false; BEGIN(INITIAL);           }
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 106 "mm.lpp"
+#line 110 "mm.lpp"
 { inID = false; yylineno++; yycolumn = 1; }
 	YY_BREAK
 case 10:
 /* rule 10 can match eol */
 YY_RULE_SETUP
-#line 107 "mm.lpp"
+#line 111 "mm.lpp"
 { inID = false;                           }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 108 "mm.lpp"
+#line 112 "mm.lpp"
 { inID = false;                           }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 110 "mm.lpp"
+#line 114 "mm.lpp"
 { inID = false; return AND;        }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 111 "mm.lpp"
+#line 115 "mm.lpp"
 { inID = false; return OR;         }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 112 "mm.lpp"
+#line 116 "mm.lpp"
 { inID = false; return RANGE;      }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 113 "mm.lpp"
+#line 117 "mm.lpp"
 { inID = false; return DOT_GT;     }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 114 "mm.lpp"
+#line 118 "mm.lpp"
 { inID = false; return SUB_GT;     }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 115 "mm.lpp"
+#line 119 "mm.lpp"
 { inID = false; return EQ;         }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 116 "mm.lpp"
+#line 120 "mm.lpp"
 { inID = false; return NE;         }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 117 "mm.lpp"
+#line 121 "mm.lpp"
 { inID = false; return LE;         }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 118 "mm.lpp"
+#line 122 "mm.lpp"
 { inID = false; return GE;         }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 119 "mm.lpp"
+#line 123 "mm.lpp"
 { inID = false; return LT;         }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 120 "mm.lpp"
+#line 124 "mm.lpp"
 { inID = false; return GT;         }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 121 "mm.lpp"
+#line 125 "mm.lpp"
 { inID = false; return DOT;        }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 122 "mm.lpp"
+#line 126 "mm.lpp"
 { inID = false; return SUB;        }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 123 "mm.lpp"
+#line 127 "mm.lpp"
 { inID = false; return UNM;        }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 124 "mm.lpp"
+#line 128 "mm.lpp"
 { inID = false; return ADD;        }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 125 "mm.lpp"
+#line 129 "mm.lpp"
 { inID = false; return MUL;        }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 126 "mm.lpp"
+#line 130 "mm.lpp"
 { inID = false; return DIV;        }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 127 "mm.lpp"
+#line 131 "mm.lpp"
 { inID = false; return ALIAS;      }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 128 "mm.lpp"
+#line 132 "mm.lpp"
 { inID = false; return LPAREN;     }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 129 "mm.lpp"
+#line 133 "mm.lpp"
 { inID = false; return RPAREN;     }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 130 "mm.lpp"
+#line 134 "mm.lpp"
 { inID = false; return NOT;        }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 131 "mm.lpp"
+#line 135 "mm.lpp"
 { inID = false; return PER;        }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 132 "mm.lpp"
+#line 136 "mm.lpp"
 { inID = false; return LCURLY;     }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 133 "mm.lpp"
+#line 137 "mm.lpp"
 { inID = false; return RCURLY;     }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 134 "mm.lpp"
+#line 138 "mm.lpp"
 { inID = false; return COLON;      }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 135 "mm.lpp"
+#line 139 "mm.lpp"
 { inID = false; return PERCENT;    }
 	YY_BREAK
 case 38:
@@ -1649,7 +1653,7 @@ case 38:
 (yy_c_buf_p) = yy_cp = yy_bp + 6;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 136 "mm.lpp"
+#line 140 "mm.lpp"
 { inID = false; return SOURCE;     }
 	YY_BREAK
 case 39:
@@ -1658,7 +1662,7 @@ case 39:
 (yy_c_buf_p) = yy_cp = yy_bp + 5;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 137 "mm.lpp"
+#line 141 "mm.lpp"
 { inID = false; return DRAIN;      }
 	YY_BREAK
 case 40:
@@ -1667,7 +1671,7 @@ case 40:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 138 "mm.lpp"
+#line 142 "mm.lpp"
 { inID = false; return POOL;       }
 	YY_BREAK
 case 41:
@@ -1676,7 +1680,7 @@ case 41:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 139 "mm.lpp"
+#line 143 "mm.lpp"
 { inID = false; return GATE;       }
 	YY_BREAK
 case 42:
@@ -1685,7 +1689,7 @@ case 42:
 (yy_c_buf_p) = yy_cp = yy_bp + 9;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 140 "mm.lpp"
+#line 144 "mm.lpp"
 { inID = false; return CONVERTER;  }
 	YY_BREAK
 case 43:
@@ -1694,7 +1698,7 @@ case 43:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 141 "mm.lpp"
+#line 145 "mm.lpp"
 { inID = false; return PUSH;       }
 	YY_BREAK
 case 44:
@@ -1703,7 +1707,7 @@ case 44:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 142 "mm.lpp"
+#line 146 "mm.lpp"
 { inID = false; return PULL;       }
 	YY_BREAK
 case 45:
@@ -1712,7 +1716,7 @@ case 45:
 (yy_c_buf_p) = yy_cp = yy_bp + 7;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 143 "mm.lpp"
+#line 147 "mm.lpp"
 { inID = false; return PASSIVE;    }
 	YY_BREAK
 case 46:
@@ -1721,7 +1725,7 @@ case 46:
 (yy_c_buf_p) = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 144 "mm.lpp"
+#line 148 "mm.lpp"
 { inID = false; return ALL;        }
 	YY_BREAK
 case 47:
@@ -1730,7 +1734,7 @@ case 47:
 (yy_c_buf_p) = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 145 "mm.lpp"
+#line 149 "mm.lpp"
 { inID = false; return ANY;        }
 	YY_BREAK
 case 48:
@@ -1739,7 +1743,7 @@ case 48:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 146 "mm.lpp"
+#line 150 "mm.lpp"
 { inID = false; return AUTO;       }
 	YY_BREAK
 case 49:
@@ -1748,7 +1752,7 @@ case 49:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 147 "mm.lpp"
+#line 151 "mm.lpp"
 { inID = false; return USER;       }
 	YY_BREAK
 case 50:
@@ -1757,7 +1761,7 @@ case 50:
 (yy_c_buf_p) = yy_cp = yy_bp + 5;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 148 "mm.lpp"
+#line 152 "mm.lpp"
 { inID = false; return START;      }
 	YY_BREAK
 case 51:
@@ -1766,7 +1770,7 @@ case 51:
 (yy_c_buf_p) = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 149 "mm.lpp"
+#line 153 "mm.lpp"
 { inID = false; return MAX;        }
 	YY_BREAK
 case 52:
@@ -1775,7 +1779,7 @@ case 52:
 (yy_c_buf_p) = yy_cp = yy_bp + 2;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 150 "mm.lpp"
+#line 154 "mm.lpp"
 { inID = false; return AT;         }
 	YY_BREAK
 case 53:
@@ -1784,7 +1788,7 @@ case 53:
 (yy_c_buf_p) = yy_cp = yy_bp + 2;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 151 "mm.lpp"
+#line 155 "mm.lpp"
 { inID = false; return IN;         }
 	YY_BREAK
 case 54:
@@ -1793,7 +1797,7 @@ case 54:
 (yy_c_buf_p) = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 152 "mm.lpp"
+#line 156 "mm.lpp"
 { inID = false; return OUT;        }
 	YY_BREAK
 case 55:
@@ -1802,7 +1806,7 @@ case 55:
 (yy_c_buf_p) = yy_cp = yy_bp + 5;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 153 "mm.lpp"
+#line 157 "mm.lpp"
 { inID = false; return INOUT;      }
 	YY_BREAK
 case 56:
@@ -1811,7 +1815,7 @@ case 56:
 (yy_c_buf_p) = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 154 "mm.lpp"
+#line 158 "mm.lpp"
 { inID = false; return REF;        }
 	YY_BREAK
 case 57:
@@ -1820,7 +1824,7 @@ case 57:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 155 "mm.lpp"
+#line 159 "mm.lpp"
 { inID = false; return DICE;       }
 	YY_BREAK
 case 58:
@@ -1829,7 +1833,7 @@ case 58:
 (yy_c_buf_p) = yy_cp = yy_bp + 6;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 156 "mm.lpp"
+#line 160 "mm.lpp"
 { inID = false; return ACTIVE;     }
 	YY_BREAK
 case 59:
@@ -1838,7 +1842,7 @@ case 59:
 (yy_c_buf_p) = yy_cp = yy_bp + 5;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 157 "mm.lpp"
+#line 161 "mm.lpp"
 { inID = false; return FALSE;      }
 	YY_BREAK
 case 60:
@@ -1847,7 +1851,7 @@ case 60:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 158 "mm.lpp"
+#line 162 "mm.lpp"
 { inID = false; return TRUE;       }
 	YY_BREAK
 case 61:
@@ -1856,7 +1860,7 @@ case 61:
 (yy_c_buf_p) = yy_cp = yy_bp + 7;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 159 "mm.lpp"
+#line 163 "mm.lpp"
 { inID = false; return PRIVATE;    }
 	YY_BREAK
 case 62:
@@ -1865,7 +1869,7 @@ case 62:
 (yy_c_buf_p) = yy_cp = yy_bp + 2;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 160 "mm.lpp"
+#line 164 "mm.lpp"
 { inID = false; return OF;         }
 	YY_BREAK
 case 63:
@@ -1874,7 +1878,7 @@ case 63:
 (yy_c_buf_p) = yy_cp = yy_bp + 3;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 161 "mm.lpp"
+#line 165 "mm.lpp"
 { inID = false; return ADDITION;   }
 	YY_BREAK
 case 64:
@@ -1883,7 +1887,7 @@ case 64:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 162 "mm.lpp"
+#line 166 "mm.lpp"
 { inID = false; return FROM;       }
 	YY_BREAK
 case 65:
@@ -1892,7 +1896,7 @@ case 65:
 (yy_c_buf_p) = yy_cp = yy_bp + 2;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 163 "mm.lpp"
+#line 167 "mm.lpp"
 { inID = false; return TO;         }
 	YY_BREAK
 case 66:
@@ -1901,7 +1905,7 @@ case 66:
 (yy_c_buf_p) = yy_cp = yy_bp + 6;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 164 "mm.lpp"
+#line 168 "mm.lpp"
 { inID = false; return ASSERT;     }
 	YY_BREAK
 case 67:
@@ -1910,7 +1914,7 @@ case 67:
 (yy_c_buf_p) = yy_cp = yy_bp + 6;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 165 "mm.lpp"
+#line 169 "mm.lpp"
 { inID = false; return DELETE;     }
 	YY_BREAK
 case 68:
@@ -1919,7 +1923,7 @@ case 68:
 (yy_c_buf_p) = yy_cp = yy_bp + 7;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 166 "mm.lpp"
+#line 170 "mm.lpp"
 { inID = false; return VIOLATE;    }
 	YY_BREAK
 case 69:
@@ -1928,7 +1932,7 @@ case 69:
 (yy_c_buf_p) = yy_cp = yy_bp + 8;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 167 "mm.lpp"
+#line 171 "mm.lpp"
 { inID = false; return ACTIVATE;   }
 	YY_BREAK
 case 70:
@@ -1937,7 +1941,7 @@ case 70:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 168 "mm.lpp"
+#line 172 "mm.lpp"
 { inID = false; return FAIL;       }
 	YY_BREAK
 case 71:
@@ -1946,7 +1950,7 @@ case 71:
 (yy_c_buf_p) = yy_cp = yy_bp + 7;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 169 "mm.lpp"
+#line 173 "mm.lpp"
 { inID = false; return PREVENT;    }
 	YY_BREAK
 case 72:
@@ -1955,7 +1959,7 @@ case 72:
 (yy_c_buf_p) = yy_cp = yy_bp + 7;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 170 "mm.lpp"
+#line 174 "mm.lpp"
 { inID = false; return DISABLE;    }
 	YY_BREAK
 case 73:
@@ -1964,7 +1968,7 @@ case 73:
 (yy_c_buf_p) = yy_cp = yy_bp + 6;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 171 "mm.lpp"
+#line 175 "mm.lpp"
 { inID = false; return DISABLE;    }
 	YY_BREAK
 case 74:
@@ -1973,7 +1977,7 @@ case 74:
 (yy_c_buf_p) = yy_cp = yy_bp + 7;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 172 "mm.lpp"
+#line 176 "mm.lpp"
 { inID = false; return TRIGGER;    }
 	YY_BREAK
 case 75:
@@ -1982,7 +1986,7 @@ case 75:
 (yy_c_buf_p) = yy_cp = yy_bp + 6;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 173 "mm.lpp"
+#line 177 "mm.lpp"
 { inID = false; return MODIFY;     }
 	YY_BREAK
 case 76:
@@ -1991,13 +1995,13 @@ case 76:
 (yy_c_buf_p) = yy_cp = yy_bp + 4;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 174 "mm.lpp"
+#line 178 "mm.lpp"
 { inID = false; return STEP;       }
 	YY_BREAK
 case 77:
 /* rule 77 can match eol */
 YY_RULE_SETUP
-#line 176 "mm.lpp"
+#line 180 "mm.lpp"
 {
   inID = false;
   yylval.str = strdup(yytext);         //copy string in yyval.str
@@ -2011,7 +2015,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 187 "mm.lpp"
+#line 191 "mm.lpp"
 {
   inID = false;
   yylval.val = atol(yytext) * 100;     //store integer
@@ -2025,7 +2029,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 198 "mm.lpp"
+#line 202 "mm.lpp"
 {
   inID = false;
   yylval.val = atol(yytext) * 100;     //store integer
@@ -2038,7 +2042,7 @@ case 80:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 204 "mm.lpp"
+#line 208 "mm.lpp"
 {
   inID = false;
 
@@ -2060,7 +2064,7 @@ case 81:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 219 "mm.lpp"
+#line 223 "mm.lpp"
 {
   inID = true;
 
@@ -2074,7 +2078,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 82:
 YY_RULE_SETUP
-#line 230 "mm.lpp"
+#line 234 "mm.lpp"
 {
   inID = true;
 
@@ -2092,7 +2096,7 @@ case 83:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 241 "mm.lpp"
+#line 245 "mm.lpp"
 {
   inID = true;
   //printf("%s\n", yytext);
@@ -2106,7 +2110,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 84:
 YY_RULE_SETUP
-#line 252 "mm.lpp"
+#line 256 "mm.lpp"
 {
   inID = true;
   //printf("%s\n", yytext);
@@ -2124,7 +2128,7 @@ case 85:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 263 "mm.lpp"
+#line 267 "mm.lpp"
 {
   inID = true;
   //printf("%s\n", yytext);
@@ -2138,7 +2142,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 86:
 YY_RULE_SETUP
-#line 274 "mm.lpp"
+#line 278 "mm.lpp"
 {
   ///[^.]
   inID = false;
@@ -2161,10 +2165,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 87:
 YY_RULE_SETUP
-#line 294 "mm.lpp"
+#line 298 "mm.lpp"
 ECHO;
 	YY_BREAK
-#line 2168 "lex.mm.cpp"
+#line 2172 "lex.mm.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(ERROR):
 case YY_STATE_EOF(IDPART):
@@ -3167,7 +3171,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 294 "mm.lpp"
+#line 298 "mm.lpp"
 
 
 

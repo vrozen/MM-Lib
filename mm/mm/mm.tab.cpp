@@ -110,6 +110,7 @@
    /* Put the tokens into the symbol table, so that GDB and other debuggers
       know about them.  */
    enum yytokentype {
+     END = 0,
      ID = 258,
      PRIVATE = 259,
      IN = 260,
@@ -207,7 +208,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 211 "mm.tab.cpp"
+#line 212 "mm.tab.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -232,7 +233,7 @@ typedef struct YYLTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 236 "mm.tab.cpp"
+#line 237 "mm.tab.cpp"
 
 #ifdef short
 # undef short
@@ -556,15 +557,15 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,   110,   110,   114,   115,   119,   120,   123,   124,   128,
-     129,   130,   131,   133,   135,   136,   137,   141,   144,   145,
-     146,   148,   149,   150,   151,   152,   153,   154,   158,   159,
-     160,   161,   162,   166,   167,   168,   169,   170,   174,   175,
-     176,   180,   181,   182,   186,   187,   191,   192,   196,   197,
-     201,   202,   206,   207,   211,   212,   216,   217,   218,   219,
-     220,   221,   222,   223,   224,   225,   226,   227,   228,   229,
-     230,   231,   232,   233,   234,   235,   236,   237,   238,   239,
-     240,   241,   242,   246
+       0,   111,   111,   115,   116,   120,   121,   124,   125,   129,
+     130,   131,   132,   134,   136,   137,   138,   142,   145,   146,
+     147,   149,   150,   151,   152,   153,   154,   155,   159,   160,
+     161,   162,   163,   167,   168,   169,   170,   171,   175,   176,
+     177,   181,   182,   183,   187,   188,   192,   193,   197,   198,
+     202,   203,   207,   208,   212,   213,   217,   218,   219,   220,
+     221,   222,   223,   224,   225,   226,   227,   228,   229,   230,
+     231,   232,   233,   234,   235,   236,   237,   238,   239,   240,
+     241,   242,   243,   247
 };
 #endif
 
@@ -573,18 +574,18 @@ static const yytype_uint8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "ID", "PRIVATE", "IN", "OUT", "INOUT",
-  "PASSIVE", "AUTO", "USER", "START", "PUSH", "PULL", "ALL", "ANY", "FROM",
-  "TO", "OF", "EQ", "NE", "LT", "GT", "LE", "GE", "AND", "OR", "NOT",
-  "TRUE", "FALSE", "ACTIVE", "ASSERT", "DELETE", "ACTIVATE", "DISABLE",
-  "ENABLE", "PREVENT", "TRIGGER", "FAIL", "VIOLATE", "MODIFY", "STEP",
-  "AT", "MAX", "DICE", "ALIAS", "DOT", "PER", "REF", "DOT_GT", "SUB_GT",
-  "LCURLY", "RCURLY", "COLON", "RANGE", "PERCENT", "SOURCE", "DRAIN",
-  "POOL", "GATE", "CONVERTER", "SUB", "ADD", "MUL", "DIV", "FPVAL",
-  "STRING", "ADDITION", "UNM", "RPAREN", "LPAREN", "$accept", "program",
-  "transformationList", "transformation", "elementList", "element", "io",
-  "when", "act", "how", "at", "max", "add", "of", "from", "to", "exp",
-  "name", 0
+  "\"end of file\"", "error", "$undefined", "ID", "PRIVATE", "IN", "OUT",
+  "INOUT", "PASSIVE", "AUTO", "USER", "START", "PUSH", "PULL", "ALL",
+  "ANY", "FROM", "TO", "OF", "EQ", "NE", "LT", "GT", "LE", "GE", "AND",
+  "OR", "NOT", "TRUE", "FALSE", "ACTIVE", "ASSERT", "DELETE", "ACTIVATE",
+  "DISABLE", "ENABLE", "PREVENT", "TRIGGER", "FAIL", "VIOLATE", "MODIFY",
+  "STEP", "AT", "MAX", "DICE", "ALIAS", "DOT", "PER", "REF", "DOT_GT",
+  "SUB_GT", "LCURLY", "RCURLY", "COLON", "RANGE", "PERCENT", "SOURCE",
+  "DRAIN", "POOL", "GATE", "CONVERTER", "SUB", "ADD", "MUL", "DIV",
+  "FPVAL", "STRING", "ADDITION", "UNM", "RPAREN", "LPAREN", "$accept",
+  "program", "transformationList", "transformation", "elementList",
+  "element", "io", "when", "act", "how", "at", "max", "add", "of", "from",
+  "to", "exp", "name", 0
 };
 #endif
 
@@ -1642,105 +1643,105 @@ yyreduce:
         case 2:
 
 /* Line 1464 of yacc.c  */
-#line 110 "mm.ypp"
+#line 111 "mm.ypp"
     { program = mm->createProgram((yyvsp[(1) - (1)].tList)); (yyval.program) = program;  ;}
     break;
 
   case 3:
 
 /* Line 1464 of yacc.c  */
-#line 114 "mm.ypp"
+#line 115 "mm.ypp"
     { (yyvsp[(1) - (2)].tList)->add((yyvsp[(2) - (2)].t)); (yyval.tList) = (yyvsp[(1) - (2)].tList);                 ;}
     break;
 
   case 4:
 
 /* Line 1464 of yacc.c  */
-#line 115 "mm.ypp"
+#line 116 "mm.ypp"
     { (yyval.tList) = mm->createTransformationVector(); ;}
     break;
 
   case 5:
 
 /* Line 1464 of yacc.c  */
-#line 119 "mm.ypp"
+#line 120 "mm.ypp"
     { (yyval.t) = mm->createModification((yyvsp[(1) - (2)].eList)); ;}
     break;
 
   case 6:
 
 /* Line 1464 of yacc.c  */
-#line 120 "mm.ypp"
+#line 121 "mm.ypp"
     { (yyval.t) = mm->createTransition((yyvsp[(1) - (2)].eList));   ;}
     break;
 
   case 7:
 
 /* Line 1464 of yacc.c  */
-#line 123 "mm.ypp"
+#line 124 "mm.ypp"
     { (yyvsp[(1) - (2)].eList)->add((yyvsp[(2) - (2)].element)); (yyval.eList) = (yyvsp[(1) - (2)].eList);           ;}
     break;
 
   case 8:
 
 /* Line 1464 of yacc.c  */
-#line 124 "mm.ypp"
+#line 125 "mm.ypp"
     { (yyval.eList) = mm->createElementVector();  ;}
     break;
 
   case 9:
 
 /* Line 1464 of yacc.c  */
-#line 128 "mm.ypp"
+#line 129 "mm.ypp"
     { (yyval.element) = mm->createSourceNode((yyvsp[(1) - (7)].io),(yyvsp[(2) - (7)].when),(yyvsp[(6) - (7)].name)); ;}
     break;
 
   case 10:
 
 /* Line 1464 of yacc.c  */
-#line 129 "mm.ypp"
+#line 130 "mm.ypp"
     { (yyval.element) = mm->createDrainNode((yyvsp[(1) - (7)].io),(yyvsp[(2) - (7)].when),(yyvsp[(4) - (7)].how),(yyvsp[(6) - (7)].name));  ;}
     break;
 
   case 11:
 
 /* Line 1464 of yacc.c  */
-#line 130 "mm.ypp"
+#line 131 "mm.ypp"
     { (yyval.element) = mm->createGateNode((yyvsp[(1) - (7)].io),(yyvsp[(2) - (7)].when),(yyvsp[(3) - (7)].act),(yyvsp[(4) - (7)].how),(yyvsp[(6) - (7)].name)); ;}
     break;
 
   case 12:
 
 /* Line 1464 of yacc.c  */
-#line 132 "mm.ypp"
+#line 133 "mm.ypp"
     { (yyval.element) = mm->createPoolNode((yyvsp[(1) - (10)].io),(yyvsp[(2) - (10)].when),(yyvsp[(3) - (10)].act),(yyvsp[(4) - (10)].how),(yyvsp[(6) - (10)].name),(yyvsp[(7) - (10)].name),(yyvsp[(8) - (10)].val),(yyvsp[(9) - (10)].val),(yyvsp[(10) - (10)].exp)); ;}
     break;
 
   case 13:
 
 /* Line 1464 of yacc.c  */
-#line 134 "mm.ypp"
+#line 135 "mm.ypp"
     { (yyval.element) = mm->createConverterNode((yyvsp[(1) - (8)].io),(yyvsp[(2) - (8)].when),(yyvsp[(6) - (8)].name),(yyvsp[(7) - (8)].name),(yyvsp[(8) - (8)].name)); ;}
     break;
 
   case 14:
 
 /* Line 1464 of yacc.c  */
-#line 135 "mm.ypp"
+#line 136 "mm.ypp"
     { (yyval.element) = mm->createRefNode((yyvsp[(1) - (3)].io),(yyvsp[(3) - (3)].name)); ;}
     break;
 
   case 15:
 
 /* Line 1464 of yacc.c  */
-#line 136 "mm.ypp"
+#line 137 "mm.ypp"
     { (yyval.element) = mm->createDeclaration((yyvsp[(1) - (2)].name),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 16:
 
 /* Line 1464 of yacc.c  */
-#line 137 "mm.ypp"
+#line 138 "mm.ypp"
     { MM::Name * preName = (yyvsp[(1) - (5)].name)->getPreName();
                                    (yyvsp[(1) - (5)].name)->setPreName(MM_NULL); //prevent double free
                                    (yyval.element) = mm->createStateEdge(preName,(yyvsp[(1) - (5)].name),(yyvsp[(3) - (5)].exp),(yyvsp[(5) - (5)].name)); ;}
@@ -1749,7 +1750,7 @@ yyreduce:
   case 17:
 
 /* Line 1464 of yacc.c  */
-#line 141 "mm.ypp"
+#line 142 "mm.ypp"
     { MM::Name * preName = (yyvsp[(1) - (5)].name)->getPreName();
                                    (yyvsp[(1) - (5)].name)->setPreName(MM_NULL); //prevent double free
                                    (yyval.element) = mm->createFlowEdge(preName,(yyvsp[(1) - (5)].name),(yyvsp[(3) - (5)].exp),(yyvsp[(5) - (5)].name));  ;}
@@ -1758,469 +1759,469 @@ yyreduce:
   case 18:
 
 /* Line 1464 of yacc.c  */
-#line 144 "mm.ypp"
+#line 145 "mm.ypp"
     { (yyval.element) = mm->createDefinition((yyvsp[(1) - (4)].name),(yyvsp[(3) - (4)].eList)); ;}
     break;
 
   case 19:
 
 /* Line 1464 of yacc.c  */
-#line 145 "mm.ypp"
+#line 146 "mm.ypp"
     { (yyval.element) = mm->createAssertion(&(yylsp[(1) - (5)]),(yyvsp[(2) - (5)].name),(yyvsp[(4) - (5)].exp),(yyvsp[(5) - (5)].str)); free(yylval.str); ;}
     break;
 
   case 20:
 
 /* Line 1464 of yacc.c  */
-#line 146 "mm.ypp"
+#line 147 "mm.ypp"
     { (yyval.element) = mm->createDeletion(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 21:
 
 /* Line 1464 of yacc.c  */
-#line 148 "mm.ypp"
+#line 149 "mm.ypp"
     { (yyval.element) = mm->createActivation(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 22:
 
 /* Line 1464 of yacc.c  */
-#line 149 "mm.ypp"
+#line 150 "mm.ypp"
     { (yyval.element) = mm->createViolation(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 23:
 
 /* Line 1464 of yacc.c  */
-#line 150 "mm.ypp"
+#line 151 "mm.ypp"
     { (yyval.element) = mm->createFailure(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 24:
 
 /* Line 1464 of yacc.c  */
-#line 151 "mm.ypp"
+#line 152 "mm.ypp"
     { (yyval.element) = mm->createPrevention(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 25:
 
 /* Line 1464 of yacc.c  */
-#line 152 "mm.ypp"
+#line 153 "mm.ypp"
     { (yyval.element) = mm->createDisablement(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 26:
 
 /* Line 1464 of yacc.c  */
-#line 153 "mm.ypp"
+#line 154 "mm.ypp"
     { (yyval.element) = mm->createEnablement(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 27:
 
 /* Line 1464 of yacc.c  */
-#line 154 "mm.ypp"
+#line 155 "mm.ypp"
     { (yyval.element) = mm->createTriggerEvent(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name)); ;}
     break;
 
   case 28:
 
 /* Line 1464 of yacc.c  */
-#line 158 "mm.ypp"
+#line 159 "mm.ypp"
     { (yyval.io) = MM::NodeBehavior::IO_PRIVATE;   ;}
     break;
 
   case 29:
 
 /* Line 1464 of yacc.c  */
-#line 159 "mm.ypp"
+#line 160 "mm.ypp"
     { (yyval.io) = MM::NodeBehavior::IO_IN;        ;}
     break;
 
   case 30:
 
 /* Line 1464 of yacc.c  */
-#line 160 "mm.ypp"
+#line 161 "mm.ypp"
     { (yyval.io) = MM::NodeBehavior::IO_OUT;       ;}
     break;
 
   case 31:
 
 /* Line 1464 of yacc.c  */
-#line 161 "mm.ypp"
+#line 162 "mm.ypp"
     { (yyval.io) = MM::NodeBehavior::IO_INOUT;     ;}
     break;
 
   case 32:
 
 /* Line 1464 of yacc.c  */
-#line 162 "mm.ypp"
+#line 163 "mm.ypp"
     { (yyval.io) = MM::NodeBehavior::IO_PRIVATE;   ;}
     break;
 
   case 33:
 
 /* Line 1464 of yacc.c  */
-#line 166 "mm.ypp"
+#line 167 "mm.ypp"
     { (yyval.when) = MM::NodeBehavior::WHEN_PASSIVE; ;}
     break;
 
   case 34:
 
 /* Line 1464 of yacc.c  */
-#line 167 "mm.ypp"
+#line 168 "mm.ypp"
     { (yyval.when) = MM::NodeBehavior::WHEN_AUTO;    ;}
     break;
 
   case 35:
 
 /* Line 1464 of yacc.c  */
-#line 168 "mm.ypp"
+#line 169 "mm.ypp"
     { (yyval.when) = MM::NodeBehavior::WHEN_USER;    ;}
     break;
 
   case 36:
 
 /* Line 1464 of yacc.c  */
-#line 169 "mm.ypp"
+#line 170 "mm.ypp"
     { (yyval.when) = MM::NodeBehavior::WHEN_START;   ;}
     break;
 
   case 37:
 
 /* Line 1464 of yacc.c  */
-#line 170 "mm.ypp"
+#line 171 "mm.ypp"
     { (yyval.when) = MM::NodeBehavior::WHEN_PASSIVE; ;}
     break;
 
   case 38:
 
 /* Line 1464 of yacc.c  */
-#line 174 "mm.ypp"
+#line 175 "mm.ypp"
     { (yyval.act) = MM::NodeBehavior::ACT_PULL; ;}
     break;
 
   case 39:
 
 /* Line 1464 of yacc.c  */
-#line 175 "mm.ypp"
+#line 176 "mm.ypp"
     { (yyval.act) = MM::NodeBehavior::ACT_PUSH; ;}
     break;
 
   case 40:
 
 /* Line 1464 of yacc.c  */
-#line 176 "mm.ypp"
+#line 177 "mm.ypp"
     { (yyval.act) = MM::NodeBehavior::ACT_PULL; ;}
     break;
 
   case 41:
 
 /* Line 1464 of yacc.c  */
-#line 180 "mm.ypp"
+#line 181 "mm.ypp"
     { (yyval.how) = MM::NodeBehavior::HOW_ANY; ;}
     break;
 
   case 42:
 
 /* Line 1464 of yacc.c  */
-#line 181 "mm.ypp"
+#line 182 "mm.ypp"
     { (yyval.how) = MM::NodeBehavior::HOW_ALL; ;}
     break;
 
   case 43:
 
 /* Line 1464 of yacc.c  */
-#line 182 "mm.ypp"
+#line 183 "mm.ypp"
     { (yyval.how) = MM::NodeBehavior::HOW_ANY; ;}
     break;
 
   case 44:
 
 /* Line 1464 of yacc.c  */
-#line 186 "mm.ypp"
+#line 187 "mm.ypp"
     { (yyval.val) = (MM::UINT32) yylval.val / 100; ;}
     break;
 
   case 45:
 
 /* Line 1464 of yacc.c  */
-#line 187 "mm.ypp"
+#line 188 "mm.ypp"
     { (yyval.val) = 0;                             ;}
     break;
 
   case 46:
 
 /* Line 1464 of yacc.c  */
-#line 191 "mm.ypp"
+#line 192 "mm.ypp"
     { (yyval.val) = (MM::UINT32) yylval.val / 100; ;}
     break;
 
   case 47:
 
 /* Line 1464 of yacc.c  */
-#line 192 "mm.ypp"
+#line 193 "mm.ypp"
     { (yyval.val) = 0;                             ;}
     break;
 
   case 48:
 
 /* Line 1464 of yacc.c  */
-#line 196 "mm.ypp"
+#line 197 "mm.ypp"
     { (yyval.exp) = mm->createOverrideExp(&(yylsp[(2) - (4)]),(yyvsp[(3) - (4)].exp),&(yylsp[(4) - (4)]));;}
     break;
 
   case 49:
 
 /* Line 1464 of yacc.c  */
-#line 197 "mm.ypp"
+#line 198 "mm.ypp"
     { (yyval.exp) = MM_NULL; ;}
     break;
 
   case 50:
 
 /* Line 1464 of yacc.c  */
-#line 201 "mm.ypp"
+#line 202 "mm.ypp"
     { (yyval.name) = (yyvsp[(2) - (2)].name);      ;}
     break;
 
   case 51:
 
 /* Line 1464 of yacc.c  */
-#line 202 "mm.ypp"
+#line 203 "mm.ypp"
     { (yyval.name) = MM_NULL; ;}
     break;
 
   case 52:
 
 /* Line 1464 of yacc.c  */
-#line 206 "mm.ypp"
+#line 207 "mm.ypp"
     { (yyval.name) = (yyvsp[(2) - (2)].name);      ;}
     break;
 
   case 53:
 
 /* Line 1464 of yacc.c  */
-#line 207 "mm.ypp"
+#line 208 "mm.ypp"
     { (yyval.name) = MM_NULL; ;}
     break;
 
   case 54:
 
 /* Line 1464 of yacc.c  */
-#line 211 "mm.ypp"
+#line 212 "mm.ypp"
     { (yyval.name) = (yyvsp[(2) - (2)].name);      ;}
     break;
 
   case 55:
 
 /* Line 1464 of yacc.c  */
-#line 212 "mm.ypp"
+#line 213 "mm.ypp"
     { (yyval.name) = MM_NULL; ;}
     break;
 
   case 56:
 
 /* Line 1464 of yacc.c  */
-#line 216 "mm.ypp"
+#line 217 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_AND,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp)); ;}
     break;
 
   case 57:
 
 /* Line 1464 of yacc.c  */
-#line 217 "mm.ypp"
+#line 218 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_OR,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp));  ;}
     break;
 
   case 58:
 
 /* Line 1464 of yacc.c  */
-#line 218 "mm.ypp"
+#line 219 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_GT,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp));  ;}
     break;
 
   case 59:
 
 /* Line 1464 of yacc.c  */
-#line 219 "mm.ypp"
+#line 220 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_GE,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp));  ;}
     break;
 
   case 60:
 
 /* Line 1464 of yacc.c  */
-#line 220 "mm.ypp"
+#line 221 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_LT,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp));  ;}
     break;
 
   case 61:
 
 /* Line 1464 of yacc.c  */
-#line 221 "mm.ypp"
+#line 222 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_LE,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp));  ;}
     break;
 
   case 62:
 
 /* Line 1464 of yacc.c  */
-#line 222 "mm.ypp"
+#line 223 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_NEQ,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp)); ;}
     break;
 
   case 63:
 
 /* Line 1464 of yacc.c  */
-#line 223 "mm.ypp"
+#line 224 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_EQ,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp));  ;}
     break;
 
   case 64:
 
 /* Line 1464 of yacc.c  */
-#line 224 "mm.ypp"
+#line 225 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_ADD,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp)); ;}
     break;
 
   case 65:
 
 /* Line 1464 of yacc.c  */
-#line 225 "mm.ypp"
+#line 226 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_SUB,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp)); ;}
     break;
 
   case 66:
 
 /* Line 1464 of yacc.c  */
-#line 226 "mm.ypp"
+#line 227 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_MUL,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp)); ;}
     break;
 
   case 67:
 
 /* Line 1464 of yacc.c  */
-#line 227 "mm.ypp"
+#line 228 "mm.ypp"
     { (yyval.exp) = mm->createBinExp((yyvsp[(1) - (3)].exp),MM::Operator::OP_DIV,&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].exp)); ;}
     break;
 
   case 68:
 
 /* Line 1464 of yacc.c  */
-#line 228 "mm.ypp"
+#line 229 "mm.ypp"
     { (yyval.exp) = mm->createUnExp(MM::Operator::OP_UNM,&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].exp));     ;}
     break;
 
   case 69:
 
 /* Line 1464 of yacc.c  */
-#line 229 "mm.ypp"
+#line 230 "mm.ypp"
     { (yyval.exp) = mm->createUnExp(MM::Operator::OP_NOT,&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].exp));     ;}
     break;
 
   case 70:
 
 /* Line 1464 of yacc.c  */
-#line 230 "mm.ypp"
+#line 231 "mm.ypp"
     { (yyval.exp) = mm->createUnExp(MM::Operator::OP_PERCENT,&(yylsp[(1) - (2)]),(yyvsp[(1) - (2)].exp)); ;}
     break;
 
   case 71:
 
 /* Line 1464 of yacc.c  */
-#line 231 "mm.ypp"
+#line 232 "mm.ypp"
     { (yyval.exp) = MM_NULL;                             /* FIXME */  ;}
     break;
 
   case 72:
 
 /* Line 1464 of yacc.c  */
-#line 232 "mm.ypp"
+#line 233 "mm.ypp"
     { (yyval.exp) = mm->createOverrideExp(&(yylsp[(1) - (3)]),(yyvsp[(2) - (3)].exp),&(yylsp[(3) - (3)]));                ;}
     break;
 
   case 73:
 
 /* Line 1464 of yacc.c  */
-#line 233 "mm.ypp"
+#line 234 "mm.ypp"
     { (yyval.exp) = mm->createRangeValExp((yyvsp[(1) - (3)].val),&(yylsp[(1) - (3)]),&(yylsp[(2) - (3)]),(yyvsp[(3) - (3)].val),&(yylsp[(3) - (3)]));         ;}
     break;
 
   case 74:
 
 /* Line 1464 of yacc.c  */
-#line 234 "mm.ypp"
+#line 235 "mm.ypp"
     { (yyval.exp) = mm->createRangeValExp(1,(yyvsp[(1) - (2)].val));                      ;}
     break;
 
   case 75:
 
 /* Line 1464 of yacc.c  */
-#line 235 "mm.ypp"
+#line 236 "mm.ypp"
     { (yyval.exp) = mm->createNumberValExp((yyvsp[(1) - (1)].val),&(yylsp[(1) - (1)]));                   ;}
     break;
 
   case 76:
 
 /* Line 1464 of yacc.c  */
-#line 236 "mm.ypp"
+#line 237 "mm.ypp"
     { (yyval.exp) = mm->createBooleanValExp(MM_TRUE,&(yylsp[(1) - (1)]));             ;}
     break;
 
   case 77:
 
 /* Line 1464 of yacc.c  */
-#line 237 "mm.ypp"
+#line 238 "mm.ypp"
     { (yyval.exp) = mm->createBooleanValExp(MM_FALSE,&(yylsp[(1) - (1)]));            ;}
     break;
 
   case 78:
 
 /* Line 1464 of yacc.c  */
-#line 238 "mm.ypp"
+#line 239 "mm.ypp"
     { (yyval.exp) = mm->createAllExp(&(yylsp[(1) - (1)]));                            ;}
     break;
 
   case 79:
 
 /* Line 1464 of yacc.c  */
-#line 239 "mm.ypp"
+#line 240 "mm.ypp"
     { (yyval.exp) = mm->createActiveExp(&(yylsp[(1) - (2)]),(yyvsp[(2) - (2)].name));                      ;}
     break;
 
   case 80:
 
 /* Line 1464 of yacc.c  */
-#line 240 "mm.ypp"
+#line 241 "mm.ypp"
     { (yyval.exp) = mm->createAliasExp(&(yylsp[(1) - (1)]));                          ;}
     break;
 
   case 81:
 
 /* Line 1464 of yacc.c  */
-#line 241 "mm.ypp"
+#line 242 "mm.ypp"
     { (yyval.exp) = mm->createVarExp((yyvsp[(1) - (1)].name));                             ;}
     break;
 
   case 82:
 
 /* Line 1464 of yacc.c  */
-#line 242 "mm.ypp"
+#line 243 "mm.ypp"
     { (yyval.exp) = mm->createOneExp(&(yylsp[(0) - (0)]));                            ;}
     break;
 
   case 83:
 
 /* Line 1464 of yacc.c  */
-#line 246 "mm.ypp"
+#line 247 "mm.ypp"
     { (yyval.name) = mm->createName(yylval.str, &(yylsp[(1) - (1)])); free(yylval.str); ;}
     break;
 
 
 
 /* Line 1464 of yacc.c  */
-#line 2224 "mm.tab.cpp"
+#line 2225 "mm.tab.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2439,7 +2440,7 @@ yyreturn:
 
 
 /* Line 1684 of yacc.c  */
-#line 249 "mm.ypp"
+#line 250 "mm.ypp"
 
 MM::Machine * mm;      //TODO: create an instance and use its parser
 MM::Program * program; //TODO: parser attribute

@@ -79,6 +79,7 @@
 %token <val> FPVAL
 %token <str> STRING
 %token <str> ADDITION
+%token END 0 "end of file"
 
 %left AND OR
 %left LT GT LE GE NE EQ
