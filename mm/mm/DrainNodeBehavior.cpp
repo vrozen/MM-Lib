@@ -164,10 +164,10 @@ MM::VOID MM::DrainNodeBehavior::stepPushAny(MM::Node * node,
 }
 
 MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
-                                           MM::Instance * tgtInstance,
-                                           MM::Vector<MM::NodeWorkItem *> * work,
-                                           MM::Machine * m,
-                                           MM::Transition * tr)
+                                            MM::Instance * tgtInstance,
+                                            MM::Vector<MM::NodeWorkItem *> * work,
+                                            MM::Machine * m,
+                                            MM::Transition * tr)
 {
   MM::Evaluator * evaluator = m->getEvaluator();
   
@@ -201,12 +201,12 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
       
       if(valExp->getTypeId() == MM::T_NumberValExp)
       {
-        val = ((NumberValExp *) valExp)->getIntValue();
+        val = ((NumberValExp *) valExp)->getValue();
         tgtInstance->setEvaluatedExp(exp, val);
       }
       else if(valExp->getTypeId() == MM::T_RangeValExp)
       {
-        val = ((RangeValExp *) valExp)->getIntValue();
+        val = ((RangeValExp *) valExp)->getIntValue() * 100;
         tgtInstance->setEvaluatedExp(exp, val);
       }
       else
@@ -216,8 +216,10 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
       
       valExp->recycle(m);
     }
+
+    val = (val / 100) * 100;
     
-    if(val > 0 &&
+    if(val >= 100 &&
        srcInstance->hasResources(srcNode, val) == MM_TRUE)
     {
       MM::FlowEvent * event =

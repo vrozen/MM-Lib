@@ -114,24 +114,24 @@ const MM::CHAR * MM::Instance::DISABLED_STR = "disabled";
  * @param type Definition that defines the instance
  * @return new Instance object
  */
-MM::Instance::Instance(MM::Instance * parent,
+MM::Instance::Instance(MM::Instance   * parent,
                        MM::Definition * def,
-                       MM::Element * decl): MM::Recyclable(),
-                                            MM::Observer(),
-                                            MM::Observable()
+                       MM::Element    * decl): MM::Recyclable(),
+                                               MM::Observer(),
+                                               MM::Observable()
 {
   //TODO, make Machine create this
-  values = new MM::Map<MM::Node*, MM::UINT32>();
-  oldValues = new MM::Map<MM::Node*, MM::UINT32>();
-  newValues = new MM::Map<MM::Node*, MM::UINT32>();
+  values = new MM::Map<MM::Node*, MM::INT32>();
+  oldValues = new MM::Map<MM::Node*, MM::INT32>();
+  newValues = new MM::Map<MM::Node*, MM::INT32>();
   //instances = new MM::Map<MM::Declaration*, MM::Instance *>();
   instances = new MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>();
   disabledNodes = new MM::Vector<MM::Node *>();
   activeNodes = new MM::Vector<MM::Node *>();
   newActiveNodes = new MM::Vector<MM::Node *>();
   gates = new MM::Map<MM::Node *, MM::Vector<Edge*>::Iterator *>();
-  curGateValues = new MM::Map<MM::Node *, MM::UINT32>();
-  gateValues = new MM::Map<MM::Node*, MM::UINT32>();
+  curGateValues = new MM::Map<MM::Node *, MM::INT32>();
+  gateValues = new MM::Map<MM::Node*, MM::INT32>();
   evaluatedExps = new MM::Map<MM::Exp *, MM::INT32>();  
   this->parent = parent;
   this->def = def;
@@ -324,7 +324,7 @@ MM::VOID MM::Instance::sweep(MM::Machine * m)
     while(del.isEmpty() == MM_FALSE)
     {
       MM::Instance * instance = del.pop();
-	  MM::Definition * unitDef = instance->getDefinition();
+	    MM::Definition * unitDef = instance->getDefinition();
       vector->remove(instance);
 
       //notify observers an instance has been deleted
@@ -424,22 +424,22 @@ MM::BOOLEAN MM::Instance::isDisabled(MM::Node * node)
   return disabledNodes->contains(node);
 }
 
-MM::UINT32 MM::Instance::getValue(MM::Node * node)
+MM::INT32 MM::Instance::getValue(MM::Node * node)
 {
   return values->get(node);
 }
 
-MM::UINT32 MM::Instance::getNewValue(MM::Node * node)
+MM::INT32 MM::Instance::getNewValue(MM::Node * node)
 {
   return newValues->get(node);
 }
 
-MM::UINT32 MM::Instance::getOldValue(MM::Node * node)
+MM::INT32 MM::Instance::getOldValue(MM::Node * node)
 {
   return oldValues->get(node);
 }
 
-MM::UINT32 MM::Instance::getGateValue(MM::Node * node)
+MM::INT32 MM::Instance::getGateValue(MM::Node * node)
 {
   return gateValues->get(node);
 }
@@ -449,22 +449,22 @@ MM::VOID MM::Instance::deleteValue(MM::Node * node)
   values->remove(node);
 }
 
-MM::VOID MM::Instance::setValue(MM::Node * node, MM::UINT32 value)
+MM::VOID MM::Instance::setValue(MM::Node * node, MM::INT32 value)
 {
   values->put(node, value);
 }
 
-MM::VOID MM::Instance::setNewValue(MM::Node * node, MM::UINT32 value)
+MM::VOID MM::Instance::setNewValue(MM::Node * node, MM::INT32 value)
 {
   newValues->put(node, value);
 }
 
-MM::VOID MM::Instance::setOldValue(MM::Node * node, MM::UINT32 value)
+MM::VOID MM::Instance::setOldValue(MM::Node * node, MM::INT32 value)
 {
   oldValues->put(node, value);
 }
 
-MM::VOID MM::Instance::setGateValue(MM::Node * node, MM::UINT32 value)
+MM::VOID MM::Instance::setGateValue(MM::Node * node, MM::INT32 value)
 {
   gateValues->put(node, value);
 }
@@ -796,23 +796,23 @@ MM::VOID MM::Instance::createInstances(MM::Element    * element,
     is->add(instance);
     
     //notify observers a new instance has been created
-	notifyObservers(this, /*FIX: unitDef was m*/ unitDef, MM::MSG_NEW_INST, instance);
+	  notifyObservers(this, /*FIX: unitDef was m*/ unitDef, MM::MSG_NEW_INST, instance);
 
     eIter.reset();
     while(eIter.hasNext() == MM_TRUE)
     {
       MM::Element * element = eIter.getNext();
 
-	  if(element->instanceof(MM::T_Node) == MM_TRUE)
-	  {
-	     MM::Node * node = (MM::Node *) element;
-		 MM::NodeBehavior * behavior = node->getBehavior();
+	    if(element->instanceof(MM::T_Node) == MM_TRUE)
+	    {
+	      MM::Node * node = (MM::Node *) element;
+		    MM::NodeBehavior * behavior = node->getBehavior();
 
-		 if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
-		 {
-	       MM::INT32 amount = node->getAmount(instance, m);
-           instance->notifyObservers(instance, (MM::VOID*)amount, MM::MSG_HAS_VALUE, node);			 
-		 }
+		    if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+		    {
+	        MM::INT32 amount = node->getAmount(instance, m);
+          instance->notifyObservers(instance, (MM::VOID*)amount, MM::MSG_HAS_VALUE, node);			 
+		    }
       }
     }
   }
@@ -911,7 +911,7 @@ MM::VOID MM::Instance::finalize()
   disabledNodes->clear();
 
   //commit new values
-  MM::Map<MM::Node *, MM::UINT32> * tempValues = values;
+  MM::Map<MM::Node *, MM::INT32> * tempValues = values;
   values = newValues;
   newValues = tempValues;
 
@@ -1028,7 +1028,7 @@ MM::VOID MM::Instance::toString(MM::String * buf)
 //serializes an instance to a JSON object
 MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
 {
-  MM::Map<MM::Node *, MM::UINT32>::Iterator valueIter =
+  MM::Map<MM::Node *, MM::INT32>::Iterator valueIter =
     values->getIterator();
   MM::Map<MM::Element *, MM::Vector<Instance *> *>::Iterator vectIter =
     instances->getIterator();

@@ -568,12 +568,12 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
       MM::ValExp * valExp = evaluator->eval(i, edge);
       if(valExp->getTypeId() == MM::T_NumberValExp)
       {
-        val = ((NumberValExp *) valExp)->getIntValue();
+        val = ((NumberValExp *) valExp)->getValue();
         i->setEvaluatedExp(exp, val);
       }
       else if(valExp->getTypeId() == MM::T_RangeValExp)
       {
-        val = ((RangeValExp *) valExp)->getIntValue();
+        val = ((RangeValExp *) valExp)->getIntValue() * 100;
         i->setEvaluatedExp(exp, val);
       }
       else
@@ -583,6 +583,9 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
       
       valExp->recycle(m);
     }
+
+    //remove fp remainder
+    val = (val / 100) * 100;
     
     MM::Node * srcNode = MM_NULL;
     MM::Node * tgtNode = MM_NULL;
@@ -604,9 +607,9 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
       tgtInstance = workItem->getInstance();
     }
     
-    if(val > 0 &&
-       srcInstance->hasResources(srcNode, 1) == MM_TRUE &&
-       tgtInstance->hasCapacity(tgtNode, 1) == MM_TRUE)
+    if(val >= 100 &&
+       srcInstance->hasResources(srcNode, 100) == MM_TRUE &&
+       tgtInstance->hasCapacity(tgtNode, 100) == MM_TRUE)
     {
       if(srcInstance->hasResources(srcNode, val) == MM_TRUE)
       {
@@ -621,7 +624,7 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
 
           tr->addElement(event);
 
-		  success = MM_TRUE;
+		      success = MM_TRUE;
         }
         else
         {
@@ -636,7 +639,7 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
           tr->addElement(event);
 
           success = MM_TRUE;
-		}
+		    }
       }
       else
       {
@@ -652,7 +655,7 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
           
           tr->addElement(event);
 
-		  success = MM_TRUE;
+		      success = MM_TRUE;
         }
         else
         {
@@ -693,14 +696,14 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
     MM::Node * tgtNode = trigger->getTarget();
     
     //notify observers a trigger happened
-	//FIXME: if trigger has no name --> error
+    //FIXME: if trigger has no name --> error
     //i->notifyObservers(i, MM_NULL, MM::MSG_TRIGGER, trigger); 
     
     if(tgtNode->isDisabled(i, e, m) == MM_FALSE)
     {
       i->setNextActive(tgtNode);
     }
-	//FIXME: notify when a trigger did not fire
+	  //FIXME: notify when a trigger did not fire
   }
   
   //FIXME: activate trigger targets of aliases
@@ -718,10 +721,10 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
 //retrieve resources from a full state in between steps
 //get the value of a node instance 
 MM::INT32 MM::NodeBehavior::getAmount(MM::Instance * i,
-                            MM::Machine * m,
-                            MM::Node * n)
+                                      MM::Machine * m,
+                                      MM::Node * n)
 {
-  return getResources(i,n); //only overriden for pool nodes
+  return getResources(i, n); //only overriden for pool nodes
 }
 
 MM::VOID MM::NodeBehavior::toString(MM::String * buf, MM::Name * name)

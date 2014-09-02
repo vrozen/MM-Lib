@@ -112,6 +112,8 @@ namespace MM
                              MM::Transition * tr);
     
     MM::VOID notifyFlow(MM::Transition * tr);
+    
+    MM::VOID notifyValues(MM::Instance * instance);
         
     //------------------------------------------------------------
     //Visitor

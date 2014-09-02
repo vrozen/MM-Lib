@@ -202,7 +202,11 @@ MM::VOID MM::Evaluator::step(MM::Transition * tr)
 
   //notify flow
   notifyFlow(tr);
-  
+
+  //notify all pool instance values
+  //TOO SLOW::
+  //notifyValues(i);
+
   //clean up instances
   //notify deletions
   i->sweep(m);
@@ -403,8 +407,8 @@ MM::VOID MM::Evaluator::setEnabledNodes(MM::Instance * i, MM::Transition * tr)
       
       if(behavior->Recyclable::instanceof(MM::T_RefNodeBehavior) == MM_FALSE)
       {
-		if(i->isActive(node) == MM_TRUE)
-		{
+        if(i->isActive(node) == MM_TRUE)
+        {
           if(node->isDisabled(i, this, m) == MM_TRUE)
           {
             MM::Disablement * event = m->createDisablement(i, node);
@@ -416,7 +420,7 @@ MM::VOID MM::Evaluator::setEnabledNodes(MM::Instance * i, MM::Transition * tr)
             MM::Enablement * event = m->createEnablement(i, node);
             tr->addElement(event);
           }
-		}
+		    }
       }
     }
   }
@@ -436,27 +440,24 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
     {
       MM::FlowEvent * event = (MM::FlowEvent *) element;
       
-	  MM::Instance * instance = event->getInstance();
+	    MM::Instance * instance = event->getInstance();
       MM::Instance * srcInstance = event->getSourceInstance();
       MM::Instance * tgtInstance = event->getTargetInstance();
       MM::Node * srcNode = event->getSourceNode();
       MM::Node * tgtNode = event->getTargetNode();
       MM::UINT32 amount = event->getAmount();
       
-	  srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
+	    srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
       tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
 
-	  //hack to notify the instance in which the flow occurred
-	  if(srcInstance != tgtInstance)
-	  {
-		  tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
-	  }
-	  if(srcInstance != tgtInstance)
-	  {
-		  srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
-	  }
+	    //hack to notify the instance in which the flow occurred
+	    if(srcInstance != tgtInstance)
+	    {
+		    tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
+		    srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
+	    }
 
-	  //let observers of instances know the current value of a pool.
+	    //let observers of instances know the current value of a pool.
       if(srcNode->getBehavior()->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
       {
         MM::INT32 srcAmount = srcNode->getAmount(srcInstance, m);
@@ -468,16 +469,62 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
         tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)tgtAmount, MM::MSG_HAS_VALUE, tgtNode);
       }
     }
-	else if(element->instanceof(MM::T_Event) == MM_TRUE)
-	{
+	  else if(element->instanceof(MM::T_Event) == MM_TRUE)
+	  {
       MM::Event * event = (MM::Event *) element;
       MM::Element * e = event->getElement();
       MM::Instance * i = event->getInstance();
       MM::MESSAGE msg = event->getMessage();
       i->notifyObservers(i, (MM::VOID*)0, msg, e); 
-	}
+	  }
   }
 }
+
+
+//notifies all values of an instance
+//this brute force notification was devised to avoid having to check dependencies
+//its main drawback is that all values are notified every step
+MM::VOID MM::Evaluator::notifyValues(MM::Instance * instance)
+{
+  MM::Definition * definition = instance->getDefinition();
+  MM::Vector<MM::Element *> * elements = definition->getElements();
+  if(elements != MM_NULL)
+  {
+    MM::Vector<MM::Element *>::Iterator elementIter = elements->getIterator();
+    while(elementIter.hasNext() == MM_TRUE)
+    {
+      MM::Element * element = elementIter.getNext();
+
+      if(element->instanceof(MM::T_Node) == MM_TRUE)
+      {
+        MM::Node * node = (MM::Node *) element;
+        MM::NodeBehavior * behavior = node->getBehavior();
+        if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+        {
+          MM::INT32 amount = node->getAmount(instance, m);
+          instance->notifyObservers(instance, (MM::VOID*)amount, MM::MSG_HAS_VALUE, node);
+        }
+      }
+    }
+  }
+
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instances = instance->getInstances();
+  MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator vectIter = instances->getIterator();
+
+  while(vectIter.hasNext() == MM_TRUE)
+  {
+    MM::Element * element = MM_NULL;
+    MM::Vector<MM::Instance *> * is = vectIter.getNext(&element);
+    MM::Vector<MM::Instance *>::Iterator instanceIter = is->getIterator();
+ 
+    while(instanceIter.hasNext() == MM_TRUE)
+    {
+      MM::Instance * childInstance = instanceIter.getNext();
+      this->notifyValues(childInstance);
+    }
+  }
+}
+
 
 /*
 //recursively propagate all gates until no gate contains temp values
@@ -681,7 +728,7 @@ MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
     val = curInstance->getValue(curNode);
   }
   
-  return m->createNumberValExp(val * 100);
+  return m->createNumberValExp(val);
 }
 
 MM::ValExp * MM::Evaluator::eval(MM::AllExp * exp,

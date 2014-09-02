@@ -53,7 +53,7 @@ namespace MM
                    public MM::Observable  //observed by the outside world
   {
   private:
-	static const MM::CHAR * ACTIVE_STR;   /**> active keyword */
+    static const MM::CHAR * ACTIVE_STR;   /**> active keyword */
     static const MM::CHAR * DISABLED_STR; /**> disabled keyword */
     static const MM::UINT32 INDENT;       /**> serialization indentation amount*/
 
@@ -67,18 +67,18 @@ namespace MM
     /* /note : these maps can become arrays
                when nodes and declarations in types have unique sequential labels
                pool values: pool --> value */
-    MM::Map<MM::Node *, MM::UINT32> * values;
+    MM::Map<MM::Node *, MM::INT32> * values;
     MM::Map<MM::Node *, MM::Vector<Edge *>::Iterator *> * gates;
-    MM::Map<MM::Node *, MM::UINT32> * curGateValues;
+    MM::Map<MM::Node *, MM::INT32> * curGateValues;
     
     //temporary values
-    MM::Map<MM::Node *, MM::UINT32> * oldValues;  /**> old temporary pool values*/
-    MM::Map<MM::Node *, MM::UINT32> * newValues;  /**> new temporary pool values*/
-    MM::Map<MM::Node *, MM::UINT32> * gateValues; /**> new temporary gate values*/
+    MM::Map<MM::Node *, MM::INT32> * oldValues;  /**> old temporary pool values*/
+    MM::Map<MM::Node *, MM::INT32> * newValues;  /**> new temporary pool values*/
+    MM::Map<MM::Node *, MM::INT32> * gateValues; /**> new temporary gate values*/
     
     //temporary try values for all
-    MM::Map<MM::Node *, MM::UINT32> * oldTryValues; /**> old try values for 'all' */
-    MM::Map<MM::Node *, MM::UINT32> * newTryValues; /**> new try values for 'all' */
+    MM::Map<MM::Node *, MM::INT32> * oldTryValues; /**> old try values for 'all' */
+    MM::Map<MM::Node *, MM::INT32> * newTryValues; /**> new try values for 'all' */
     
     //declaration instances: declaration --> instance
     //MM::Map<MM::Declaration *, MM::Instance *> * instances; /**> sub-instances*/
@@ -128,18 +128,18 @@ namespace MM
     MM::INT32 getIndex(MM::Element * element, MM::Instance * i);
     
     //pool and gate values:
-    MM::UINT32 getValue(MM::Node * node);
-    MM::UINT32 getNewValue(MM::Node * node);
-    MM::UINT32 getOldValue(MM::Node * node);
-    MM::UINT32 getGateValue(MM::Node * node);
+    MM::INT32 getValue(MM::Node * node);
+    MM::INT32 getNewValue(MM::Node * node);
+    MM::INT32 getOldValue(MM::Node * node);
+    MM::INT32 getGateValue(MM::Node * node);
     
     //only used during definition modficiations
     MM::VOID deleteValue(MM::Node * node);
-    MM::VOID setValue(MM::Node * node, MM::UINT32 value);
+    MM::VOID setValue(MM::Node * node, MM::INT32 value);
     
-    MM::VOID setNewValue(MM::Node * node, MM::UINT32 value);
-    MM::VOID setOldValue(MM::Node * node, MM::UINT32 value);
-    MM::VOID setGateValue(MM::Node * node, MM::UINT32 value);
+    MM::VOID setNewValue(MM::Node * node, MM::INT32 value);
+    MM::VOID setOldValue(MM::Node * node, MM::INT32 value);
+    MM::VOID setGateValue(MM::Node * node, MM::INT32 value);
     
     //Edge expression evaluation
     MM::BOOLEAN isEvaluatedExp(MM::Exp * exp);
@@ -149,7 +149,7 @@ namespace MM
     //Activity:
     MM::BOOLEAN isActive(MM::Node * node);
     MM::VOID setActive(MM::Node * node);
-	MM::VOID setNextActive(MM::Node * node);
+	  MM::VOID setNextActive(MM::Node * node);
 
     //Disabed:
     MM::BOOLEAN isDisabled(MM::Node * node);

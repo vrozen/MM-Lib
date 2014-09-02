@@ -215,12 +215,12 @@ MM::VOID MM::SourceNodeBehavior::stepPushAll(MM::Node * srcNode,
       
       if(valExp->getTypeId() == MM::T_NumberValExp)
       {
-        val = ((NumberValExp *) valExp)->getIntValue();
+        val = ((NumberValExp *) valExp)->getValue();
         srcInstance->setEvaluatedExp(exp, val);
       }
       else if(valExp->getTypeId() == MM::T_RangeValExp)
       {
-        val = ((RangeValExp *) valExp)->getIntValue();
+        val = ((RangeValExp *) valExp)->getIntValue() * 100;
         srcInstance->setEvaluatedExp(exp, val);
       }
       else
@@ -231,8 +231,8 @@ MM::VOID MM::SourceNodeBehavior::stepPushAll(MM::Node * srcNode,
       valExp->recycle(m);
     }
     
-    if(val > 0 &&
-       tgtInstance->hasCapacity(tgtNode,val) == MM_TRUE)
+    if(val >= 100 &&
+       tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
     {
       tempSrcAmount -= val;
       MM::FlowEvent * event =
@@ -246,7 +246,6 @@ MM::VOID MM::SourceNodeBehavior::stepPushAll(MM::Node * srcNode,
       break;
     }
   }
-  
   
   //if we have computed a succesfull transition, then apply it
   if(success == MM_TRUE)
@@ -273,11 +272,11 @@ MM::VOID MM::SourceNodeBehavior::stepPushAll(MM::Node * srcNode,
   else
   {
     //fail
-	MM::Failure * event = m->createFailure(srcInstance, srcNode);
+	  MM::Failure * event = m->createFailure(srcInstance, srcNode);
     tr->addElement(event);
 	  
-	//clean up
-	MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
+	  //clean up
+    MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
     while(eIter.hasNext() == MM_TRUE)
     {
       MM::Element * element = eIter.getNext();
