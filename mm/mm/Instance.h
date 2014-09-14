@@ -48,6 +48,8 @@
 
 namespace MM
 {
+  class PoolNodeInstance;
+
   class Instance : public MM::Recyclable, //managed
                    public MM::Observer,   //observes its definition
                    public MM::Observable  //observed by the outside world
@@ -67,21 +69,23 @@ namespace MM
     /* /note : these maps can become arrays
                when nodes and declarations in types have unique sequential labels
                pool values: pool --> value */
-    MM::Map<MM::Node *, MM::INT32> * values;
-    MM::Map<MM::Node *, MM::Vector<Edge *>::Iterator *> * gates;
-    MM::Map<MM::Node *, MM::INT32> * curGateValues;
+    //MM::Map<MM::Node *, MM::INT32> * values;
+    //MM::Map<MM::Node *, MM::Vector<Edge *>::Iterator *> * gates;
+    //MM::Map<MM::Node *, MM::INT32> * curGateValues;
     
     //temporary values
-    MM::Map<MM::Node *, MM::INT32> * oldValues;  /**> old temporary pool values*/
-    MM::Map<MM::Node *, MM::INT32> * newValues;  /**> new temporary pool values*/
-    MM::Map<MM::Node *, MM::INT32> * gateValues; /**> new temporary gate values*/
+    //MM::Map<MM::Node *, MM::INT32> * oldValues;  /**> old temporary pool values*/
+    //MM::Map<MM::Node *, MM::INT32> * newValues;  /**> new temporary pool values*/
+    //MM::Map<MM::Node *, MM::INT32> * gateValues; /**> new temporary gate values*/
     
-    //temporary try values for all
-    MM::Map<MM::Node *, MM::INT32> * oldTryValues; /**> old try values for 'all' */
-    MM::Map<MM::Node *, MM::INT32> * newTryValues; /**> new try values for 'all' */
+    //temporary try values for all (no longer used...)
+    //MM::Map<MM::Node *, MM::INT32> * oldTryValues; /**> old try values for 'all' */
+    //MM::Map<MM::Node *, MM::INT32> * newTryValues; /**> new try values for 'all' */
     
     //declaration instances: declaration --> instance
     //MM::Map<MM::Declaration *, MM::Instance *> * instances; /**> sub-instances*/
+
+    MM::Map<MM::Node *, MM::PoolNodeInstance *> * poolNodeInstances;
     
     MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * instances;
     
@@ -94,7 +98,7 @@ namespace MM
     MM::Vector<MM::Node *> * newDisabledNodes; /**> disabled nodes are
                                                     nodes that are not active
                                                     because a conditions is false*/
-    
+    //FIXME: dirty expressions
     MM::Map<MM::Exp *, MM::INT32> * evaluatedExps;
     
   public:
@@ -131,7 +135,7 @@ namespace MM
     MM::INT32 getValue(MM::Node * node);
     MM::INT32 getNewValue(MM::Node * node);
     MM::INT32 getOldValue(MM::Node * node);
-    MM::INT32 getGateValue(MM::Node * node);
+    //MM::INT32 getGateValue(MM::Node * node);
     
     //only used during definition modficiations
     MM::VOID deleteValue(MM::Node * node);
@@ -139,7 +143,7 @@ namespace MM
     
     MM::VOID setNewValue(MM::Node * node, MM::INT32 value);
     MM::VOID setOldValue(MM::Node * node, MM::INT32 value);
-    MM::VOID setGateValue(MM::Node * node, MM::INT32 value);
+    //MM::VOID setGateValue(MM::Node * node, MM::INT32 value);
     
     //Edge expression evaluation
     MM::BOOLEAN isEvaluatedExp(MM::Exp * exp);
@@ -161,30 +165,30 @@ namespace MM
                     MM::UINT32 message,
                     MM::VOID * object);
     
-  private:
-    MM::VOID createNode(MM::Node * node);
+  //private:
+    //MM::VOID createNode(MM::Node * node);
     
-    MM::VOID createInstance(MM::Declaration * decl, MM::Machine * m);
-    MM::VOID createPool(MM::Node * pool, MM::Machine * m);
-    MM::VOID createGate(MM::Node * gate);
-    MM::VOID createSource(MM::Node * source);
-    MM::VOID createDrain(MM::Node * drain);
-    MM::VOID createConverter(MM::Node * converter);
-    MM::VOID createReference(MM::Node * ref);
+    //MM::VOID createInstance(MM::Declaration * decl, MM::Machine * m);
+    //MM::VOID createPool(MM::Node * pool, MM::Machine * m);
+    //MM::VOID createGate(MM::Node * gate);
+    //MM::VOID createSource(MM::Node * source);
+    //MM::VOID createDrain(MM::Node * drain);
+    //MM::VOID createConverter(MM::Node * converter);
+    //MM::VOID createReference(MM::Node * ref);
     
-    MM::VOID removeInstance(MM::Declaration * decl, MM::Recycler * r);
-    MM::VOID removePool(MM::Node * pool);
+    //MM::VOID removeInstance(MM::Declaration * decl, MM::Recycler * r);
+    //MM::VOID removePool(MM::Node * pool);
     
-    MM::VOID createInstancePool(MM::Node         * node,
-                                MM::UINT32         at,
-                                MM::Machine      * m,
-                                MM::Definition   * unitDef);
+    //MM::VOID createInstancePool(MM::Node         * node,
+    //                            MM::UINT32         at,
+    //                            MM::Machine      * m,
+    //                            MM::Definition   * unitDef);
     
-    MM::VOID removeGate(MM::Node * gate);
-    MM::VOID removeSource(MM::Node * source);
-    MM::VOID removeDrain(MM::Node * drain);
-    MM::VOID removeConverter(MM::Node * converter);
-    MM::VOID removeReference(MM::Node * ref);
+    //MM::VOID removeGate(MM::Node * gate);
+    //MM::VOID removeSource(MM::Node * source);
+    //MM::VOID removeDrain(MM::Node * drain);
+    //MM::VOID removeConverter(MM::Node * converter);
+    //MM::VOID removeReference(MM::Node * ref);
     
   public:
     MM::VOID createInstances(MM::Element    * element,
@@ -202,21 +206,26 @@ namespace MM
     MM::VOID destroyInstance(MM::Element  * element,
                              MM::Machine  * m,
                              MM::Instance * i);    
-    
+
+    MM::PoolNodeInstance * getPoolNodeInstance(MM::Node * node);
+    MM::VOID addPoolNodeInstance(MM::PoolNodeInstance * poolNodeInstance);
+    MM::VOID removePoolNodeInstance(MM::PoolNodeInstance * poolNodeInstance);
+
     MM::VOID begin();
     MM::VOID finalize();
 
     MM::VOID clearActive();
     MM::VOID clearDisabled();
     
-    MM::UINT32 getCapacity(MM::Node * node);
-    MM::UINT32 getResources(MM::Node * node);
-    MM::BOOLEAN hasResources(MM::Node * node, MM::UINT32 amount);
-    MM::BOOLEAN hasCapacity(MM::Node * node, MM::UINT32 amount);
+    MM::INT32 getCapacity(MM::Node * node, MM::Machine * m);
+    MM::INT32 getResources(MM::Node * node, MM::Machine * m);
+    MM::BOOLEAN hasResources(MM::Node * node, MM::UINT32 amount, MM::Machine * m);
+    MM::BOOLEAN hasCapacity(MM::Node * node, MM::UINT32 amount, MM::Machine * m);
     MM::VOID sub(MM::Node * node, MM::Machine * m, MM::UINT32 amount);
     MM::VOID add(MM::Node * node, MM::Machine * m, MM::UINT32 amount);
-    
-  public:
+        
+    MM::VOID MM::Instance::notifyValues(MM::Machine * m);
+
     MM::VOID nameToString(MM::String * buf);
     MM::VOID nameToString(MM::Element * element, MM::String * buf);
     MM::VOID toString(MM::String * buf);

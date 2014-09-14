@@ -283,80 +283,80 @@ namespace LibMM
 
 
 	  signed long getValue(unsigned long instance,
-		                   unsigned long poolNode)
+		                     unsigned long poolNode)
 	  {
-		MM::Instance * i = (MM::Instance *) instance;
-		MM::Node * n = (MM::Node *) poolNode;
-		MM::INT32 val = n->getAmount(i, m);
-		return (signed long) val;
+		  MM::Instance * i = (MM::Instance *) instance;
+		  MM::Node * n = (MM::Node *) poolNode;
+		  MM::INT32 val = n->getAmount(i, m);
+		  return (signed long) val;
 	  }
 
 	  System::String ^ getName(unsigned long element)
 	  {
-		unsigned long size = 1024 * 256 *  8;
-		char * buf = (char *) malloc(size);
-		memset(buf, 0, size);
+		  unsigned long size = 1024 * 256 *  8;
+		  char * buf = (char *) malloc(size);
+		  memset(buf, 0, size);
 		
-        m->getName(element, buf, size);
+          m->getName(element, buf, size);
 
-		System::String ^ str = gcnew System::String(buf);
+    		System::String ^ str = gcnew System::String(buf);
 
- 		free(buf);
-		return str;
+ 	  	  free(buf);
+        return str;
 	  }
 
 	  System::String ^ getInstanceName(unsigned long instance)
 	  {
-		unsigned long size = 1024 * 256 * 8;
+	    unsigned long size = 1024 * 256 * 8;
 	    char * buf = (char *) malloc(size);
 	    memset(buf, 0, size);
 		
-        m->getInstanceName(instance, buf, size);
+	    m->getInstanceName(instance, buf, size);
 	
-		System::String ^ str = gcnew System::String(buf);
+	    System::String ^ str = gcnew System::String(buf);
 
- 		free(buf);
-		return str;
+	  	free(buf);
+	  	return str;
 	  }
 
 	  System::String ^ getModel()
 	  {
-		unsigned long size = 1024 * 256 * 8;
+	    unsigned long size = 1024 * 256 * 8;
 	    char * buf = (char *) malloc(size);
-		memset(buf, 0, size);
+	    memset(buf, 0, size);
 
-		MM::String * str = new MM::String(buf, size);
+	    MM::String * str = new MM::String(buf, size);
 
 	    MM::Definition * def = m->getDefinition();
 
-		def->toString(str);
+	    def->toString(str);
 
-		System::String ^ ret = gcnew System::String(buf);
+	    System::String ^ ret = gcnew System::String(buf);
+ 
+	    delete str;
+	    free(buf);
 
-		delete str;
-		free(buf);
-
-		return ret;
+	    return ret;
 	  }
 
 	  System::String ^ getState()
 	  {
-		unsigned long size = 1024 * 256 * 8;
+		  unsigned long size = 1024 * 256 * 8;
 	    char * buf = (char *) malloc(size);
-		memset(buf, 0, size);
+		  memset(buf, 0, size);
 
-		MM::String * str = new MM::String(buf, size);
+		  MM::String * str = new MM::String(buf, size);
 
-		MM::Instance * instance = m->getInstance();
+		  MM::Instance * instance = m->getInstance();
 
-		instance->toString(str);
+		  instance->toString(str);
 
-		System::String ^ ret = gcnew System::String(buf);
+		  System::String ^ ret = gcnew System::String(buf);
 
-		delete str;
-		free(buf);
+		  delete str;
+		  free(buf);
 
-		return ret;
+		  return ret;
 	  }
 
 
@@ -364,29 +364,29 @@ namespace LibMM
 	  void activate(unsigned long node,
 		            unsigned long instance)
 	  {
-		m->activate(node, instance);
+		  m->activate(node, instance);
 	  }
 
 	  void step()
 	  {
-        //unsigned long long size = 1024 * 256 * 8;
-		//char * buf = (char *) malloc(size);
-		m->step();
-        //return gcnew System::String(buf);
+      //unsigned long long size = 1024 * 256 * 8;
+		  //char * buf = (char *) malloc(size);
+		  m->step();
+      //return gcnew System::String(buf);
 	  }
 
 	  /*System::String ^*/ void step(unsigned long instance)
 	  {
-        //unsigned long long size = 1024 * 256 * 8;
-		//char * buf = (char *) malloc(size);
-		//m->step(instance, buf, size);
-		m->step();
-        //return gcnew System::String(buf);
+      //unsigned long long size = 1024 * 256 * 8;
+		  //char * buf = (char *) malloc(size);
+		  //m->step(instance, buf, size);
+		  m->step();
+      //return gcnew System::String(buf);
 	  }
 
 	  void removeObserver(unsigned long observer)
 	  {
-		m->removeObserver(observer);
+		  m->removeObserver(observer);
 	  }
 
 
@@ -399,25 +399,25 @@ namespace LibMM
 
 	  void eval(System::String^ message)
 	  {
-		char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(message);
+		  char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(message);
 	    m->eval(str);
-		Marshal::FreeHGlobal(IntPtr(str));
+		  Marshal::FreeHGlobal(IntPtr(str));
 
-		//marshal_context ^ context = gcnew marshal_context();
+		  //marshal_context ^ context = gcnew marshal_context();
 	    //const char* chars = context->marshal_as<const char*>(str);
-		//m->eval(chars);
+		  //m->eval(chars);
      	//delete context;
 	  }
 
 	  void evalFile(System::String^ file)
 	  {
-		char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(file);
+		  char* str = (char*)(void*)Marshal::StringToHGlobalAnsi(file);
 	    m->evalFile(str);
-		Marshal::FreeHGlobal(IntPtr(str));
+		  Marshal::FreeHGlobal(IntPtr(str));
 
 	    //marshal_context ^ context = gcnew marshal_context();
 	    //const char* chars = context->marshal_as<const char*>(str);
-	 	//m->evalFile(chars);
+	   	//m->evalFile(chars);
      	//delete context;
 	  }
 

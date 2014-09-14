@@ -327,30 +327,34 @@ MM::VOID MM::ConverterNodeBehavior::sub(MM::Instance * i,
   return sourceNode->sub(i, m, amount);
 }
 
-MM::UINT32 MM::ConverterNodeBehavior::getCapacity(MM::Instance * i,
-                                                  MM::Node * n)
+MM::INT32 MM::ConverterNodeBehavior::getCapacity(MM::Instance * i,
+                                                 MM::Node * n,
+                                                 MM::Machine * m)
 {
-  return drainNode->getCapacity(i);
+  return drainNode->getCapacity(i, m);
 }
 
-MM::UINT32 MM::ConverterNodeBehavior::getResources(MM::Instance * i,
-                                                   MM::Node * n)
+MM::INT32 MM::ConverterNodeBehavior::getResources(MM::Instance * i,
+                                                  MM::Node * n,
+                                                  MM::Machine * m)
 {
-  return sourceNode->getResources(i);
+  return sourceNode->getResources(i, m);
 }
 
 MM::BOOLEAN MM::ConverterNodeBehavior::hasCapacity(MM::Instance * i,
                                                    MM::Node * n,
-                                                   MM::UINT32 amount)
+                                                   MM::UINT32 amount,
+                                                   MM::Machine * m)
 {
-  return drainNode->hasCapacity(i, amount);
+  return drainNode->hasCapacity(i, amount, m);
 }
 
 MM::BOOLEAN MM::ConverterNodeBehavior::hasResources(MM::Instance * i,
                                                     MM::Node * n,
-                                                    MM::UINT32 amount)
+                                                    MM::UINT32 amount,
+                                                    MM::Machine * m)
 {
-  return sourceNode->hasResources(i, amount);
+  return sourceNode->hasResources(i, amount, m);
 }
 
 

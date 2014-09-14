@@ -339,26 +339,28 @@ MM::VOID MM::Node::sub(MM::Instance * i,
   behavior->sub(i, m, this, amount);
 }
 
-MM::UINT32 MM::Node::getCapacity(MM::Instance * i)
+MM::INT32 MM::Node::getCapacity(MM::Instance * i, MM::Machine * m)
 {
-  return behavior->getCapacity(i, this);
+  return behavior->getCapacity(i, this, m);
 }
 
-MM::UINT32 MM::Node::getResources(MM::Instance * i)
+MM::INT32 MM::Node::getResources(MM::Instance * i, MM::Machine * m)
 {
-  return behavior->getResources(i, this);
+  return behavior->getResources(i, this, m);
 }
 
 MM::BOOLEAN MM::Node::hasCapacity(MM::Instance * i,
-                                  MM::UINT32 amount)
+                                  MM::UINT32 amount,
+                                  MM::Machine * m)
 {
-  return behavior->hasCapacity(i, this, amount);
+  return behavior->hasCapacity(i, this, amount, m);
 }
 
 MM::BOOLEAN MM::Node::hasResources(MM::Instance * i,
-                                   MM::UINT32 amount)
+                                   MM::UINT32 amount,
+                                   MM::Machine * m)
 {
-  return behavior->hasResources(i, this, amount);
+  return behavior->hasResources(i, this, amount, m);
 }
 
 

@@ -130,7 +130,7 @@ MM::VOID MM::InterfaceNode::sub(MM::Instance * i, MM::UINT32 amount)
   //ref->sub(iChild, amount);
 }
 
-MM::UINT32 MM::InterfaceNode::getCapacity(MM::Instance * i)
+MM::INT32 MM::InterfaceNode::getCapacity(MM::Instance * i, MM::Machine * m)
 {
   MM_printf("should not happen anaymore MM::InterfaceNode::getCapacity\n");
   //MM::Instance * iChild = i->getInstance(decl);
@@ -138,7 +138,7 @@ MM::UINT32 MM::InterfaceNode::getCapacity(MM::Instance * i)
   return 0;
 }
 
-MM::UINT32 MM::InterfaceNode::getResources(MM::Instance * i)
+MM::INT32 MM::InterfaceNode::getResources(MM::Instance * i, MM::Machine * m)
 {
   MM_printf("should not happen anaymore MM::InterfaceNode::getResources\n");
   //MM::Instance * iChild = i->getInstance(decl);
@@ -147,7 +147,7 @@ MM::UINT32 MM::InterfaceNode::getResources(MM::Instance * i)
 }
 
 MM::BOOLEAN MM::InterfaceNode::hasCapacity(MM::Instance * i,
-                                           MM::UINT32 amount)
+                                           MM::UINT32 amount, MM::Machine * m)
 {
   MM_printf("should not happen anaymore MM::InterfaceNode::hasCapacity");
   //MM::Instance * iChild = i->getInstance(decl);
@@ -156,7 +156,7 @@ MM::BOOLEAN MM::InterfaceNode::hasCapacity(MM::Instance * i,
 }
 
 MM::BOOLEAN MM::InterfaceNode::hasResources(MM::Instance * i,
-                                            MM::UINT32 amount)
+                                            MM::UINT32 amount, MM::Machine * m)
 {
   MM_printf("should not happen anaymore MM::InterfaceNode::hasResources");
   //MM::Instance * iChild = i->getInstance(decl);

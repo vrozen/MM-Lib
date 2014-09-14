@@ -122,10 +122,10 @@ namespace MM
     virtual MM::VOID change(MM::Instance * i, MM::Machine * m);
     virtual MM::VOID add(MM::Instance * i, MM::Machine * m, MM::UINT32 amount);
     virtual MM::VOID sub(MM::Instance * i, MM::Machine * m, MM::UINT32 amount);
-    virtual MM::UINT32 getCapacity(MM::Instance * i);
-    virtual MM::UINT32 getResources(MM::Instance * i);
-    virtual MM::BOOLEAN hasCapacity(MM::Instance * i, MM::UINT32 amount);
-    virtual MM::BOOLEAN hasResources(MM::Instance * i, MM::UINT32 amount);
+    virtual MM::INT32 getCapacity(MM::Instance * i, MM::Machine * m);
+    virtual MM::INT32 getResources(MM::Instance * i, MM::Machine * m);
+    virtual MM::BOOLEAN hasCapacity(MM::Instance * i, MM::UINT32 amount, MM::Machine * m);
+    virtual MM::BOOLEAN hasResources(MM::Instance * i, MM::UINT32 amount, MM::Machine * m);
     
     MM::VOID step(MM::Instance * i,
                   MM::Machine * m,

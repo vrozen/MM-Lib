@@ -268,8 +268,8 @@ MM::VOID MM::RefNodeBehavior::sub(MM::Instance * i,
   //aliasSrc->sub(aliasInstance, amount);
 }
 
-MM::UINT32 MM::RefNodeBehavior::getCapacity(MM::Instance * i,
-                                            MM::Node * n)
+MM::INT32 MM::RefNodeBehavior::getCapacity(MM::Instance * i,
+                                           MM::Node * n, MM::Machine * m)
 {
   MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getCapacity\n");
   //MM::Node * aliasSrc = alias->getSource();
@@ -279,8 +279,8 @@ MM::UINT32 MM::RefNodeBehavior::getCapacity(MM::Instance * i,
   return 0;
 }
 
-MM::UINT32 MM::RefNodeBehavior::getResources(MM::Instance * i,
-                                             MM::Node * n)
+MM::INT32 MM::RefNodeBehavior::getResources(MM::Instance * i,
+                                            MM::Node * n, MM::Machine * m)
 {
   MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::getResources\n");
   //MM::Node * aliasSrc = alias->getSource();
@@ -292,7 +292,7 @@ MM::UINT32 MM::RefNodeBehavior::getResources(MM::Instance * i,
 
 MM::BOOLEAN MM::RefNodeBehavior::hasCapacity(MM::Instance * i,
                                              MM::Node * n,
-                                             MM::UINT32 amount)
+                                             MM::UINT32 amount, MM::Machine * m)
 {
   MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasCapacity\n");
   //MM::Node * aliasSrc = alias->getSource();
@@ -304,7 +304,7 @@ MM::BOOLEAN MM::RefNodeBehavior::hasCapacity(MM::Instance * i,
 
 MM::BOOLEAN MM::RefNodeBehavior::hasResources(MM::Instance * i,
                                               MM::Node * n,
-                                              MM::UINT32 amount)
+                                              MM::UINT32 amount, MM::Machine * m)
 {
   MM_printf("SHOULD NOT HAPPEN ANYMORE MM::RefNodeBehavior::hasResources\n");
   //MM::Node * aliasSrc = alias->getSource();

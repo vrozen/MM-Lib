@@ -132,6 +132,11 @@ namespace MM
                      MM::Edge * edge,
                      MM::Vector<MM::NodeWorkItem *> * work);
     
+    MM::INT32 evaluateExpression(MM::Instance * instance,
+                                 MM::Exp * exp,
+                                 MM::Edge * edge,
+                                 MM::Machine *);
+
     virtual MM::VOID step(MM::Node * n,
                           MM::Instance * i,
                           MM::Machine * m,
@@ -196,16 +201,20 @@ namespace MM
                          MM::Machine * m,
                          MM::Node * n,
                          MM::UINT32 amount) = 0;
-    virtual MM::UINT32 getCapacity(MM::Instance * i,
-                                   MM::Node * n) = 0;
-    virtual MM::UINT32 getResources(MM::Instance * i,
-                                    MM::Node * n) = 0;
+    virtual MM::INT32 getCapacity(MM::Instance * i,
+                                  MM::Node * n,
+                                  MM::Machine * m) = 0;
+    virtual MM::INT32 getResources(MM::Instance * i,
+                                   MM::Node * n,
+                                   MM::Machine * m) = 0;
     virtual MM::BOOLEAN hasCapacity(MM::Instance * i,
                                     MM::Node * n,
-                                    MM::UINT32 amount) = 0;
+                                    MM::UINT32 amount,
+                                    MM::Machine * m) = 0;
     virtual MM::BOOLEAN hasResources(MM::Instance * i,
                                      MM::Node * n,
-                                     MM::UINT32 amount) = 0;
+                                     MM::UINT32 amount,
+                                     MM::Machine * m) = 0;
     
     virtual MM::VOID activateTriggerTargets(MM::Node *,
                                             MM::Instance * i,

@@ -86,6 +86,7 @@
 #include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
+#include "PoolNodeInstance.h"
 #include "Operator.h"
 #include "ValExp.h"
 #include "UnExp.h"
@@ -120,19 +121,27 @@ MM::Instance::Instance(MM::Instance   * parent,
                                                MM::Observer(),
                                                MM::Observable()
 {
+  poolNodeInstances = new MM::Map<MM::Node *, MM::PoolNodeInstance *>();
+
+  /*
   //TODO, make Machine create this
   values = new MM::Map<MM::Node*, MM::INT32>();
   oldValues = new MM::Map<MM::Node*, MM::INT32>();
   newValues = new MM::Map<MM::Node*, MM::INT32>();
-  //instances = new MM::Map<MM::Declaration*, MM::Instance *>();
+  */
+
   instances = new MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>();
   disabledNodes = new MM::Vector<MM::Node *>();
   activeNodes = new MM::Vector<MM::Node *>();
   newActiveNodes = new MM::Vector<MM::Node *>();
-  gates = new MM::Map<MM::Node *, MM::Vector<Edge*>::Iterator *>();
-  curGateValues = new MM::Map<MM::Node *, MM::INT32>();
-  gateValues = new MM::Map<MM::Node*, MM::INT32>();
+
+  //gates = new MM::Map<MM::Node *, MM::Vector<Edge*>::Iterator *>();
+  //curGateValues = new MM::Map<MM::Node *, MM::INT32>();
+  //gateValues = new MM::Map<MM::Node*, MM::INT32>();
+  
+  //FIXME: dirty expressions not taken into account --> value may not be up to date!
   evaluatedExps = new MM::Map<MM::Exp *, MM::INT32>();  
+
   this->parent = parent;
   this->def = def;
   this->decl = decl;
@@ -146,33 +155,35 @@ MM::Instance::Instance(MM::Instance   * parent,
 MM::Instance::~Instance()
 {
   //clean up values
-  delete values;
-  
+  //delete values;
+  delete poolNodeInstances;
+
   //clean up instances
   delete instances;
   
   //clean up gates
-  delete gates;
-  delete curGateValues;
+  //delete gates;
+  //delete curGateValues;
 
   //clean up temporary data
-  delete oldValues;
-  delete newValues;
-  delete gateValues;
+  //delete oldValues;
+  //delete newValues;
+  //delete gateValues;
   
   delete evaluatedExps;
   delete activeNodes;
   delete newActiveNodes;
   delete disabledNodes;
   
-  values = MM_NULL;
+  //values = MM_NULL;
   instances = MM_NULL;
-  gates = MM_NULL;
-  curGateValues = MM_NULL;
-  oldValues = MM_NULL;
-  newValues = MM_NULL;
-  gateValues = MM_NULL;
-  
+  //gates = MM_NULL;
+  //curGateValues = MM_NULL;
+  //oldValues = MM_NULL;
+  //newValues = MM_NULL;
+  //gateValues = MM_NULL;
+  poolNodeInstances = MM_NULL;
+
   evaluatedExps = MM_NULL;
   activeNodes = MM_NULL;
   newActiveNodes = MM_NULL;
@@ -193,6 +204,14 @@ MM::Instance::~Instance()
 MM::VOID MM::Instance::recycle(MM::Recycler * r)
 {
   //NOTE: type is not owned, leave intact
+  MM::Map<MM::Node *, MM::PoolNodeInstance *>::Iterator poolNodeInstanceIter =
+    poolNodeInstances->getIterator();
+  while(poolNodeInstanceIter.hasNext() == MM_TRUE)
+  {
+    MM::PoolNodeInstance * poolNodeInstance = poolNodeInstanceIter.getNext();
+    removePoolNodeInstance(poolNodeInstance);
+    delete poolNodeInstance;
+  }
 
   MM::Map<MM::Element *, MM::Vector<MM::Instance *> *>::Iterator i =
     instances->getIterator();
@@ -335,7 +354,6 @@ MM::VOID MM::Instance::sweep(MM::Machine * m)
 }
 
 
-
 MM::Map<MM::Element *, MM::Vector<MM::Instance *> *> * MM::Instance::getInstances()
 {
   return instances;
@@ -369,16 +387,19 @@ MM::INT32 MM::Instance::getIndex(MM::Element * element, MM::Instance * i)
   return is->getPosition(i);
 }
 
+//FIXME: dirty expressions
 MM::BOOLEAN MM::Instance::isEvaluatedExp(MM::Exp * exp)
 {
   return evaluatedExps->contains(exp);
 }
 
+//FIXME: dirty expressions
 MM::VOID MM::Instance::setEvaluatedExp(MM::Exp * exp, MM::INT32 val)
 {
   evaluatedExps->put(exp, val);
 }
 
+//FIXME: dirty expressions
 MM::INT32 MM::Instance::getEvaluatedExp(MM::Exp * exp)
 {
   return evaluatedExps->get(exp);
@@ -426,48 +447,129 @@ MM::BOOLEAN MM::Instance::isDisabled(MM::Node * node)
 
 MM::INT32 MM::Instance::getValue(MM::Node * node)
 {
-  return values->get(node);
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  MM::INT32 val = 0;
+  if(poolNodeInstances->contains(node) == MM_TRUE)
+  {
+    poolNodeInstance = poolNodeInstances->get(node);
+    val = poolNodeInstance->getValue();
+  }
+  else
+  {
+    printf("Missing poolNodeInstance %s on getValue\n", node->getName()->getBuffer());
+  }
+
+  return val;
+  //return values->get(node);
 }
 
 MM::INT32 MM::Instance::getNewValue(MM::Node * node)
 {
-  return newValues->get(node);
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  MM::INT32 val = 0;
+  if(poolNodeInstances->contains(node) == MM_TRUE)
+  {
+    poolNodeInstance = poolNodeInstances->get(node);
+    val = poolNodeInstance->getNewValue();
+  }
+  else
+  {
+    printf("Missing poolNodeInstance %s on getNewValue\n", node->getName()->getBuffer());
+  }
+
+
+  return val;
+  //return newValues->get(node);
 }
 
 MM::INT32 MM::Instance::getOldValue(MM::Node * node)
 {
-  return oldValues->get(node);
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  MM::INT32 val = 0;
+  if(poolNodeInstances->contains(node) == MM_TRUE)
+  {
+    poolNodeInstance = poolNodeInstances->get(node);
+    val = poolNodeInstance->getOldValue();
+  }
+  else
+  {
+    printf("Missing poolNodeInstance %s on getOldValue\n", node->getName()->getBuffer());
+  }
+
+  return val;
+  //return oldValues->get(node);
 }
 
-MM::INT32 MM::Instance::getGateValue(MM::Node * node)
-{
-  return gateValues->get(node);
-}
+//MM::INT32 MM::Instance::getGateValue(MM::Node * node)
+//{
+//  return gateValues->get(node);
+//}
 
 MM::VOID MM::Instance::deleteValue(MM::Node * node)
 {
-  values->remove(node);
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  if(poolNodeInstances->contains(node) == MM_TRUE)
+  {
+    poolNodeInstance = poolNodeInstances->get(node);
+    poolNodeInstances->remove(node);
+    delete poolNodeInstance;
+  }
+  else
+  {
+    printf("Missing poolNodeInstance %s on deleteValue\n", node->getName()->getBuffer());
+  }
+  //values->remove(node);
 }
 
 MM::VOID MM::Instance::setValue(MM::Node * node, MM::INT32 value)
 {
-  values->put(node, value);
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  if(poolNodeInstances->contains(node) == MM_TRUE)
+  {
+    poolNodeInstance = poolNodeInstances->get(node);
+    poolNodeInstance->setValue(value);
+  }
+  else
+  {
+    printf("Missing poolNodeInstance %s on setValue\n", node->getName()->getBuffer());
+  }
+  //values->put(node, value);
 }
 
 MM::VOID MM::Instance::setNewValue(MM::Node * node, MM::INT32 value)
 {
-  newValues->put(node, value);
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  if(poolNodeInstances->contains(node) == MM_TRUE)
+  {
+    poolNodeInstance = poolNodeInstances->get(node);
+    poolNodeInstance->setNewValue(value);
+  }
+  else
+  {
+    printf("Missing poolNodeInstance %s on setNewValue\n", node->getName()->getBuffer());
+  }
+  //newValues->put(node, value);
 }
 
 MM::VOID MM::Instance::setOldValue(MM::Node * node, MM::INT32 value)
 {
-  oldValues->put(node, value);
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  if(poolNodeInstances->contains(node) == MM_TRUE)
+  {
+    poolNodeInstance = poolNodeInstances->get(node);
+    poolNodeInstance->setOldValue(value);
+  }
+  else
+  {
+    printf("Missing poolNodeInstance %s on setOldValue\n", node->getName()->getBuffer());
+  }
+  //oldValues->put(node, value);
 }
 
-MM::VOID MM::Instance::setGateValue(MM::Node * node, MM::INT32 value)
-{
-  gateValues->put(node, value);
-}
+//MM::VOID MM::Instance::setGateValue(MM::Node * node, MM::INT32 value)
+//{
+//  gateValues->put(node, value);
+//}
 
 /**
  * @fn MM::VOID MM::Instance::update(MM::Observable * observable,
@@ -781,6 +883,16 @@ MM::VOID MM::Instance::createInstances(MM::Element    * element,
       {
         case MM::T_Node:
           behavior = ((MM::Node*)element)->getBehavior();
+
+          if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+          {
+            MM::PoolNodeBehavior * poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
+            MM::UINT32 at = poolNodeBehavior->getAt();
+
+            MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance((MM::Node *)element, this, at);
+            instance->addPoolNodeInstance(poolNodeInstance);
+          }
+
           instance->update(unitDef, m, behavior->getCreateMessage(), element);
           break;
         case MM::T_Declaration:
@@ -878,16 +990,43 @@ MM::VOID MM::Instance::destroyInstance(MM::Element  * element,
   }
 }
 
+
+MM::PoolNodeInstance * MM::Instance::getPoolNodeInstance(MM::Node * node)
+{
+  return poolNodeInstances->get(node);
+}
+
+
+MM::VOID MM::Instance::addPoolNodeInstance(MM::PoolNodeInstance * poolNodeInstance)
+{
+  MM::Node * node = poolNodeInstance->getNode();
+  poolNodeInstances->put(node, poolNodeInstance);
+}
+
+
+MM::VOID MM::Instance::removePoolNodeInstance(MM::PoolNodeInstance * poolNodeInstance)
+{
+  MM::Node * node = poolNodeInstance->getNode();
+  poolNodeInstances->remove(node);
+}
+
 //begin step
 MM::VOID MM::Instance::begin()
 {
   //copy values to old and new
-  oldValues->clear();
-  newValues->clear();  
-  oldValues->putAll(values);
-  newValues->putAll(values);  
-  gateValues->clear();
-  
+  //oldValues->clear();
+  //newValues->clear();  
+  //oldValues->putAll(values);
+  //newValues->putAll(values);  
+  //gateValues->clear();
+
+  MM::Map<MM::Node *, MM::PoolNodeInstance *>::Iterator poolNodeInstanceIter = poolNodeInstances->getIterator();
+  while(poolNodeInstanceIter.hasNext() == MM_TRUE)
+  {
+    MM::PoolNodeInstance * poolNodeInstance = poolNodeInstanceIter.getNext();
+    poolNodeInstance->begin();
+  }
+
   evaluatedExps->clear();
 
   //these remain valid.
@@ -903,17 +1042,24 @@ MM::VOID MM::Instance::begin()
 MM::VOID MM::Instance::finalize()
 {
   //TODO: forward gate values!
-  values->clear();    //clear current values
-  oldValues->clear(); //clear old values
-  gateValues->clear(); //clear gate values
+  //values->clear();    //clear current values
+  //oldValues->clear(); //clear old values
+  //gateValues->clear(); //clear gate values
 
   //clear disabled nodes
   disabledNodes->clear();
 
   //commit new values
-  MM::Map<MM::Node *, MM::INT32> * tempValues = values;
-  values = newValues;
-  newValues = tempValues;
+  //MM::Map<MM::Node *, MM::INT32> * tempValues = values;
+  //values = newValues;
+  //newValues = tempValues;
+
+  MM::Map<MM::Node *, MM::PoolNodeInstance *>::Iterator poolNodeInstanceIter = poolNodeInstances->getIterator();
+  while(poolNodeInstanceIter.hasNext() == MM_TRUE)
+  {
+    MM::PoolNodeInstance * poolNodeInstance = poolNodeInstanceIter.getNext();
+    poolNodeInstance->finalize();
+  }
 
   //commit active nodes
   activeNodes->clear(); //clear active nodes
@@ -934,29 +1080,35 @@ MM::VOID MM::Instance::clearDisabled()
 }
 */
 
-MM::UINT32 MM::Instance::getResources(MM::Node * node)
-{
-  //checks in old values
-  return node->getResources(this);
-}
 
 MM::BOOLEAN MM::Instance::hasResources(MM::Node * node,
-                                       MM::UINT32 amount)
+                                       MM::UINT32 amount,
+                                       MM::Machine * m)
 {
   //checks in old values  
-  return node->hasResources(this, amount);
+  return node->hasResources(this, amount, m);
 }
 
-MM::UINT32 MM::Instance::getCapacity(MM::Node * node)
+MM::INT32 MM::Instance::getCapacity(MM::Node * node,
+                                    MM::Machine * m)
 {
-  return node->getCapacity(this);
+  //checks in new values
+  return node->getCapacity(this, m);
+}
+
+MM::INT32 MM::Instance::getResources(MM::Node * node,
+                                      MM::Machine * m)
+{
+  //checks in old values
+  return node->getResources(this, m);
 }
 
 MM::BOOLEAN MM::Instance::hasCapacity(MM::Node * node,
-                                      MM::UINT32 amount)
+                                      MM::UINT32 amount,
+                                      MM::Machine * m)
 {
   //checks in new values
-  return node->hasCapacity(this, amount);
+  return node->hasCapacity(this, amount, m);
 }
 
 MM::VOID MM::Instance::sub(MM::Node * node,
@@ -964,6 +1116,7 @@ MM::VOID MM::Instance::sub(MM::Node * node,
                            MM::UINT32 amount)
 {
   node->sub(this, m, amount);
+  //too soon: !!
   //notifyObservers(this, (void*) amount, MM::MSG_ADD_VALUE, node);
 }
 
@@ -972,7 +1125,52 @@ MM::VOID MM::Instance::add(MM::Node * node,
                            MM::UINT32 amount)
 {
   node->add(this, m, amount);
+  //too soon: !!
   //notifyObservers(this, (void*) amount, MM::MSG_SUB_VALUE, node);
+}
+
+MM::VOID MM::Instance::notifyValues(MM::Machine * m)
+{
+  MM::Map<MM::Node *, MM::PoolNodeInstance *>::Iterator valueIter =
+    poolNodeInstances->getIterator();
+
+  while(valueIter.hasNext() == MM_TRUE)
+  {
+    MM::Node * node = MM_NULL;
+    MM::PoolNodeInstance * poolNodeInstance = valueIter.getNext(&node);
+
+    MM::Instance * i2 = poolNodeInstance->getInstance();
+
+    //if(i2 != this)
+    //{
+    //  printf("NOT SELF\n");
+    //  fflush(stdout);
+    //}
+
+    if(poolNodeInstance->isDirty() == MM_TRUE)
+    {
+      MM::INT32 value = node->getAmount(this, m);
+
+      //printf("PNI %lu %s has value %ld\n", poolNodeInstance, node->getName()->getBuffer(), value);
+      //fflush(stdout);
+
+	    this->notifyObservers(this, (MM::VOID*)value, MM::MSG_HAS_VALUE, node);
+    }
+  }
+
+  MM::Map<MM::Element *, MM::Vector<Instance *> *>::Iterator vectIter =
+    instances->getIterator();
+
+  while(vectIter.hasNext() == MM_TRUE)
+  {
+    MM::Vector<Instance *> * is = vectIter.getNext();
+    MM::Vector<Instance *>::Iterator instanceIter = is->getIterator(); 
+    while(instanceIter.hasNext() == MM_TRUE)
+    {
+      MM::Instance * instance = instanceIter.getNext();
+      instance->notifyValues(m); 
+    }
+  }    
 }
 
 MM::VOID MM::Instance::nameToString(MM::Element * element, MM::String * buf)
@@ -981,7 +1179,6 @@ MM::VOID MM::Instance::nameToString(MM::Element * element, MM::String * buf)
   MM::Name * elementName = element->getName();  
   elementName->toString(buf);
 }
-
 
 MM::VOID MM::Instance::nameToString(MM::String * buf)
 {
@@ -1028,8 +1225,11 @@ MM::VOID MM::Instance::toString(MM::String * buf)
 //serializes an instance to a JSON object
 MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
 {
-  MM::Map<MM::Node *, MM::INT32>::Iterator valueIter =
-    values->getIterator();
+  //MM::Map<MM::Node *, MM::INT32>::Iterator valueIter =
+  //  values->getIterator();
+  MM::Map<MM::Node *, MM::PoolNodeInstance *>::Iterator valueIter =
+    poolNodeInstances->getIterator();
+  
   MM::Map<MM::Element *, MM::Vector<Instance *> *>::Iterator vectIter =
     instances->getIterator();
 
@@ -1039,7 +1239,12 @@ MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
   while(valueIter.hasNext() == MM_TRUE)
   {
     MM::Node * node = MM_NULL;
-    MM::UINT32 value = valueIter.getNext(&node);
+    MM::PoolNodeInstance * poolNodeInstance = valueIter.getNext(&node);
+   // MM::INT32 value = node->getResources(this, m);
+
+    MM::INT32 value = 0;
+
+
     MM::Name * name = node->getName();
     buf->space(indent+MM::Instance::INDENT);
     name->toString(buf);

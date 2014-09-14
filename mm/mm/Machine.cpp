@@ -84,6 +84,7 @@
 #include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
+#include "PoolNodeInstance.h"
 #include "Operator.h"
 #include "ValExp.h"
 #include "UnExp.h"
@@ -1138,6 +1139,32 @@ MM::Instance * MM::Machine::createInstance(MM::Instance * parent,
                                            MM::Element * decl)
 {
   MM::Instance * instance = new MM::Instance(parent, def, decl);
+  MM::Node * node = MM_NULL;
+  MM::NodeBehavior * behavior = MM_NULL;
+  MM::Vector<Element *> * elements = def->getElements();
+  MM::Vector<Element *>::Iterator eIter = elements->getIterator();
+  while(eIter.hasNext() == MM_TRUE)
+  {
+    MM::Element * element = eIter.getNext();
+    switch(element->getTypeId())
+    {
+     case MM::T_Node:
+       node = (MM::Node*) element;
+       behavior = node->getBehavior();
+
+       if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+       {
+         MM::PoolNodeBehavior * poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
+         MM::UINT32 at = poolNodeBehavior->getAt();
+
+         MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance(node, instance, at);
+         instance->addPoolNodeInstance(poolNodeInstance);
+       }
+       break;
+     default:
+       break;
+    }
+  }
   MM::Recycler::create(instance);
   return instance;
 }

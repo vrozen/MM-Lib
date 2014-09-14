@@ -69,12 +69,12 @@ namespace MM
                  MM::UINT32 amount);
     MM::VOID sub(MM::Instance * i,
                  MM::UINT32 amount);
-    MM::UINT32 getCapacity(MM::Instance * i);
-    MM::UINT32 getResources(MM::Instance * i);
+    MM::INT32 getCapacity(MM::Instance * i, MM::Machine * m);
+    MM::INT32 getResources(MM::Instance * i, MM::Machine * m);
     MM::BOOLEAN hasCapacity(MM::Instance * i,
-                            MM::UINT32 amount);
+                            MM::UINT32 amount, MM::Machine * m);
     MM::BOOLEAN hasResources(MM::Instance * i,
-                             MM::UINT32 amount);
+                             MM::UINT32 amount, MM::Machine * m);
     
     MM::VOID activateTriggerTargets(MM::Instance * i, MM::Machine * m);
     MM::VOID toString(MM::String * buf);

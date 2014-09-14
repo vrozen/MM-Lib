@@ -223,6 +223,7 @@
     <ClInclude Include="..\mm\Operator.h" />
     <ClInclude Include="..\mm\OverrideExp.h" />
     <ClInclude Include="..\mm\PoolNodeBehavior.h" />
+    <ClInclude Include="..\mm\PoolNodeInstance.h" />
     <ClInclude Include="..\mm\Prevention.h" />
     <ClInclude Include="..\mm\Program.h" />
     <ClInclude Include="..\mm\RangeValExp.h" />
@@ -291,6 +292,7 @@
     <ClCompile Include="..\mm\Operator.cpp" />
     <ClCompile Include="..\mm\OverrideExp.cpp" />
     <ClCompile Include="..\mm\PoolNodeBehavior.cpp" />
+    <ClCompile Include="..\mm\PoolNodeInstance.cpp" />
     <ClCompile Include="..\mm\Prevention.cpp" />
     <ClCompile Include="..\mm\Program.cpp" />
     <ClCompile Include="..\mm\RangeValExp.cpp" />

@@ -233,6 +233,9 @@
     <ClInclude Include="..\mm\Enablement.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\mm\PoolNodeInstance.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\mm\VarExp.cpp">
@@ -422,6 +425,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mm\Enablement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mm\PoolNodeInstance.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

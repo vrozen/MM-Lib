@@ -138,10 +138,10 @@ namespace MM
                  MM::Machine  * m,
                  MM::Node     * n,
                  MM::UINT32     amount);
-    MM::UINT32 getCapacity(MM::Instance * i, MM::Node * n);
-    MM::UINT32 getResources(MM::Instance * i, MM::Node * n);
-    MM::BOOLEAN hasCapacity(MM::Instance * i, MM::Node * n, MM::UINT32 amount);
-    MM::BOOLEAN hasResources(MM::Instance * i, MM::Node * n, MM::UINT32 amount);
+    MM::INT32 getCapacity(MM::Instance * i, MM::Node * n, MM::Machine * m);
+    MM::INT32 getResources(MM::Instance * i, MM::Node * n, MM::Machine * m);
+    MM::BOOLEAN hasCapacity(MM::Instance * i, MM::Node * n, MM::UINT32 amount, MM::Machine * m);
+    MM::BOOLEAN hasResources(MM::Instance * i, MM::Node * n, MM::UINT32 amount, MM::Machine * m);
 
     MM::VOID activateTriggerTargets(MM::Node * node,
                                     MM::Instance * i,

@@ -203,8 +203,8 @@ MM::VOID MM::Evaluator::step(MM::Transition * tr)
   //notify flow
   notifyFlow(tr);
 
-  //notify all pool instance values
-  //TOO SLOW::
+  //notify dirty pool instance values
+  i->notifyValues(m);
   //notifyValues(i);
 
   //clean up instances
@@ -450,14 +450,15 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
 	    srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
       tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
 
-	    //hack to notify the instance in which the flow occurred
+      //hack to notify the instance in which the flow occurred
 	    if(srcInstance != tgtInstance)
 	    {
-		    tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
 		    srcInstance->notifyObservers(srcInstance, (MM::VOID*)amount, MM::MSG_ADD_VALUE, tgtNode);
-	    }
+	      tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)amount, MM::MSG_SUB_VALUE, srcNode);
+		  }
 
 	    //let observers of instances know the current value of a pool.
+      /*
       if(srcNode->getBehavior()->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
       {
         MM::INT32 srcAmount = srcNode->getAmount(srcInstance, m);
@@ -468,6 +469,7 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
         MM::INT32 tgtAmount = tgtNode->getAmount(tgtInstance, m);
         tgtInstance->notifyObservers(tgtInstance, (MM::VOID*)tgtAmount, MM::MSG_HAS_VALUE, tgtNode);
       }
+      */
     }
 	  else if(element->instanceof(MM::T_Event) == MM_TRUE)
 	  {
@@ -480,7 +482,7 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
   }
 }
 
-
+/*
 //notifies all values of an instance
 //this brute force notification was devised to avoid having to check dependencies
 //its main drawback is that all values are notified every step
@@ -524,7 +526,7 @@ MM::VOID MM::Evaluator::notifyValues(MM::Instance * instance)
     }
   }
 }
-
+*/
 
 /*
 //recursively propagate all gates until no gate contains temp values
@@ -725,7 +727,15 @@ MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
       }
     }
     
-    val = curInstance->getValue(curNode);
+
+    //DECISION: expressions are fixed during a step to the
+    //          current values of the previous step
+    //          changes to observable values are only taken
+    //          into account at the next step
+    //          when calculating resources or capacity
+    val = curNode->getAmount(curInstance, m);
+
+    //val = curInstance->getValue(curNode);
   }
   
   return m->createNumberValExp(val);

@@ -131,8 +131,11 @@ namespace LibMM
 
     MSG_FAIL,
 
-    MSG_PREVENT
+    MSG_PREVENT,
 
+    //pool node instance messages
+    MSG_UPD_VALUE, //dirty value during step
+    MSG_END_VALUE  //value ending
   };
 
 #if __cplusplus

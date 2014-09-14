@@ -159,9 +159,9 @@ MM::VOID MM::GateNodeBehavior::add(MM::Instance * i,
                                    MM::UINT32 amount)
 {
   //gate value is zero if not stored before
-  MM::UINT32 tempValue = i->getGateValue(n);
-  tempValue = tempValue + amount;
-  i->setGateValue(n, tempValue);
+  //MM::UINT32 tempValue = i->getGateValue(n);
+  //tempValue = tempValue + amount;
+  //i->setGateValue(n, tempValue);
 }
 
 MM::VOID MM::GateNodeBehavior::sub(MM::Instance * i,
@@ -170,28 +170,28 @@ MM::VOID MM::GateNodeBehavior::sub(MM::Instance * i,
                                    MM::UINT32 amount)
 {
   //if the gate value is not available this should fail!
-  MM::UINT32 tempValue = i->getGateValue(n);
+  //MM::UINT32 tempValue = i->getGateValue(n);
  
-  if(amount <= tempValue)
-  {
-    tempValue = tempValue - amount;
-    i->setGateValue(n, tempValue);
-  }
-  else
-  {
+  //if(amount <= tempValue)
+  //{
+  //  tempValue = tempValue - amount;
+    //i->setGateValue(n, tempValue);
+  //}
+  //else
+  //{
     //error
-  }
+  //}
 }
 
-MM::UINT32 MM::GateNodeBehavior::getCapacity(MM::Instance * i,
-                                            MM::Node * n)
+MM::INT32 MM::GateNodeBehavior::getCapacity(MM::Instance * i,
+                                            MM::Node * n, MM::Machine * m)
 {
   //NOTE: we assume gates can propagate resources later
   return MM_MAX_RESOURCES;
 }
 
-MM::UINT32 MM::GateNodeBehavior::getResources(MM::Instance * i,
-                                              MM::Node * n)
+MM::INT32 MM::GateNodeBehavior::getResources(MM::Instance * i,
+                                             MM::Node * n, MM::Machine * m)
 {
   //NOTE: when queried for pulling gates always reply no resources are available
   return 0;
@@ -199,14 +199,14 @@ MM::UINT32 MM::GateNodeBehavior::getResources(MM::Instance * i,
 
 MM::BOOLEAN MM::GateNodeBehavior::hasCapacity(MM::Instance * i,
                                               MM::Node * n,
-                                              MM::UINT32 amount)
+                                              MM::UINT32 amount, MM::Machine * m)
 {
   return MM_TRUE;
 }
 
 MM::BOOLEAN MM::GateNodeBehavior::hasResources(MM::Instance * i,
                                                MM::Node * n,
-                                               MM::UINT32 amount)
+                                               MM::UINT32 amount, MM::Machine * m)
 {
   return MM_FALSE;
 }

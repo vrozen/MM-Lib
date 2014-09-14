@@ -1336,23 +1336,23 @@ MM::VOID MM::Reflector::replace(MM::Definition * def,
     }
     
     //reprioritize
-	//def->deprioritize(node);
+	  //def->deprioritize(node);
     def->prioritize(node);
-    
+
     //notify observers
     if(behavior->getTypeId() == behavior2->getTypeId())
     {
       MM::UINT32 updateMessage = behavior->getUpdateMessage();
       def->notifyObservers(def, m, updateMessage, node);
 
-	  if(behavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
-	  {
-         MM::RefNodeBehavior * refBehavior = (RefNodeBehavior *) behavior; 
-		 MM::Edge * alias = refBehavior->getAlias();
+	    if(behavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
+	    {
+        MM::RefNodeBehavior * refBehavior = (RefNodeBehavior *) behavior; 
+		    MM::Edge * alias = refBehavior->getAlias();
 
-		 MM::RefNodeBehavior * refBehavior2 = (RefNodeBehavior *) behavior2;
-		 refBehavior2->setAlias(alias);
-	  }
+		    MM::RefNodeBehavior * refBehavior2 = (RefNodeBehavior *) behavior2;
+		    refBehavior2->setAlias(alias);
+	    }
     }
     else
     {

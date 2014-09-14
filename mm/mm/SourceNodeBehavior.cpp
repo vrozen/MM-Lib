@@ -187,7 +187,7 @@ MM::VOID MM::SourceNodeBehavior::stepPushAll(MM::Node * srcNode,
   MM::Vector<MM::NodeWorkItem *>::Iterator workIter = work->getIterator();
   MM::BOOLEAN success = MM_TRUE;
   
-  MM::INT32 tempSrcAmount = srcInstance->getValue(srcNode);
+ // MM::INT32 tempSrcAmount = srcInstance->getValue(srcNode);
   
   MM_printf("STEP PUSH ALL NODE %s (%ld edges)\n",
             srcNode->getName()->getBuffer(),
@@ -201,40 +201,15 @@ MM::VOID MM::SourceNodeBehavior::stepPushAll(MM::Node * srcNode,
     MM::Node * tgtNode = workItem->getNode();
     MM::Instance * tgtInstance = workItem->getInstance();
     MM::INT32 val = 0; //evaluated expression
-    
-    if(srcInstance->isEvaluatedExp(exp) == MM_TRUE) //check if expression is pre-evaluated
-    {
-      val = srcInstance->getEvaluatedExp(exp);
-    }
-    else
-    {
-      //NOTE: whatever is evaluated here will hold during this step
-      //      since it is stored in evaluated expressions
-      //      and chance plays into this!
-      MM::ValExp * valExp = evaluator->eval(srcInstance, edge);
-      
-      if(valExp->getTypeId() == MM::T_NumberValExp)
-      {
-        val = ((NumberValExp *) valExp)->getValue();
-        srcInstance->setEvaluatedExp(exp, val);
-      }
-      else if(valExp->getTypeId() == MM::T_RangeValExp)
-      {
-        val = ((RangeValExp *) valExp)->getIntValue() * 100;
-        srcInstance->setEvaluatedExp(exp, val);
-      }
-      else
-      {
-        //TODO runtime exception
-      }
-      
-      valExp->recycle(m);
-    }
+  
+    val = evaluateExpression(srcInstance, exp, edge, m);
+
+    val = (val / 100) * 100;
     
     if(val >= 100 &&
-       tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
+       tgtInstance->hasCapacity(tgtNode, val, m) == MM_TRUE)
     {
-      tempSrcAmount -= val;
+      //tempSrcAmount -= val;
       MM::FlowEvent * event =
         m->createFlowEvent(srcInstance, srcNode, edge,
                            srcInstance, srcNode, val, tgtInstance, tgtNode);
@@ -323,28 +298,32 @@ MM::VOID MM::SourceNodeBehavior::sub(MM::Instance * i,
 }
 
 
-MM::UINT32 MM::SourceNodeBehavior::getCapacity(MM::Instance * i,
-                                               MM::Node * n)
+MM::INT32 MM::SourceNodeBehavior::getCapacity(MM::Instance * i,
+                                              MM::Node * n,
+                                              MM::Machine * m)
 {
   return 0;
 }
 
-MM::UINT32 MM::SourceNodeBehavior::getResources(MM::Instance * i,
-                                                MM::Node * n)
+MM::INT32 MM::SourceNodeBehavior::getResources(MM::Instance * i,
+                                               MM::Node * n,
+                                               MM::Machine * m)
 {
   return MM_MAX_RESOURCES;
 }
 
 MM::BOOLEAN MM::SourceNodeBehavior::hasCapacity(MM::Instance * i,
                                                 MM::Node * n,
-                                                MM::UINT32 amount)
+                                                MM::UINT32 amount,
+                                                MM::Machine * m)
 {
   return MM_FALSE;
 }
 
 MM::BOOLEAN MM::SourceNodeBehavior::hasResources(MM::Instance * i,
                                                  MM::Node * n,
-                                                 MM::UINT32 amount)
+                                                 MM::UINT32 amount,
+                                                 MM::Machine * m)
 {
   return MM_TRUE;
 }

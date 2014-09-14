@@ -267,8 +267,6 @@ MM::BOOLEAN MM::NodeBehavior::conformsTo(MM::NodeBehavior::IO direction)
   return r;
 }
 
-
-
 MM::VOID MM::NodeBehavior::getWork(MM::Node * node, /*edge source node*/
                                    MM::Instance * instance,
                                    MM::Edge * edge,
@@ -357,6 +355,45 @@ MM::VOID MM::NodeBehavior::getWork(MM::Node * node, /*edge source node*/
       new MM::NodeWorkItem(instance, node, edge);
     work->add(workItem);
   }
+}
+
+
+MM::INT32 MM::NodeBehavior::evaluateExpression(MM::Instance * instance,
+                                               MM::Exp * exp,
+                                               MM::Edge * edge,
+                                               MM::Machine * m)
+{
+  MM::INT32 val = 0;
+  if(instance->isEvaluatedExp(exp) == MM_TRUE) //check if expression is pre-evaluated
+  {
+    val = instance->getEvaluatedExp(exp);
+  }
+  else
+  {
+    MM::Evaluator * evaluator = m->getEvaluator();
+
+    //NOTE: whatever is evaluated here will hold during this step
+    //      since it is stored in evaluated expressions
+    //      and chance plays into this!
+    MM::ValExp * valExp = evaluator->eval(exp, instance, edge);
+      
+    if(valExp->getTypeId() == MM::T_NumberValExp)
+    {
+      val = ((NumberValExp *) valExp)->getValue();
+      instance->setEvaluatedExp(exp, val);
+    }
+    else if(valExp->getTypeId() == MM::T_RangeValExp)
+    {
+      val = ((RangeValExp *) valExp)->getIntValue() * 100;
+      instance->setEvaluatedExp(exp, val);
+    }
+    else
+    {
+      //TODO runtime exception
+    }      
+    valExp->recycle(m);
+  }
+  return val;
 }
 
 MM::VOID MM::NodeBehavior::step(MM::Node * node,
@@ -608,12 +645,12 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
     }
     
     if(val >= 100 &&
-       srcInstance->hasResources(srcNode, 100) == MM_TRUE &&
-       tgtInstance->hasCapacity(tgtNode, 100) == MM_TRUE)
+       srcInstance->hasResources(srcNode, 100, m) == MM_TRUE &&
+       tgtInstance->hasCapacity(tgtNode, 100, m) == MM_TRUE)
     {
-      if(srcInstance->hasResources(srcNode, val) == MM_TRUE)
+      if(srcInstance->hasResources(srcNode, val, m) == MM_TRUE)
       {
-        if(tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
+        if(tgtInstance->hasCapacity(tgtNode, val, m) == MM_TRUE)
         {
           MM_printf("Full flow %ld\n", val);
           srcInstance->sub(srcNode, m, val);
@@ -628,7 +665,7 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
         }
         else
         {
-          val = i->getCapacity(tgtNode);
+          val = i->getCapacity(tgtNode, m);
           MM_printf("Flow up to capacity %ld\n", val);
           srcInstance->sub(srcNode, m, val);
           tgtInstance->add(tgtNode, m, val);
@@ -643,8 +680,8 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
       }
       else
       {
-        val = srcInstance->getResources(srcNode);
-        if(tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
+        val = srcInstance->getResources(srcNode, m);
+        if(tgtInstance->hasCapacity(tgtNode, val, m) == MM_TRUE)
         {
           MM_printf("Flow up to availability %ld\n", val);
           srcInstance->sub(srcNode, m, val);
@@ -659,7 +696,7 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
         }
         else
         {
-          val = tgtInstance->getCapacity(tgtNode);
+          val = tgtInstance->getCapacity(tgtNode, m);
           MM_printf("Flow up to capacity %ld\n", val);
           srcInstance->sub(srcNode, m, val);
           tgtInstance->add(tgtNode, m, val);
@@ -724,7 +761,7 @@ MM::INT32 MM::NodeBehavior::getAmount(MM::Instance * i,
                                       MM::Machine * m,
                                       MM::Node * n)
 {
-  return getResources(i, n); //only overriden for pool nodes
+  return getResources(i, n, m); //only overriden for pool nodes
 }
 
 MM::VOID MM::NodeBehavior::toString(MM::String * buf, MM::Name * name)

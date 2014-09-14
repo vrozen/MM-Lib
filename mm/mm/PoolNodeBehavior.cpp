@@ -31,7 +31,7 @@
  *   * Riemer van Rozen - rozen@cwi.nl - HvA / CWI
  ******************************************************************************/
 //
-//  Pool.cpp
+//  PoolNodeBehavior.cpp
 //  mm
 //
 //  Created by Riemer van Rozen on 7/10/13.
@@ -84,6 +84,7 @@
 #include "InterfaceNode.h"
 #include "Definition.h"
 #include "Instance.h"
+#include "PoolNodeInstance.h"
 #include "Operator.h"
 #include "ValExp.h"
 #include "UnExp.h"
@@ -205,6 +206,7 @@ MM::VOID MM::PoolNodeBehavior::update(MM::Observable * observable,
 {
   switch(message)
   {
+    //pool node behavior is observing its type definition
     case MM::MSG_NEW_DRAIN:
     case MM::MSG_NEW_POOL:
     case MM::MSG_NEW_SOURCE:
@@ -212,6 +214,7 @@ MM::VOID MM::PoolNodeBehavior::update(MM::Observable * observable,
     case MM::MSG_NEW_GATE:
       addInterface((MM::Machine *) aux, (MM::Node *) object);
       break;
+    //pool node behavior is observing its type definition
     case MM::MSG_DEL_DRAIN:
     case MM::MSG_DEL_POOL:
     case MM::MSG_DEL_SOURCE:
@@ -384,13 +387,11 @@ MM::VOID MM::PoolNodeBehavior::stepPullAll(MM::Node * tgtNode,
                                            MM::Machine * m,
                                            MM::Transition * tr)
 {
-  MM::Evaluator * evaluator = m->getEvaluator();
-  
   MM::Vector<MM::Element *> es;
   MM::Vector<MM::NodeWorkItem *>::Iterator workIter = work->getIterator();
   MM::BOOLEAN success = MM_TRUE;
   
-  MM::INT32 tempTgtCapacity = tgtInstance->getCapacity(tgtNode);
+  MM::INT32 tempTgtCapacity = tgtInstance->getCapacity(tgtNode, m);
   
   MM_printf("STEP PULL ALL NODE %s (%ld edges)\n",
             tgtNode->getName()->getBuffer(),
@@ -405,40 +406,13 @@ MM::VOID MM::PoolNodeBehavior::stepPullAll(MM::Node * tgtNode,
     MM::Instance * srcInstance = workItem->getInstance();
     MM::INT32 val = 0; //evaluated expression
     
-    if(tgtInstance->isEvaluatedExp(exp) == MM_TRUE) //check if expression is pre-evaluated
-    {
-      val = tgtInstance->getEvaluatedExp(exp);
-    }
-    else
-    {
-      //NOTE: whatever is evaluated here will hold during this step
-      //      since it is stored in evaluated expressions
-      //      and chance plays into this!
-      MM::ValExp * valExp = evaluator->eval(tgtInstance, edge);
-      
-      if(valExp->getTypeId() == MM::T_NumberValExp)
-      {
-        val = ((NumberValExp *) valExp)->getValue();
-        tgtInstance->setEvaluatedExp(exp, val);
-      }
-      else if(valExp->getTypeId() == MM::T_RangeValExp)
-      {
-        val = ((RangeValExp *) valExp)->getIntValue() * 100;
-        tgtInstance->setEvaluatedExp(exp, val);
-      }
-      else
-      {
-        //TODO runtime exception
-      }
-      
-      valExp->recycle(m);
-    }
+    val = evaluateExpression(tgtInstance, exp, edge, m);
 
     //remove fp remainder
     val = (val / 100 ) * 100;
 
     if(val >= 100 &&
-       srcInstance->hasResources(srcNode, val) == MM_TRUE &&
+       srcInstance->hasResources(srcNode, val, m) == MM_TRUE &&
        (tempTgtCapacity - val) >= 0)
     {
       tempTgtCapacity -= val;
@@ -518,42 +492,15 @@ MM::VOID MM::PoolNodeBehavior::stepPushAll(MM::Node * srcNode,
     MM::Node * tgtNode = workItem->getNode();
     MM::Instance * tgtInstance = workItem->getInstance();
     MM::INT32 val = 0; //evaluated expression (fp)
-    
-    if(srcInstance->isEvaluatedExp(exp) == MM_TRUE) //check if expression is pre-evaluated
-    {
-      val = srcInstance->getEvaluatedExp(exp);
-    }
-    else
-    {
-      //NOTE: whatever is evaluated here will hold during this step
-      //      since it is stored in evaluated expressions
-      //      and chance plays into this!
-      MM::ValExp * valExp = evaluator->eval(srcInstance, edge);
-      
-      if(valExp->getTypeId() == MM::T_NumberValExp)
-      {
-        val = ((NumberValExp *) valExp)->getValue();
-        srcInstance->setEvaluatedExp(exp, val);
-      }
-      else if(valExp->getTypeId() == MM::T_RangeValExp)
-      {
-        val = ((RangeValExp *) valExp)->getIntValue() * 100;
-        srcInstance->setEvaluatedExp(exp, val);
-      }
-      else
-      {
-        //TODO runtime exception
-      }
-      
-      valExp->recycle(m);
-    }
-
+        
+    val = evaluateExpression(srcInstance, exp, edge, m);
+ 
     //remove fp remainder
     val = (val / 100) * 100;
     
     if(val >= 100 &&
        tempSrcAmount - val >= 0 &&
-       tgtInstance->hasCapacity(tgtNode, val) == MM_TRUE)
+       tgtInstance->hasCapacity(tgtNode, val, m) == MM_TRUE)
     {
       tempSrcAmount -= val;
       MM::FlowEvent * event =
@@ -621,32 +568,48 @@ MM::VOID MM::PoolNodeBehavior::begin(MM::Instance * i,
       i->createInstances(n, m, (MM::Definition *) unitDef, at / 100);
     }
   }
-  
+ 
+  MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance(n, i, at);
+
+  //node instance: wants to know about changes to its expression
+  //1. find node instances in expression
+  //2. listens to those node instances because updated values imply its observable value changed
+  //3. when informed (via update): revaluates its observable value and informs observers
+
+  i->addPoolNodeInstance(poolNodeInstance);
+
   //hack
-  i->setValue(n, at);     //Begin before step
-  i->setNewValue(n, at);  //Begin during step
+  //i->setValue(n, at);     //Begin before step
+  //i->setNewValue(n, at);  //Begin during step
 }
 
 MM::VOID MM::PoolNodeBehavior::end(MM::Instance * i,
                                    MM::Machine * m,
                                    MM::Node * n)
-{
-  //remove value
-  i->deleteValue(n);
-  
+{  
   //detroy instances
   i->destroyAllInstances(n, m);
+
+  //remove pool node instance and delete it
+  MM::PoolNodeInstance * poolNodeInstance = i->getPoolNodeInstance(n);
+
+  i->removePoolNodeInstance(poolNodeInstance);
+  
+  delete poolNodeInstance;
+  //FIXME: notify observes of its demise???
 }
 
 MM::VOID MM::PoolNodeBehavior::change(MM::Instance * i,
                                       MM::Machine * m,
                                       MM::Node * n)
 {
+  //if the type changes the new value will be 'at'
+
   //FIXME: add to previous transition
   //FIXME: recalculate disabled, enabled and active nodes
-
   //FIX: fp value
-  MM::INT32 delta = at - i->getValue(n);
+  MM::INT32 val = i->getValue(n);
+  MM::INT32 delta = at - val;
 
   //FIXME: do it via transitions for messages!
   if(delta >= 0)
@@ -668,30 +631,13 @@ MM::INT32 MM::PoolNodeBehavior::getAmount(MM::Instance * i,
                                           MM::Machine * m,
                                           MM::Node * n)
 {
-  MM::Evaluator * evaluator = m->getEvaluator();
-  MM::INT32 val = 0;
-  //fixme move to val exp method
+  MM::INT32 addVal = 0;
   if(exp != MM_NULL)
   {
-    MM::ValExp * valExp = evaluator->eval(exp, i, MM_NULL);
-    if(valExp->getTypeId() == MM::T_NumberValExp)
-    {
-      //FIX: inter value --> fixed point value
-      val = ((NumberValExp *) valExp)->getValue();
-      i->setEvaluatedExp(exp, val);
-    }
-    else if(valExp->getTypeId() == MM::T_RangeValExp)
-    {
-      //FIX: integer value --> fixed point value
-      val = ((RangeValExp *) valExp)->getIntValue() * 100;
-      i->setEvaluatedExp(exp, val);
-    }
-    else
-    {
-      //TODO runtime exception
-    }
+    addVal = evaluateExpression(i, exp, MM_NULL, m);
   }
-  val = i->getValue(n) + val;
+  
+  MM::INT32 val = i->getValue(n) + addVal;
   
   return val;
 }
@@ -761,21 +707,39 @@ MM::VOID MM::PoolNodeBehavior::sub(MM::Instance * i,
   }
 }
 
-MM::UINT32 MM::PoolNodeBehavior::getCapacity(MM::Instance * i,
-                                             MM::Node     * n)
+MM::INT32 MM::PoolNodeBehavior::getCapacity(MM::Instance * i,
+                                            MM::Node     * n,
+                                            MM::Machine  * m)
 {
-  return max - i->getNewValue(n);
+  MM::INT32 addVal = 0;
+  if(exp != MM_NULL)
+  {
+    addVal = evaluateExpression(i, exp, MM_NULL, m);
+  }
+
+  return max - (i->getNewValue(n) + addVal);
 }
 
-MM::UINT32 MM::PoolNodeBehavior::getResources(MM::Instance * i,
-                                              MM::Node     * n)
+//FIXME: observable resources in between steps
+MM::INT32 MM::PoolNodeBehavior::getResources(MM::Instance * i,
+                                             MM::Node     * n,
+                                             MM::Machine  * m)
 {
-  return i->getOldValue(n);
+  MM::INT32 addVal = 0;
+  
+  if(exp != MM_NULL)
+  {
+    addVal = evaluateExpression(i, exp, MM_NULL, m);
+  }
+
+  return i->getOldValue(n) + addVal;
 }
 
+//FIXME: observable capacity to store resources during a step
 MM::BOOLEAN MM::PoolNodeBehavior::hasCapacity(MM::Instance * i,
                                               MM::Node     * n,
-                                              MM::UINT32     amount)
+                                              MM::UINT32     amount,
+                                              MM::Machine  * m)
 {
   MM::BOOLEAN r = MM_FALSE;
   if(max == 0)
@@ -784,7 +748,14 @@ MM::BOOLEAN MM::PoolNodeBehavior::hasCapacity(MM::Instance * i,
   }
   else
   {
-    MM::UINT32 newValue = i->getNewValue(n);
+    MM::INT32 addVal = 0;
+    if(exp != MM_NULL)
+    {
+      addVal = evaluateExpression(i, exp, MM_NULL, m);
+    }
+
+    MM::UINT32 newValue = i->getNewValue(n) + addVal;
+
     if(max - newValue >= amount)
     {
       r = MM_TRUE;
@@ -793,12 +764,21 @@ MM::BOOLEAN MM::PoolNodeBehavior::hasCapacity(MM::Instance * i,
   return r;
 }
 
+//FIXME: observable availability of resources during a step
 MM::BOOLEAN MM::PoolNodeBehavior::hasResources(MM::Instance * i,
                                                MM::Node     * n,
-                                               MM::UINT32     amount)
+                                               MM::UINT32     amount,
+                                               MM::Machine  * m)
 {
   MM::BOOLEAN r = MM_FALSE;
-  MM::INT32 oldValue = i->getOldValue(n);
+  MM::INT32 addVal = 0;
+  if(exp != MM_NULL)
+  {
+    addVal = evaluateExpression(i, exp, MM_NULL, m);
+  }
+
+  MM::INT32 oldValue = i->getOldValue(n) + addVal;
+
   if(oldValue >= (MM::INT32) amount)
   {
     r = MM_TRUE;
@@ -827,13 +807,13 @@ MM::VOID MM::PoolNodeBehavior::toString(MM::String * buf,
     buf->space();
     of->toString(buf);
   }  
-  if(at!= 0)
+  if(at != 0)
   {
     buf->space();
     buf->append((MM::CHAR*)MM::PoolNodeBehavior::AT_STR,
                 MM::PoolNodeBehavior::AT_LEN);
     buf->space();
-    buf->appendInt(at);
+    buf->appendInt(at / 100);
   }
   if(max != 0)
   {

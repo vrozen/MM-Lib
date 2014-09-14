@@ -188,39 +188,12 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
     MM::Instance * srcInstance = workItem->getInstance();
     MM::INT32 val = 0; //evaluated expression
     
-    if(tgtInstance->isEvaluatedExp(exp) == MM_TRUE) //check if expression is pre-evaluated
-    {
-      val = tgtInstance->getEvaluatedExp(exp);
-    }
-    else
-    {
-      //NOTE: whatever is evaluated here will hold during this step
-      //      since it is stored in evaluated expressions
-      //      and chance plays into this!
-      MM::ValExp * valExp = evaluator->eval(tgtInstance, edge);
-      
-      if(valExp->getTypeId() == MM::T_NumberValExp)
-      {
-        val = ((NumberValExp *) valExp)->getValue();
-        tgtInstance->setEvaluatedExp(exp, val);
-      }
-      else if(valExp->getTypeId() == MM::T_RangeValExp)
-      {
-        val = ((RangeValExp *) valExp)->getIntValue() * 100;
-        tgtInstance->setEvaluatedExp(exp, val);
-      }
-      else
-      {
-        //TODO runtime exception
-      }
-      
-      valExp->recycle(m);
-    }
+    val = evaluateExpression(tgtInstance, exp, edge, m);
 
     val = (val / 100) * 100;
-    
+
     if(val >= 100 &&
-       srcInstance->hasResources(srcNode, val) == MM_TRUE)
+       srcInstance->hasResources(srcNode, val, m) == MM_TRUE)
     {
       MM::FlowEvent * event =
         m->createFlowEvent(tgtInstance, tgtNode, edge,
@@ -319,28 +292,28 @@ MM::VOID MM::DrainNodeBehavior::sub(MM::Instance * i,
   //do nothing
 }
 
-MM::UINT32 MM::DrainNodeBehavior::getCapacity(MM::Instance * i,
-                                              MM::Node * n)
+MM::INT32 MM::DrainNodeBehavior::getCapacity(MM::Instance * i,
+                                             MM::Node * n, MM::Machine * m)
 {
   return MM_MAX_RESOURCES;
 }
 
-MM::UINT32 MM::DrainNodeBehavior::getResources(MM::Instance * i,
-                                               MM::Node * n)
+MM::INT32 MM::DrainNodeBehavior::getResources(MM::Instance * i,
+                                              MM::Node * n, MM::Machine * m)
 {
   return 0;
 }
 
 MM::BOOLEAN MM::DrainNodeBehavior::hasCapacity(MM::Instance * i,
                                                MM::Node * n,
-                                               MM::UINT32 amount)
+                                               MM::UINT32 amount, MM::Machine * m)
 {
   return MM_TRUE;
 }
 
 MM::BOOLEAN MM::DrainNodeBehavior::hasResources(MM::Instance * i,
                                                 MM::Node * n,
-                                                MM::UINT32 amount)
+                                                MM::UINT32 amount, MM::Machine * m)
 {
   return MM_FALSE;
 }
