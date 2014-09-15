@@ -226,6 +226,8 @@ namespace MM
         
     MM::VOID MM::Instance::notifyValues(MM::Machine * m);
 
+    MM::PoolNodeInstance * findPoolNodeInstance(MM::VarExp * varExp);
+
     MM::VOID nameToString(MM::String * buf);
     MM::VOID nameToString(MM::Element * element, MM::String * buf);
     MM::VOID toString(MM::String * buf);

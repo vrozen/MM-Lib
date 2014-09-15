@@ -65,6 +65,7 @@
 #include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
+#include "VarExp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Activation.h"

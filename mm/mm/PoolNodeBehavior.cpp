@@ -66,6 +66,7 @@
 #include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
+#include "VarExp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Edge.h"
@@ -553,6 +554,8 @@ MM::VOID MM::PoolNodeBehavior::stepPushAll(MM::Node * srcNode,
   }
 }
 
+
+
 //what happens to an instance when a pool node is created
 MM::VOID MM::PoolNodeBehavior::begin(MM::Instance * i,
                                      MM::Machine * m,
@@ -569,14 +572,25 @@ MM::VOID MM::PoolNodeBehavior::begin(MM::Instance * i,
     }
   }
  
-  MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance(n, i, at);
-
+  
   //node instance: wants to know about changes to its expression
   //1. find node instances in expression
   //2. listens to those node instances because updated values imply its observable value changed
   //3. when informed (via update): revaluates its observable value and informs observers
 
-  i->addPoolNodeInstance(poolNodeInstance);
+  if(i->getPoolNodeInstance(n) == MM_NULL)
+  {
+    printf("create pool node instance %s\n", n->getName()->getBuffer());
+    fflush(stdout);
+    MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance(n, i, at);
+    if(exp != MM_NULL)
+    {
+      printf("init pool node instance %s\n", n->getName()->getBuffer());
+      fflush(stdout);
+      poolNodeInstance->initExp(exp);
+    }
+    i->addPoolNodeInstance(poolNodeInstance);
+  }
 
   //hack
   //i->setValue(n, at);     //Begin before step
@@ -592,6 +606,14 @@ MM::VOID MM::PoolNodeBehavior::end(MM::Instance * i,
 
   //remove pool node instance and delete it
   MM::PoolNodeInstance * poolNodeInstance = i->getPoolNodeInstance(n);
+  if(poolNodeInstance != MM_NULL)
+  {
+    poolNodeInstance->deinitExp();
+  }
+  else
+  {
+    //TODO: runtime exception
+  }
 
   i->removePoolNodeInstance(poolNodeInstance);
   
@@ -621,6 +643,20 @@ MM::VOID MM::PoolNodeBehavior::change(MM::Instance * i,
   {
 	  sub(i, m, n, (MM::UINT32)-delta);
     i->notifyObservers(i, (MM::VOID*)((MM::UINT32)-delta), MM::MSG_SUB_VALUE, n);
+  }
+
+  MM::PoolNodeInstance * poolNodeInstance = i->getPoolNodeInstance(n);
+  if(poolNodeInstance != MM_NULL)
+  {
+    printf("init pool node instance %s\n", n->getName()->getBuffer());
+    fflush(stdout);
+
+    poolNodeInstance->deinitExp();
+    poolNodeInstance->initExp(exp);
+  }
+  else
+  {
+    //TODO: runtime exception
   }
 
   i->notifyObservers(i, (MM::VOID*) at, MM::MSG_HAS_VALUE, n);

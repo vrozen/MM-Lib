@@ -67,6 +67,7 @@
 #include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
+#include "VarExp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Activation.h"
@@ -209,6 +210,7 @@ MM::VOID MM::Instance::recycle(MM::Recycler * r)
   while(poolNodeInstanceIter.hasNext() == MM_TRUE)
   {
     MM::PoolNodeInstance * poolNodeInstance = poolNodeInstanceIter.getNext();
+    poolNodeInstance->deinitExp();
     removePoolNodeInstance(poolNodeInstance);
     delete poolNodeInstance;
   }
@@ -332,8 +334,7 @@ MM::VOID MM::Instance::sweep(MM::Machine * m)
       
       if(instance->isMarked() == MM_TRUE)
       {
-        del.add(instance);
-        
+        del.add(instance);        
       }
       else
       {
@@ -457,6 +458,7 @@ MM::INT32 MM::Instance::getValue(MM::Node * node)
   else
   {
     printf("Missing poolNodeInstance %s on getValue\n", node->getName()->getBuffer());
+    fflush(stdout);
   }
 
   return val;
@@ -475,6 +477,7 @@ MM::INT32 MM::Instance::getNewValue(MM::Node * node)
   else
   {
     printf("Missing poolNodeInstance %s on getNewValue\n", node->getName()->getBuffer());
+    fflush(stdout);
   }
 
 
@@ -494,6 +497,7 @@ MM::INT32 MM::Instance::getOldValue(MM::Node * node)
   else
   {
     printf("Missing poolNodeInstance %s on getOldValue\n", node->getName()->getBuffer());
+    fflush(stdout);
   }
 
   return val;
@@ -517,6 +521,7 @@ MM::VOID MM::Instance::deleteValue(MM::Node * node)
   else
   {
     printf("Missing poolNodeInstance %s on deleteValue\n", node->getName()->getBuffer());
+    fflush(stdout);
   }
   //values->remove(node);
 }
@@ -532,6 +537,7 @@ MM::VOID MM::Instance::setValue(MM::Node * node, MM::INT32 value)
   else
   {
     printf("Missing poolNodeInstance %s on setValue\n", node->getName()->getBuffer());
+    fflush(stdout);
   }
   //values->put(node, value);
 }
@@ -547,6 +553,7 @@ MM::VOID MM::Instance::setNewValue(MM::Node * node, MM::INT32 value)
   else
   {
     printf("Missing poolNodeInstance %s on setNewValue\n", node->getName()->getBuffer());
+    fflush(stdout);
   }
   //newValues->put(node, value);
 }
@@ -562,6 +569,7 @@ MM::VOID MM::Instance::setOldValue(MM::Node * node, MM::INT32 value)
   else
   {
     printf("Missing poolNodeInstance %s on setOldValue\n", node->getName()->getBuffer());
+    fflush(stdout);
   }
   //oldValues->put(node, value);
 }
@@ -871,38 +879,65 @@ MM::VOID MM::Instance::createInstances(MM::Element    * element,
   
   for(MM::UINT32 nrOfInstances = 0; nrOfInstances < amount; nrOfInstances++)
   {
-    MM::Instance * instance = m->createInstance(this, unitDef, element);
-    
-    MM::NodeBehavior * behavior = MM_NULL;
+    MM::Instance * instance = m->createInstance(this, unitDef, element);    
     MM::Vector<Element *> * elements = unitDef->getElements();
     MM::Vector<Element *>::Iterator eIter = elements->getIterator();
     while(eIter.hasNext() == MM_TRUE)
     {
-      MM::Element * element = eIter.getNext();
-      switch(element->getTypeId())
+      MM::Element * element = element = eIter.getNext();
+      if(element->instanceof(MM::T_Node) == MM_TRUE)
       {
-        case MM::T_Node:
-          behavior = ((MM::Node*)element)->getBehavior();
+        MM::Node * node = (MM::Node*) element;
+        MM::NodeBehavior * behavior = behavior = node->getBehavior();
+        if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+        {
+          printf("create pool node instance %s\n", node->getName()->getBuffer());
+          fflush(stdout);
 
-          if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
-          {
-            MM::PoolNodeBehavior * poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
-            MM::UINT32 at = poolNodeBehavior->getAt();
-
-            MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance((MM::Node *)element, this, at);
-            instance->addPoolNodeInstance(poolNodeInstance);
-          }
-
-          instance->update(unitDef, m, behavior->getCreateMessage(), element);
-          break;
-        case MM::T_Declaration:
-          instance->update(unitDef, m, MM::MSG_NEW_DECL, element);
-          break;
-        default:
-          //do nothing
-          break;
+          MM::PoolNodeBehavior * poolNodeBehavior = poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
+          MM::UINT32 at = poolNodeBehavior->getAt();
+          MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance((MM::Node *)element, instance, at);
+          instance->addPoolNodeInstance(poolNodeInstance);
+        }
       }
     }
+
+    MM::Vector<Element *> * elements2 = unitDef->getElements();
+    MM::Vector<Element *>::Iterator eIter2 = elements2->getIterator();
+    while(eIter2.hasNext() == MM_TRUE)
+    {
+      MM::Element * element2 = eIter2.getNext();
+      if(element2->instanceof(MM::T_Node) == MM_TRUE)
+      {
+        MM::Node * node2 = (MM::Node*) element2;
+        MM::NodeBehavior * behavior2 = node2->getBehavior();
+
+
+        if(behavior2->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+        {
+          MM::PoolNodeBehavior * poolNodeBehavior2 = (MM::PoolNodeBehavior *) behavior2;
+          MM::Exp * exp2 = poolNodeBehavior2->getAdd();
+          if(exp2 != MM_NULL)
+          {            
+            printf("init pool node instance %s\n", node2->getName()->getBuffer());
+            fflush(stdout);
+            MM::PoolNodeInstance * poolNodeInstance2 = instance->getPoolNodeInstance(node2);
+            poolNodeInstance2->initExp(exp2);
+          }
+        }
+
+        instance->update(unitDef, m, behavior2->getCreateMessage(), element2);
+      }
+      else if(element2->instanceof(MM::T_Declaration) == MM_TRUE)
+      {
+        instance->update(unitDef, m, MM::MSG_NEW_DECL, element2);
+      }
+      else
+      {
+        //do nothing
+      }
+    }
+
     unitDef->addObserver(instance);
     
     is->add(instance);
@@ -1128,6 +1163,56 @@ MM::VOID MM::Instance::add(MM::Node * node,
   //too soon: !!
   //notifyObservers(this, (void*) amount, MM::MSG_SUB_VALUE, node);
 }
+
+MM::PoolNodeInstance * MM::Instance::findPoolNodeInstance(MM::VarExp * varExp)
+{
+  MM::Definition * def = this->getDefinition();
+  MM::Name * name = varExp->getName();
+  MM::Element * element = def->getElement(name);
+  MM::PoolNodeInstance * curPoolNodeInstance = MM_NULL;
+
+  if(element->instanceof(MM::T_Node) == MM_TRUE)
+  {
+    MM::Node * curNode = (MM::Node *) element;
+    MM::NodeBehavior * curNodeBehavior = curNode->getBehavior();
+    MM::Instance * curInstance = this;
+    
+    while(curNodeBehavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
+    {
+      MM::Edge * aliasEdge = ((MM::RefNodeBehavior *)curNodeBehavior)->getAlias();
+      if(aliasEdge != MM_NULL)
+      {
+        curNode = aliasEdge->getSource();
+        
+        //internally bound: alias source node is in the same type
+        MM::Definition * def = curInstance->getDefinition();
+        if(def->containsElement(curNode) == MM_TRUE)
+        {
+          curNodeBehavior = curNode->getBehavior();
+        }
+        else
+        {
+          //externally bound: alias source node is in the parent type
+          //ASSUME: parent definition contains curNode
+          curInstance = curInstance->getParent();
+          break;
+        }
+      }
+      else
+      {
+        MM_printf("NodeBehavior Error: %s has unresolved alias!\n",
+                  curNode->getName()->getBuffer());
+        break;
+      }
+    }
+
+    curPoolNodeInstance = curInstance->getPoolNodeInstance(curNode);
+    
+  }
+
+  return curPoolNodeInstance;
+}
+
 
 MM::VOID MM::Instance::notifyValues(MM::Machine * m)
 {

@@ -65,6 +65,7 @@
 #include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
+#include "VarExp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Activation.h"
@@ -115,6 +116,7 @@ MM::PoolNodeInstance::PoolNodeInstance(MM::Node * poolNode,
   this->oldVal = initVal;
   this->newVal = initVal;
   this->dirty = MM_TRUE;
+  this->observing = new MM::Vector<MM::PoolNodeInstance *>();
 }
 
 MM::PoolNodeInstance::~PoolNodeInstance()
@@ -125,6 +127,7 @@ MM::PoolNodeInstance::~PoolNodeInstance()
   this->oldVal = 0;
   this->newVal = 0;
   this->dirty = MM_FALSE;
+  delete observing;
 }
 
 MM::Node * MM::PoolNodeInstance::getNode()
@@ -205,6 +208,7 @@ MM::VOID MM::PoolNodeInstance::finalize()
     //printf("PNI %lu %s value is %ld was %ld becomes %ld\n", this, poolNode->getName()->getBuffer(), val, oldVal, newVal);
     //fflush(stdout);
     this->setDirty(MM_TRUE);
+    notifyObservers(this, 0, MM::MSG_UPD_VALUE, (MM::VOID*)newVal);
     val = newVal;
   }
 }
@@ -224,12 +228,74 @@ MM::VOID MM::PoolNodeInstance::update(MM::Observable * observable,
       //and that we should inform anyone observing this pool node instance
       this->setDirty(MM_TRUE);
       break;
+      /*
     case MM::MSG_END_VALUE:
       MM_printf("PoolNodeInstance: Sees poolNodeInstance %s end\n",
              ((MM::Node*)observable)->getName()->getBuffer());
       //any pool node instance listening to a value end should trigger a run-time exception
       break;
+      */
     default:
       break;
+  }
+}
+
+MM::VOID MM::PoolNodeInstance::initExp(MM::Exp * exp)
+{
+  if(exp != MM_NULL)
+  {
+    Vector<MM::Exp *> exps;
+    exps.add(exp);
+ 
+    MM::PoolNodeInstance * other = MM_NULL;
+    MM::VarExp * varExp = MM_NULL;
+
+    while(exps.isEmpty() == MM_FALSE)
+    {
+      Exp * curExp = exps.pop();
+
+      switch(curExp->getTypeId())
+      {
+        case MM::T_BinExp:
+          exps.add(((MM::BinExp*)curExp)->getLhsExp());
+          exps.add(((MM::BinExp*)curExp)->getRhsExp());
+          break;
+       case MM::T_OverrideExp:
+          exps.add(((MM::OverrideExp*)curExp)->getExp());
+          break;
+        case MM::T_UnExp:
+          exps.add(((MM::UnExp*)curExp)->getExp());
+          break;
+        case MM::T_VarExp:
+          varExp = (MM::VarExp *) curExp;
+          other = instance->findPoolNodeInstance(varExp);
+          if(other != MM_NULL)
+          {
+            printf("%lu poolNodeInstance %s observes poolNodeInstance %s %lu\n", this, poolNode->getName()->getBuffer(), other->getNode()->getName()->getBuffer(), other);
+            fflush(stdout);
+            other->addObserver(this);
+            observing->add(other);
+          }
+          else
+          {
+            //TODO: runtime exception
+            printf("Missing poolNodeInstance on expression %s\n", poolNode->getName()->getBuffer());
+            fflush(stdout);
+            //other = instance->findPoolNodeInstance(varExp);
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+}
+
+MM::VOID MM::PoolNodeInstance::deinitExp()
+{
+  while(observing->isEmpty() == MM_FALSE)
+  {
+    MM::PoolNodeInstance * other = observing->pop();
+    other->removeObserver(this);
   }
 }

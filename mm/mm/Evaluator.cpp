@@ -54,6 +54,7 @@
 #include "Element.h"
 #include "Operator.h"
 #include "Exp.h"
+#include "VarExp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Edge.h"

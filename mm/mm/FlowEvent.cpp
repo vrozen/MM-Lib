@@ -60,6 +60,7 @@
 #include "FlowEvent.h"
 #include "Operator.h"
 #include "Exp.h"
+#include "VarExp.h"
 #include "Edge.h"
 #include "NodeWorkItem.h"
 #include "NodeBehavior.h"

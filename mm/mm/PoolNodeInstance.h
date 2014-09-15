@@ -60,6 +60,7 @@ namespace MM
                              //this flag is set to true. based on this at the
                              //end of the step MSG_HAS_VAL messages are sent
                              //by the parent instance, and the flag is cleared to false.
+    MM::Vector<MM::PoolNodeInstance *> * observing;
 
   public:
     PoolNodeInstance(MM::Node * poolNode,
@@ -91,6 +92,9 @@ namespace MM
                     MM::VOID * aux,
                     MM::UINT32 message,
                     MM::VOID * object);
+
+    MM::VOID initExp(MM::Exp * exp);
+    MM::VOID deinitExp();
   };
 
 }

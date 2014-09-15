@@ -66,6 +66,7 @@
 #include "Prevention.h"
 #include "Operator.h"
 #include "Exp.h"
+#include "VarExp.h"
 #include "Assertion.h"
 #include "Deletion.h"
 #include "Edge.h"
@@ -347,6 +348,9 @@ MM::VOID MM::Machine::reflect(MM::Program * program)
         buf->print();
       }
     }
+
+    inst->notifyValues(this);
+
     buf->recycle(this);
   }
 }
@@ -1143,6 +1147,13 @@ MM::Instance * MM::Machine::createInstance(MM::Instance * parent,
   MM::NodeBehavior * behavior = MM_NULL;
   MM::Vector<Element *> * elements = def->getElements();
   MM::Vector<Element *>::Iterator eIter = elements->getIterator();
+  MM::PoolNodeBehavior * poolNodeBehavior = MM_NULL;
+  MM::UINT32 at = 0;
+  MM::Exp * exp = MM_NULL;
+  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+
+  /*
+  //create poolNodeInstances
   while(eIter.hasNext() == MM_TRUE)
   {
     MM::Element * element = eIter.getNext();
@@ -1154,10 +1165,9 @@ MM::Instance * MM::Machine::createInstance(MM::Instance * parent,
 
        if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
        {
-         MM::PoolNodeBehavior * poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
-         MM::UINT32 at = poolNodeBehavior->getAt();
-
-         MM::PoolNodeInstance * poolNodeInstance = new PoolNodeInstance(node, instance, at);
+         poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
+         at = poolNodeBehavior->getAt();
+         poolNodeInstance = new PoolNodeInstance(node, instance, at);
          instance->addPoolNodeInstance(poolNodeInstance);
        }
        break;
@@ -1165,6 +1175,35 @@ MM::Instance * MM::Machine::createInstance(MM::Instance * parent,
        break;
     }
   }
+
+  //initialize poolNodeInstances (can only be done after creation!)
+  eIter.reset();
+  while(eIter.hasNext() == MM_TRUE)
+  {
+    MM::Element * element = eIter.getNext();
+    switch(element->getTypeId())
+    {
+     case MM::T_Node:
+       node = (MM::Node*) element;
+       behavior = node->getBehavior();
+
+       if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+       {
+         poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
+         exp = poolNodeBehavior->getAdd();
+         poolNodeInstance = instance->getPoolNodeInstance(node);
+         if(exp != MM_NULL)
+         {
+           poolNodeInstance->initExp(exp);
+         }
+       }
+       break;
+     default:
+       break;
+    }
+  }
+  */
+
   MM::Recycler::create(instance);
   return instance;
 }
