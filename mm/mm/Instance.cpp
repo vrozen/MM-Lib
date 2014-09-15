@@ -347,8 +347,12 @@ MM::VOID MM::Instance::sweep(MM::Machine * m)
 	    MM::Definition * unitDef = instance->getDefinition();
       vector->remove(instance);
 
+      //stop observing the definition
+      unitDef->removeObserver(instance);
+
       //notify observers an instance has been deleted
       notifyObservers(this, /*FIX: unitDef was m*/ unitDef, MM::MSG_DEL_INST, instance);
+
       instance->recycle(m);
     }
   }
@@ -980,6 +984,7 @@ MM::VOID MM::Instance::destroyInstances(MM::Element    * element,
     {
       MM::UINT32 randomPos = rand() % size;
       MM::Instance * instance = is->elementAt(randomPos);
+
       instance->mark();
       //postpone:
       //notifyObservers(this, m, MM::MSG_DEL_INST, instance);
