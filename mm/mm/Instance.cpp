@@ -895,8 +895,7 @@ MM::VOID MM::Instance::createInstances(MM::Element    * element,
         MM::NodeBehavior * behavior = behavior = node->getBehavior();
         if(behavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
         {
-          printf("create pool node instance %s\n", node->getName()->getBuffer());
-          fflush(stdout);
+          MM_printf("create pool node instance %s\n", node->getName()->getBuffer());
 
           MM::PoolNodeBehavior * poolNodeBehavior = poolNodeBehavior = (MM::PoolNodeBehavior *) behavior;
           MM::UINT32 at = poolNodeBehavior->getAt();

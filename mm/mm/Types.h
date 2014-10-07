@@ -46,11 +46,12 @@
 
 //FIXME: HACK
 #if _MSC_VER
-#define snprintf _snprintf
+  #define snprintf _snprintf
 #endif
 
 #if MM_DEBUG
-  #define MM_printf printf
+  #define MM_printf(fmt, ...) \
+        do { fprintf(stdout, fmt, __VA_ARGS__); fflush(stdout); } while (0)
 #else
   #define MM_printf
 #endif

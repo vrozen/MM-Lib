@@ -750,7 +750,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
   else
   {
     //TODO: error
-    MM_printf("Error: source node of edge not found\n");
+    MM_printf("Error: source node %s of edge not found\n", srcName->getBuffer());
   }
   
   if(tgtNode != MM_NULL)
@@ -760,7 +760,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::Edge * edge)
   else
   {
     //TODO: error
-    MM_printf("Error: target node of edge not found\n");
+    MM_printf("Error: target node %s of edge not found\n", tgtName->getBuffer());
   }
   
   switch(edge->getTypeId())
@@ -802,11 +802,11 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::StateEdge * edge)
     //      and if not, then we resolve it to the parent instead 
     if(src == MM_NULL)
     {
-      MM_printf("Error: unresolved source name\n");
+      MM_printf("Error: unresolved source name %s\n",edge->getSourceName()->getBuffer());
     }
     else if(tgt == MM_NULL)
     {
-      MM_printf("Error: unresolved target name\n");
+      MM_printf("Error: unresolved target name %s\n",edge->getTargetName()->getBuffer());
     }
     else
     {
