@@ -146,8 +146,16 @@ namespace MM
                     MM::Node     * n);
 
     //query values on a complete state between steps
-    MM::INT32 getAmount(MM::Instance * i, MM::Machine * m, MM::Node * n);
-    
+    MM::INT32 getAmount(MM::Instance * i,
+                        MM::Node * n,
+                        MM::Machine * m);
+
+    //set value on a complete state between steps
+    MM::VOID setAmount(MM::Instance * i,
+                       MM::Node * n,
+                       MM::Machine * m,
+                       MM::INT32 val);    
+
     //instance manipulation during transitions
     MM::VOID add(MM::Instance * i,
                  MM::Machine  * m,

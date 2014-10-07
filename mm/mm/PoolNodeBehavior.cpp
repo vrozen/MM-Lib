@@ -664,8 +664,8 @@ MM::VOID MM::PoolNodeBehavior::change(MM::Instance * i,
 
 //query values on a state
 MM::INT32 MM::PoolNodeBehavior::getAmount(MM::Instance * i,
-                                          MM::Machine * m,
-                                          MM::Node * n)
+                                          MM::Node * n,
+                                          MM::Machine * m)
 {
   MM::INT32 addVal = 0;
   if(exp != MM_NULL)
@@ -676,6 +676,15 @@ MM::INT32 MM::PoolNodeBehavior::getAmount(MM::Instance * i,
   MM::INT32 val = i->getValue(n) + addVal;
   
   return val;
+}
+
+MM::VOID MM::PoolNodeBehavior::setAmount(MM::Instance * i,
+                                         MM::Node     * n,
+                                         MM::Machine  * m,                                         
+                                         MM::INT32      val)
+{
+  //ignore expression
+  i->setValue(n, val);
 }
 
 MM::VOID MM::PoolNodeBehavior::add(MM::Instance * i,
@@ -765,10 +774,11 @@ MM::INT32 MM::PoolNodeBehavior::getResources(MM::Instance * i,
   
   if(exp != MM_NULL)
   {
+    //TODO: reevaluate if dirty
     addVal = evaluateExpression(i, exp, MM_NULL, m);
   }
 
-  return i->getOldValue(n) + addVal;
+  return i->getNewValue(n) + addVal;
 }
 
 //FIXME: observable capacity to store resources during a step

@@ -323,7 +323,12 @@ MM::VOID MM::Node::change(MM::Instance * i, MM::Machine * m)
 
 MM::INT32 MM::Node::getAmount(MM::Instance * i, MM::Machine * m)
 {
-  return behavior->getAmount(i, m, this);
+  return behavior->getAmount(i, this, m);
+}
+
+MM::VOID MM::Node::setAmount(MM::Instance * i, MM::Machine * m, MM::INT32 val)
+{
+  return behavior->setAmount(i, this, m, val);
 }
 
 MM::VOID MM::Node::add(MM::Instance * i,

@@ -109,7 +109,8 @@ const MM::CHAR * MM::NodeBehavior::IO_STR[] =
   "", //epsilon = private
   "in",
   "out",
-  "inout"
+  "inout",
+  "extern"
 };
 
 const MM::CHAR * MM::NodeBehavior::WHEN_STR[] =
@@ -141,7 +142,8 @@ const MM::UINT32 MM::NodeBehavior::IO_LEN[] =
   strlen(MM::NodeBehavior::IO_STR[1]), //epsilon (private)
   strlen(MM::NodeBehavior::IO_STR[2]), //in
   strlen(MM::NodeBehavior::IO_STR[3]), //out
-  strlen(MM::NodeBehavior::IO_STR[4])  //inout
+  strlen(MM::NodeBehavior::IO_STR[4]), //inout
+  strlen(MM::NodeBehavior::IO_STR[5])  //extern
 };
 
 const MM::UINT32 MM::NodeBehavior::WHEN_LEN[] =
@@ -759,10 +761,19 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
 //retrieve resources from a full state in between steps
 //get the value of a node instance 
 MM::INT32 MM::NodeBehavior::getAmount(MM::Instance * i,
-                                      MM::Machine * m,
-                                      MM::Node * n)
+                                      MM::Node * n,
+                                      MM::Machine * m)
 {
-  return getResources(i, n, m); //only overriden for pool nodes
+  //default: getResources
+  return getResources(i, n, m);
+}
+
+MM::VOID MM::NodeBehavior::setAmount(MM::Instance * i,
+                                     MM::Node * n,
+                                     MM::Machine * m,
+                                     MM::INT32 val)
+{
+  //default: do nothing
 }
 
 MM::VOID MM::NodeBehavior::toString(MM::String * buf, MM::Name * name)

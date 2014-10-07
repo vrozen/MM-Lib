@@ -57,7 +57,8 @@ namespace MM
       IO_PRIVATE,
       IO_IN,
       IO_OUT,
-      IO_INOUT
+      IO_INOUT,
+      IO_EXTERN
     } IO;
     
     typedef enum __When
@@ -188,9 +189,10 @@ namespace MM
                             MM::Node     * n) = 0;
 
     //query values on a state
-    virtual MM::INT32 getAmount(MM::Instance * i,
-                                MM::Machine * m,
-                                MM::Node * n);
+    virtual MM::INT32 getAmount(MM::Instance * i, MM::Node * n, MM::Machine * m);
+
+    //set values in a state
+    virtual MM::VOID setAmount(MM::Instance * i, MM::Node * n, MM::Machine * m, MM::INT32 val);
     
     //instance manipulation during transitions/steps
     virtual MM::VOID add(MM::Instance * i,

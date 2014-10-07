@@ -99,7 +99,6 @@
 #include "AllExp.h"
 #include "AliasExp.h"
 #include "OneExp.h"
-#include "VarExp.h"
 #include "Reflector.h"
 #include "Evaluator.h"
 #include "Machine.h"
@@ -247,6 +246,27 @@ MM::VOID MM::Machine::step()
   MM::Transition * tr = createTransition();
   evaluator->step(tr);
   tr->recycle(this);
+}
+
+//Query the value of node instances directly
+//NOTE: bad practice, this is an event driven system
+MM::INT32 MM::Machine::getAmount(MM::UINT32 node, 
+                                 MM::UINT32 instance)
+{
+  MM::Node * n = (MM::Node *) node;
+  MM::Instance * i = (MM::Instance *) instance;
+  return n->getAmount(i, this);
+}
+
+//Set value in nodes directly
+//NOTE: node must be extern
+MM::VOID MM::Machine::setAmount(MM::UINT32 node, 
+                                MM::UINT32 instance,
+                                MM::INT32 val)
+{
+  MM::Node * n = (MM::Node *) node;
+  MM::Instance * i = (MM::Instance *) instance;
+  n->setAmount(i, this, val);
 }
 
 /*
