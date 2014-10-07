@@ -795,34 +795,45 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::StateEdge * edge)
     MM::Node * src = edge->getSource();
     MM::Node * tgt = edge->getTarget();
 
-    MM::NodeBehavior * behavior = tgt->getBehavior();
     //Note: because getBehavior returns the behavior of the referenced node on interfaces
     //      it can happen that we resolve an alias acros instance borders
     //      in the NodeBehavior class we rely on that
     //      we just check if the node is in the definition of the current instance
     //      and if not, then we resolve it to the parent instead 
-    if(behavior->getTypeId() == MM::T_RefNodeBehavior)
+    if(src == MM_NULL)
     {
-      MM::RefNodeBehavior * ref = (MM::RefNodeBehavior *) behavior;
-
-      MM::Edge * alias = ref->getAlias();
-      
-      //deinit and remove existing alias
-      if(alias != MM_NULL)
-      {
-        removeElement(def, alias);
-      }
-      
-      //store alias in tgt node
-      ref->setAlias(edge);
-      
-      //store alias in src node
-      src->addAlias(edge);
+      MM_printf("Error: unresolved source name\n");
+    }
+    else if(tgt == MM_NULL)
+    {
+      MM_printf("Error: unresolved target name\n");
     }
     else
     {
-      //TODO: error
-      MM_printf("Error: attempt to alias a node that is not a reference\n");
+      MM::NodeBehavior * behavior = tgt->getBehavior();
+      if(behavior->getTypeId() == MM::T_RefNodeBehavior)
+      {
+        MM::RefNodeBehavior * ref = (MM::RefNodeBehavior *) behavior;
+
+        MM::Edge * alias = ref->getAlias();
+      
+        //deinit and remove existing alias
+        if(alias != MM_NULL)
+        {
+          removeElement(def, alias);
+        }
+      
+        //store alias in tgt node
+        ref->setAlias(edge);
+      
+        //store alias in src node
+        src->addAlias(edge);
+      }
+      else
+      {
+        //TODO: error
+        MM_printf("Error: attempt to alias a node that is not a reference\n");
+      }
     }
   }
   else

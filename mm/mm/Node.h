@@ -115,6 +115,11 @@ namespace MM
     //query values on a state
     virtual MM::INT32 getAmount(MM::Instance * i,
                                 MM::Machine * m);
+
+    //set values in a state
+    virtual MM::VOID setAmount(MM::Instance * i,
+                               MM::Machine * m,
+                               MM::INT32 val);
     
     //instance manipulation
     virtual MM::VOID begin(MM::Instance * i, MM::Machine * m);

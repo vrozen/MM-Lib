@@ -206,15 +206,18 @@ public:
     //external API
     //--------------------------------------------------------------------------
     //evaluates input and adds elements to the model
-	MM::VOID eval (const MM::CHAR * input);
-	MM::VOID evalFile (const MM::CHAR * file);
-	MM::VOID reflect (MM::Program * program);
+    MM::VOID eval (const MM::CHAR * input);
+    MM::VOID evalFile (const MM::CHAR * file);
+    MM::VOID reflect (MM::Program * program);
 
     //takes a step in an MM model
-	MM::VOID step ();
+    MM::VOID step ();
     MM::VOID step (MM::CHAR * buf, MM::UINT32 size);
     MM::VOID step (MM::UINT32 instance, MM::CHAR * buf, MM::UINT32 size);
     
+    MM::INT32 getAmount(MM::UINT32 node, MM::UINT32 instance);
+    MM::VOID setAmount(MM::UINT32 node,  MM::UINT32 instance, MM::INT32 val);
+
     //resets all instances to definition start values
     MM::VOID reset ();
     MM::VOID reset (MM::UINT32 instance);

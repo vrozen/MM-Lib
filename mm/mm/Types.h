@@ -64,7 +64,8 @@ namespace MM
   typedef void          VOID;    /**> void type */
   typedef bool          BOOLEAN; /**> boolean type */
 
-  #define MM_MAX_RESOURCES LONG_MAX
+  #define MM_MAX_RESOURCES INT_MAX
+  #define MM_MIN_RESOURCES INT_MIN
   
   #define MM_TRUE  true  /**> true value */
   #define MM_FALSE false /**> false value */
