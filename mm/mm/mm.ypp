@@ -65,7 +65,7 @@
 %locations
 %error-verbose
 %token <str> ID
-%token <str> PRIVATE IN OUT INOUT
+%token <str> PRIVATE IN OUT INOUT EXTERN
 %token <str> PASSIVE AUTO USER START
 %token <str> PUSH PULL
 %token <str> ALL ANY
@@ -160,6 +160,7 @@ io
 | IN          { $$ = MM::NodeBehavior::IO_IN;        }
 | OUT         { $$ = MM::NodeBehavior::IO_OUT;       }
 | INOUT       { $$ = MM::NodeBehavior::IO_INOUT;     }
+| EXTERN      { $$ = MM::NodeBehavior::IO_EXTERN;    }
 | /*epsilon*/ { $$ = MM::NodeBehavior::IO_PRIVATE;   }
 ;
 
@@ -272,6 +273,8 @@ int main(int argc, const char * argv[])
 
 MM::Program * MM_parse(MM::Machine * machine, const MM::CHAR * input)
 {
+  yylineno = 1;          //TODO: attribute of parser
+  yycolumn = 1;
   mm = machine;
   program = MM_NULL;
   yy_scan_buffer((char*)input, strlen(input));    
@@ -281,6 +284,8 @@ MM::Program * MM_parse(MM::Machine * machine, const MM::CHAR * input)
 
 MM::Program * MM_parseFile(MM::Machine * machine, const MM::CHAR * file)
 {
+  yylineno = 1;          //TODO: attribute of parser
+  yycolumn = 1;
   program = MM_NULL;
   mm = machine;
 
