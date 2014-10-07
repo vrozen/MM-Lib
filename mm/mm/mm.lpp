@@ -155,6 +155,7 @@
 "in"/[^a-z]         { inID = false; return IN;         }
 "out"/[^a-z]        { inID = false; return OUT;        }
 "inout"/[^a-z]      { inID = false; return INOUT;      }
+"extern"/[^a-z]     { inID = false; return EXTERN;     }
 "ref"/[^a-z]        { inID = false; return REF;        }
 "dice"/[^a-z]       { inID = false; return DICE;       }
 "active"/[^a-z]     { inID = false; return ACTIVE;     }
