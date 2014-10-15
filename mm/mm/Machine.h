@@ -223,8 +223,8 @@ public:
     MM::VOID reset (MM::UINT32 instance);
 
     //activates an interactive node in an instance
-    MM::VOID activate (MM::UINT32 node,
-                       MM::UINT32 instance);
+    MM::BOOLEAN activate (MM::UINT32 node,
+                          MM::UINT32 instance);
     
     //retrieves a definition from a parent element by name    
     MM::UINT32 getInstance(MM::UINT32 instance, //0 -> global scope

@@ -233,12 +233,19 @@ MM::VOID MM::Machine::getInstanceName(MM::UINT32 instance,
   delete name;
 }
 
-MM::VOID MM::Machine::activate(MM::UINT32 node,
+MM::BOOLEAN MM::Machine::activate(MM::UINT32 node,
                                MM::UINT32 instance)
 {
   MM::Node * n = (MM::Node *) node;
   MM::Instance * i = (MM::Instance *) instance;
-  i->setActive(n);
+  MM::BOOLEAN isDisabled = n->isDisabled(i, evaluator, this);
+
+  if(isDisabled == MM_FALSE)
+  {
+    i->setActive(n);
+  }
+
+  return isDisabled;
 }
 
 MM::VOID MM::Machine::step()
