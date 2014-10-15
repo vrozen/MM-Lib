@@ -52,6 +52,7 @@ namespace MM
   private:
     MM::Element * decl;
     MM::Node    * ref;
+    MM::Edge    * alias;
   public:
     InterfaceNode(MM::Name    * name,
                   MM::Element * decl,
@@ -61,6 +62,9 @@ namespace MM
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
     
+    MM::Edge * getAlias();
+    MM::VOID setAlias(MM::Edge * edge);
+
     MM::NodeBehavior * getBehavior();
     MM::Element * getDeclaration();
     MM::Node * getNode();    

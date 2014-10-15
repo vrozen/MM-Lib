@@ -72,12 +72,14 @@ MM::InterfaceNode::InterfaceNode(MM::Name    * name,
 {
   this->decl = decl;
   this->ref = ref;
+  this->alias = MM_NULL;
 }
 
 MM::InterfaceNode::~InterfaceNode()
 {
   this->decl = MM_NULL;
   this->ref = MM_NULL;
+  this->alias = MM_NULL;
 }
 
 MM::VOID MM::InterfaceNode::recycle(MM::Recycler *r)
@@ -100,6 +102,20 @@ MM::BOOLEAN MM::InterfaceNode::instanceof(MM::TID tid)
   {
     return MM::Node::instanceof(tid);
   }
+}
+
+MM::Edge * MM::InterfaceNode::getAlias()
+{
+  return alias;
+}
+
+MM::VOID MM::InterfaceNode::setAlias(MM::Edge * edge)
+{
+  if(alias != MM_NULL)
+  {
+    MM_printf("Warning: reset alias");
+  }
+  this->alias = edge;
 }
 
 MM::NodeBehavior * MM::InterfaceNode::getBehavior()
