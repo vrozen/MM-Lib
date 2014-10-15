@@ -641,8 +641,8 @@ MM::VOID MM::NodeBehavior::stepAny(MM::NodeBehavior::Act act,
     }
     else
     {
-      srcNode = node;
-      tgtNode = workItem->getNode();
+      srcNode = workItem->getNode();
+      tgtNode = node;
       srcInstance = i;
       tgtInstance = workItem->getInstance();
     }
