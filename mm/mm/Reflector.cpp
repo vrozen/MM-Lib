@@ -802,11 +802,32 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::StateEdge * edge)
     //      and if not, then we resolve it to the parent instead 
     if(src == MM_NULL)
     {
-      MM_printf("Error: unresolved source name %s\n",edge->getSourceName()->getBuffer());
+      MM_printf("Error: unresolved source name %s\n", edge->getSourceName()->getBuffer());
+      return;
     }
-    else if(tgt == MM_NULL)
+    
+    if(tgt == MM_NULL)
     {
-      MM_printf("Error: unresolved target name %s\n",edge->getTargetName()->getBuffer());
+      MM_printf("Error: unresolved target name %s\n", edge->getTargetName()->getBuffer());
+      return;
+    }
+   
+    if(tgt->instanceof(MM::T_InterfaceNode) == MM_TRUE)
+    {
+      MM::InterfaceNode * iNode = (MM::InterfaceNode *) tgt;
+      MM::Edge * alias = iNode->getAlias();
+      
+      //deinit and remove existing alias
+      if(alias != MM_NULL)
+      {
+        removeElement(def, alias);
+      }
+      
+      //store alias in tgt node
+      iNode->setAlias(edge);
+      
+      //store alias in src node
+      src->addAlias(edge);
     }
     else
     {
@@ -835,8 +856,8 @@ MM::VOID MM::Reflector::init(MM::Definition * def, MM::StateEdge * edge)
         MM_printf("Error: attempt to alias a node that is not a reference\n");
       }
     }
-  }
-  else
+  } //end if alias
+  else //it must be a condition
   {
     //store condition in tgt node
     MM::Node * tgt = edge->getTarget();
