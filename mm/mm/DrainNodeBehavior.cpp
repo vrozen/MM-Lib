@@ -233,11 +233,11 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
   else
   {
     //fail
-	MM::Failure * event = m->createFailure(tgtInstance, tgtNode);
+    MM::Failure * event = m->createFailure(tgtInstance, tgtNode);
     tr->addElement(event);
 
-	//clean up
-	MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
+    //clean up
+    MM::Vector<MM::Element *>::Iterator eIter = es.getIterator();
     while(eIter.hasNext() == MM_TRUE)
     {
       MM::Element * element = eIter.getNext();

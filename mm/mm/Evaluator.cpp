@@ -681,6 +681,8 @@ MM::ValExp * MM::Evaluator::eval(MM::OverrideExp * exp,
   return eval((MM::Exp*)exp->getExp(), i, e);
 }
 
+
+/*
 MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
                                  MM::Instance * i,
                                  MM::Edge * e)
@@ -705,17 +707,20 @@ MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
       if(aliasEdge != MM_NULL)
       {
         curNode = aliasEdge->getSource();
-        
+        curNodeBehavior = curNode->getBehavior();
+
         //internally bound: alias source node is in the same type
         MM::Definition * def = curInstance->getDefinition();
         if(def->containsElement(curNode) == MM_TRUE)
         {
-          curNodeBehavior = curNode->getBehavior();
+          break;
         }
         else
         {
           //externally bound: alias source node is in the parent type
           //ASSUME: parent definition contains curNode
+          //WRONG!
+
           curInstance = curInstance->getParent();
           break;
         }
@@ -734,6 +739,9 @@ MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
     //          changes to observable values are only taken
     //          into account at the next step
     //          when calculating resources or capacity
+    //NOTE:     it may be possible to use the new value instead...
+    //          and set expressions dirty... :(
+    //          for not getting old incorrect values
     val = curNode->getAmount(curInstance, m);
 
     //val = curInstance->getValue(curNode);
@@ -741,6 +749,37 @@ MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
   
   return m->createNumberValExp(val);
 }
+*/
+
+MM::ValExp * MM::Evaluator::eval(MM::VarExp * exp,
+                                 MM::Instance * i,
+                                 MM::Edge * e)
+{
+  MM::UINT32 val = 0;
+  MM::Node * node = MM_NULL;
+  MM::Instance * instance = MM_NULL;
+  MM::ValExp * rExp = MM_NULL;
+
+  i->findNodeInstance(exp, &node, &instance);
+
+  if(node != MM_NULL && instance != MM_NULL)
+  {
+    val = node->getAmount(instance, m);
+    rExp = m->createNumberValExp(val);
+  }
+
+  //DECISION: expressions are fixed during a step to the
+  //          current values of the previous step
+  //          changes to observable values are only taken
+  //          into account at the next step
+  //          when calculating resources or capacity
+  //NOTE:     it may be possible to use the new value instead...
+  //          and set expressions dirty... :(
+  //          for not getting old incorrect values
+ 
+  return rExp;
+}
+
 
 MM::ValExp * MM::Evaluator::eval(MM::AllExp * exp,
                                  MM::Instance * i,

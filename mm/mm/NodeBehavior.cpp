@@ -315,41 +315,17 @@ MM::VOID MM::NodeBehavior::getWork(MM::Node * node, /*edge source node*/
   else if(node->getBehavior()->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
   {
     //resolve the reference to an actual node instance
-    MM::Node * curNode = node;
-    MM::NodeBehavior * curNodeBehavior = curNode->getBehavior();
-    MM::Instance * curInstance = instance;
-    
-    while(curNodeBehavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
-    {
-      MM::Edge * aliasEdge = ((MM::RefNodeBehavior *)curNodeBehavior)->getAlias();
-      if(aliasEdge != MM_NULL)
-      {
-        curNode = aliasEdge->getSource();
+    MM::Node * curNode = MM_NULL;
+    MM::Instance * curInstance = MM_NULL;
 
-        //internally bound: alias source node is in the same type
-        MM::Definition * def = curInstance->getDefinition();
-        if(def->containsElement(curNode) == MM_TRUE)
-        {
-          curNodeBehavior = curNode->getBehavior();
-        }
-        else
-        {
-          //externally bound: alias source node is in the parent type
-          //ASSUME: parent definition contains curNode
-          curInstance = instance->getParent();
-          break;
-        }
-      }
-      else
-      {
-        MM_printf("NodeBehavior Error: %s has unresolved alias!\n",
-                  node->getName()->getBuffer());
-        return;
-      }
-    }
+    instance->findNodeInstance(node, &curNode, &curInstance);
+
+    MM::NodeWorkItem * workItem =
+      new MM::NodeWorkItem(curInstance, curNode, edge);
+    work->add(workItem);
     //NOTE: assumed correct, references can be resolved using alias edges
     //curNode and curInstance are resolved to a node instance edge works on
-    getWork(curNode, curInstance, edge, work);
+    //getWork(curNode, curInstance, edge, work);
   }
   else
   {

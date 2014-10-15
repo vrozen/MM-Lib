@@ -105,8 +105,8 @@ namespace MM
   private:
     MM::VOID clearActiveNodes(MM::Instance * i);
 
-	MM::VOID setActiveNodes(MM::Instance * i,
-		                    MM::Transition * tr);
+	  MM::VOID setActiveNodes(MM::Instance * i,
+		                        MM::Transition * tr);
     
     MM::VOID setEnabledNodes(MM::Instance * i,
                              MM::Transition * tr);

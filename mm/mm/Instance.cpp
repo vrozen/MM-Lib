@@ -1168,6 +1168,174 @@ MM::VOID MM::Instance::add(MM::Node * node,
   //notifyObservers(this, (void*) amount, MM::MSG_SUB_VALUE, node);
 }
 
+
+MM::VOID MM::Instance::findNodeInstance(MM::Node * node,
+                                        MM::Node ** rNode,
+                                        MM::Instance ** rInstance)
+{
+  MM::Node * curNode = node;
+  MM::NodeBehavior * curNodeBehavior = curNode->getBehavior();
+  MM::Name * curNodeName = curNode->getName();
+  MM::Instance * curInstance = this;
+  MM::Definition * curDefinition = curInstance->getDefinition();
+    
+  while(curNodeBehavior->instanceof(MM::T_RefNodeBehavior) == MM_TRUE)
+  {
+    MM::Edge * aliasEdge = ((MM::RefNodeBehavior *)curNodeBehavior)->getAlias();
+    if(aliasEdge != MM_NULL) //internally bound
+    {
+      //internally bound: alias source node is in the same instance
+      curNode = aliasEdge->getSource();
+      curNodeBehavior = curNode->getBehavior();
+      curNodeName = curNode->getName();
+        
+      if(curNode->instanceof(MM::T_InterfaceNode) == MM_TRUE)
+      {
+        MM::InterfaceNode * interfaceNode = (MM::InterfaceNode *) curNode;
+        MM::Element * interfaceElement = interfaceNode->getDeclaration();
+        MM::Declaration * interfaceDecl = MM_NULL;
+        MM::Definition * interfaceDef = MM_NULL;
+
+        if(interfaceElement->instanceof(MM::T_Declaration) == MM_TRUE)
+        {
+          interfaceDecl = (MM::Declaration *) interfaceElement;
+          interfaceDef = interfaceDecl->getDefinition();
+        }
+        else
+        {
+          //Error: expected declaration
+          break;
+        }
+        curNode = (MM::Node *) interfaceDef->getElement(curNodeName);
+        curNodeBehavior = curNode->getBehavior();
+        curNodeName = curNode->getName();
+        curInstance = curInstance->getInstance(interfaceDecl);
+        curDefinition = curInstance->getDefinition();
+      }
+    }
+    else //externally bound
+    {
+      MM::Element * element = curInstance->getDeclaration();
+      MM::InterfaceNode * interfaceNode = MM_NULL;
+
+      if(element->instanceof(MM::T_Declaration) == MM_TRUE)
+      {
+        MM::Declaration * declaration = (MM::Declaration *) element;
+        interfaceNode = (MM::InterfaceNode *) declaration->getInterface(curNodeName);
+      }
+      else if(element->instanceof(MM::T_Node) == MM_TRUE)
+      {
+        MM::Node * declNode = (MM::Node *) element;
+        MM::NodeBehavior * declNodeBehavior = declNode->getBehavior();
+        if(declNodeBehavior->instanceof(MM::T_PoolNodeBehavior) == MM_TRUE)
+        {
+          MM::PoolNodeBehavior * declPoolNodeBehavior = (MM::PoolNodeBehavior *) declNodeBehavior;
+          interfaceNode = (MM::InterfaceNode *) declPoolNodeBehavior->getInterface(curNodeName);
+        }
+        else
+        {
+          //Error: expected pool
+          break;
+        }
+      }
+      else
+      {
+        //Error: expected declaration
+        break;
+      }
+
+      aliasEdge = interfaceNode->getAlias();       
+      if(aliasEdge == MM_NULL)
+      {
+        //Error: missing alias
+        break;
+      }
+      curNode = aliasEdge->getSource();
+      curNodeName = curNode->getName();
+      curNodeBehavior = curNode->getBehavior();
+
+      MM::Instance * parentInstance = curInstance->getParent();
+      MM::Definition * parentDefinition = parentInstance->getDefinition();
+
+      if(parentDefinition == MM_NULL)
+      {
+        //Error: expected definition
+        break;
+      }
+
+      if(parentDefinition->getElement(curNodeName) == curNode)
+      {
+        curInstance = parentInstance;
+        curDefinition = parentDefinition;
+      }
+      else if(curNode->instanceof(MM::T_InterfaceNode) == MM_TRUE)
+      {
+        MM::InterfaceNode * interfaceNode = (MM::InterfaceNode *) curNode;
+        MM::Element * interfaceElement = interfaceNode->getDeclaration();
+        MM::Declaration * interfaceDecl = MM_NULL;
+        MM::Definition * interfaceDef = MM_NULL;
+
+        if(interfaceElement->instanceof(MM::T_Declaration) == MM_TRUE)
+        {
+          interfaceDecl = (MM::Declaration *) interfaceElement;
+          interfaceDef = interfaceDecl->getDefinition();
+        }
+        else
+        {
+          //Error: expected declaration
+          break;
+        }
+        curNode = (MM::Node *) interfaceDef->getElement(curNodeName);
+        curNodeName = curNode->getName();
+        curNodeBehavior = curNode->getBehavior();
+        curInstance = curInstance->getParent();
+        curInstance = curInstance->getInstance(interfaceDecl);
+        curDefinition = curInstance->getDefinition();
+      }
+      else
+      {
+        //Error: expected interface node
+        break;
+      }
+    }
+  }
+
+  * rNode = curNode;
+  * rInstance = curInstance;
+}
+
+MM::VOID MM::Instance::findNodeInstance(MM::VarExp * exp,
+                                        MM::Node ** rNode,
+                                        MM::Instance ** rInstance)
+{
+  MM::Name * name = exp->getName();
+  MM::Element * element = def->getElement(name);
+
+  if(element->instanceof(MM::T_Node) == MM_TRUE)
+  {
+    MM::Node * curNode = (MM::Node *) element;
+    MM::Instance * curInstance = this;
+    findNodeInstance(curNode, rNode, rInstance);  
+  }
+}
+
+MM::PoolNodeInstance * MM::Instance::findPoolNodeInstance(MM::VarExp * exp)
+{
+  MM::Node * node = MM_NULL;
+  MM::Instance * instance = MM_NULL;
+  MM::PoolNodeInstance * nodeInstance = MM_NULL;
+
+  findNodeInstance(exp, &node, &instance);
+
+  if(node != MM_NULL && instance != MM_NULL)
+  {
+    nodeInstance = instance->getPoolNodeInstance(node);
+  }
+
+  return nodeInstance;
+}
+
+/*
 MM::PoolNodeInstance * MM::Instance::findPoolNodeInstance(MM::VarExp * varExp)
 {
   MM::Definition * def = this->getDefinition();
@@ -1216,7 +1384,7 @@ MM::PoolNodeInstance * MM::Instance::findPoolNodeInstance(MM::VarExp * varExp)
 
   return curPoolNodeInstance;
 }
-
+*/
 
 MM::VOID MM::Instance::notifyValues(MM::Machine * m)
 {
