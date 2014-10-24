@@ -259,7 +259,8 @@ MM::VOID MM::Reflector::merge(MM::Definition * root,
       MM_printf("Merge: Adding new type definition %s to parent definition.\n",
                 type->getName()->getBuffer());
       def->addElement(type);
-      init(root,type);
+      def->notifyObservers(def, m, MSG_NEW_TYPE, type);
+      init(root, type); //FIXME: is this correct?
     }
     else
     {
@@ -397,7 +398,7 @@ MM::VOID MM::Reflector::init(MM::Definition * def)
   //      however, the new nodes are initialized already (converter sugar)
   //NOTE: decision: we may never decrease the amount of elements.
   //NOTE: decision: all initializations initialize extra generated elements
-  
+
   //init types
   for(MM::UINT32 i = 0; i < size; i++)
   {
