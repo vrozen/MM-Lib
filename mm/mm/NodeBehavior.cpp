@@ -715,11 +715,13 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
     //FIXME: if trigger has no name --> error
     //i->notifyObservers(i, MM_NULL, MM::MSG_TRIGGER, trigger); 
     
-    if(tgtNode->isDisabled(i, e, m) == MM_FALSE)
-    {
+    //if(tgtNode->isDisabled(i, e, m) == MM_FALSE)
+    //{
       i->setNextActive(tgtNode);
-    }
+    //}
 	  //FIXME: notify when a trigger did not fire
+
+    //INSIGHT: the trigger did fire and inhibition is discovered only in the next step!
   }
   
   //FIXME: activate trigger targets of aliases
