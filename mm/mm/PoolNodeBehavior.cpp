@@ -747,6 +747,22 @@ MM::VOID MM::PoolNodeBehavior::sub(MM::Instance * i,
       //inform parent instance of the demise of instance
       //MM::Instance * parentInstance = i->getParent();
       //parentInstance->destroyInstance(n, m, i);
+
+      //set the new value of the pool node instance one lower
+      MM::Element * decl = i->getDeclaration();
+      if(decl->instanceof(MM::T_Node) == MM_TRUE)
+      {
+        MM::Node * declNode = (MM::Node *) decl;
+        //must be a pool node!
+        MM::Instance * parent = i->getParent();
+        MM::INT32 val = parent->getNewValue(declNode);
+        parent->setNewValue(declNode, val-100);
+        //NOTE: can't use setDirty because sweeep happens after finalize
+        //manually notify sub and has value
+        parent->notifyObservers(parent, (MM::VOID*) 100, MM::MSG_SUB_VALUE, declNode);
+        parent->notifyObservers(parent, (MM::VOID*)(val-100), MM::MSG_HAS_VALUE, declNode);			 
+      }
+
       i->mark();
     }
   }
