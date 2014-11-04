@@ -466,16 +466,51 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
     nodeEdges = output;
   }
 
+  /*
+  MM::CHAR * nodeName = MM_NULL;    
+  if(name != MM_NULL)
+  {
+    nodeName = name->getBuffer();
+  }
+  */
+
+  /*
+  MM::CHAR * nodeType = MM_NULL;
+  switch(behavior->getTypeId())
+  {
+    case MM::T_DrainNodeBehavior:
+      nodeType = "drain";
+      break;
+    case MM::T_SourceNodeBehavior:
+      nodeType = "source";
+      break;
+    case MM::T_PoolNodeBehavior:
+      nodeType = "pool";
+      break;
+    case MM::T_GateNodeBehavior:
+      nodeType = "gate";
+      break;
+    case MM::T_ConverterNodeBehavior:
+      nodeType = "converter";
+      break;
+    default:
+      nodeType = "other";
+      break;
+  }*/
 
   if(nodeEdges->isEmpty() == MM_TRUE)
   {
     if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO ||
        i->isActive(this) == MM_TRUE)
     {
+      //printf("SATISFIED Node %s of type %s, empty edge set and activated\n", nodeName, nodeType);
+      //fflush(stdout);
       satisfied = MM_TRUE; 
     }
     else
     {
+      //printf("UNSATISFIED Node %s of type %s, empty edge set and deactivated\n", nodeName, nodeType);
+      //fflush(stdout);
       satisfied = MM_FALSE;
     }
   }
@@ -483,14 +518,23 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
   {
     MM::Vector<Edge *>::Iterator iIter = nodeEdges->getIterator();
     
+    //search for edges of this node
     while(iIter.hasNext() == MM_TRUE)
     {
       MM::Edge * iEdge = iIter.getNext();
       MM::Exp * iExp = iEdge->getExp();
       MM::BOOLEAN found = MM_FALSE;
+
+      MM::CHAR * edgeName = MM_NULL;
+      if(iEdge->getName() != MM_NULL)
+      {
+        edgeName = iEdge->getName()->getBuffer();
+      }
       
       MM::Vector<Element *> * tElements = tr->getElements();
       MM::Vector<Element *>::Iterator tIter = tElements->getIterator();
+
+      //in the flow events of the transition
       while(tIter.hasNext() == MM_TRUE)
       {
         MM::Element * tElement = tIter.getNext();
@@ -500,17 +544,28 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
           MM::Instance * actInstance = event->getActInstance();
           MM::Node * actNode = event->getActNode();
           MM::Edge * actEdge = event->getActEdge();
+
+          //found iEdge
           if(actInstance == i && actNode == this && actEdge == iEdge)
           {
             found = MM_TRUE;
             MM::UINT32 flowValue = event->getAmount();
-            //note flowValue may not be the full flow value
-            //because two nodes can operate on the same edge
+            //FIXME: flowValue may not be the full flow value
+            //because two nodes can operate on the same edge            
             MM::UINT32 evaluatedEdgeExp = i->getEvaluatedExp(iExp);
-            
             if(flowValue < evaluatedEdgeExp)
             {
+              //there exists a flow edge for which the flow is less than required.
               satisfied = MM_FALSE;
+              /*
+              printf("UNSATISFIED Node %s of type %s, Edge %s flow value %ld < evaluated value.\n",
+                     nodeName,
+                     nodeType,
+                     edgeName,
+                     flowValue,
+                     evaluatedEdgeExp);
+              fflush(stdout);
+              */
               break;
             }
           }
@@ -518,23 +573,29 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
       }
       if(found == MM_FALSE)
       {
+        /*printf("UNSATISFIED Node %s of type %s, Edge %s\n",
+               nodeName,
+               nodeType,
+               edgeName);
+        fflush(stdout);
+        */
         satisfied = MM_FALSE;
         break;
       }
     }
   }
 
-  if(satisfied == MM_TRUE)
+
+  /*if(satisfied == MM_TRUE)
   {
-    MM::CHAR * buf = MM_NULL;
-    
-    if(name != MM_NULL)
-    {
-      buf = name->getBuffer();
-    }
-    
-    MM_printf("SATISFIED %s\n", buf);
+    printf("SATISFIED Node %s of type %s\n", nodeName, nodeType);
+    fflush(stdout);
   }
+  else
+  {
+    printf("UNSATISFIED Node %s of type %s\n", nodeName, nodeType);
+    fflush(stdout);
+  }*/
   
   return satisfied;
 }
