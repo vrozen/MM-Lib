@@ -210,6 +210,7 @@ MM::VOID MM::Evaluator::step(MM::Transition * tr)
 
   //clean up instances
   //notify deletions
+  //NOTE: pool node instance values might change --> also notified
   i->sweep(m);
   
   //recycle string
@@ -266,8 +267,11 @@ MM::VOID MM::Evaluator::prepare(MM::Instance * instance)
     MM::Node * node = pullAllIter.getNext();
     if(instance->isActive(node) == MM_TRUE)
     {
-      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
-      pullAllWork->add(ni);
+      if(node->isDisabled(instance, this, m) == MM_FALSE)
+      { 
+        MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+        pullAllWork->add(ni);
+      }
     }
   }
 
@@ -277,9 +281,11 @@ MM::VOID MM::Evaluator::prepare(MM::Instance * instance)
     MM::Node * node = pullAnyIter.getNext();
     if(instance->isActive(node) == MM_TRUE)
     {
-      //printf("YAY!\n");
-      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
-      pullAnyWork->add(ni);
+      if(node->isDisabled(instance, this, m) == MM_FALSE)
+      { 
+        MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+        pullAnyWork->add(ni);
+      }
     }
   }
   
@@ -289,8 +295,11 @@ MM::VOID MM::Evaluator::prepare(MM::Instance * instance)
     MM::Node * node = pushAllIter.getNext();
     if(instance->isActive(node) == MM_TRUE)
     {
-      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
-      pushAllWork->add(ni);
+      if(node->isDisabled(instance, this, m) == MM_FALSE)
+      { 
+        MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+        pushAllWork->add(ni);
+      }
     }
   }
   
@@ -300,8 +309,11 @@ MM::VOID MM::Evaluator::prepare(MM::Instance * instance)
     MM::Node * node = pushAnyIter.getNext();
     if(instance->isActive(node) == MM_TRUE)
     {
-      MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
-      pushAnyWork->add(ni);
+      if(node->isDisabled(instance, this, m) == MM_FALSE)
+      {
+        MM::Evaluator::NodeInstance * ni = new NodeInstance(instance, node);
+        pushAnyWork->add(ni);
+      }
     }
   }
 }
