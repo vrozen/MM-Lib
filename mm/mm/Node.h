@@ -143,6 +143,9 @@ namespace MM
     MM::BOOLEAN isSatisfied(MM::Instance * i,
                             MM::Transition * tr);
 
+    MM::BOOLEAN isSatisfiedAll(MM::Instance * i, MM::Transition * tr);
+    MM::BOOLEAN isSatisfiedAny(MM::Instance * i, MM::Transition * tr);
+
     virtual MM::VOID activateTriggerTargets(MM::Instance * i,
                                             MM::Machine * m);
     

@@ -453,6 +453,50 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
   }
   
   MM::BOOLEAN satisfied = MM_TRUE;
+  
+  MM::NodeBehavior::How how = behavior->getHow();
+  
+  if(how == MM::NodeBehavior::HOW_ANY)
+  {
+    satisfied = isSatisfiedAny(i, tr);
+  }
+  else
+  {
+    satisfied = isSatisfiedAll(i, tr);
+  }
+
+  return satisfied;
+}
+
+
+
+
+
+
+
+//checks if a node is "satisfied" such that its triggers activate other nodes
+//NOTE: call after a flow happens -> transition occurs!
+//NOTE: call after disabled nodes are calculated and stored in the instance!
+//FIXME: include aliases
+MM::BOOLEAN MM::Node::isSatisfiedAll(MM::Instance * i, MM::Transition * tr)
+{
+  //calculate which node's inputs are 'satisfied'
+  //this set is the set of node labels for which all flow edges they operate on are satisfied at the same time
+  
+  //satisfied nodes are
+  //1. pulling nodes
+  //either each inflow is satisfied and it has inflow
+  //or the node has no inflow and it is active (auto or activated)
+  //2. pushing nodes
+  //either each outflow is satisfied and it has outflow
+  //or the node has no outflow and it is active (auto or activated)
+  
+  if(i->isDisabled(this) == MM_TRUE)
+  {
+    return MM_FALSE; //diabled nodes are never satisfied
+  }
+  
+  MM::BOOLEAN satisfied = MM_TRUE;
   MM::NodeBehavior::Act act = behavior->getAct();
   
   MM::Vector<MM::Edge *> * nodeEdges = MM_NULL;
@@ -599,6 +643,138 @@ MM::BOOLEAN MM::Node::isSatisfied(MM::Instance * i, MM::Transition * tr)
   
   return satisfied;
 }
+
+
+
+
+//checks if a node is "satisfied" such that its triggers activate other nodes
+//NOTE: call after a flow happens -> transition occurs!
+//NOTE: call after disabled nodes are calculated and stored in the instance!
+//FIXME: include aliases
+MM::BOOLEAN MM::Node::isSatisfiedAny(MM::Instance * i, MM::Transition * tr)
+{
+  //any nodes to trigger when any flow is satisfied
+  
+  //satisfied nodes are
+  //1. pulling nodes
+  //either each inflow is satisfied and it has inflow
+  //or the node has no inflow and it is active (auto or activated)
+  //2. pushing nodes
+  //either each outflow is satisfied and it has outflow
+  //or the node has no outflow and it is active (auto or activated)
+  
+  if(i->isDisabled(this) == MM_TRUE)
+  {
+    return MM_FALSE; //diabled nodes are never satisfied
+  }
+  
+  MM::BOOLEAN satisfied = MM_FALSE;
+  MM::NodeBehavior::Act act = behavior->getAct();
+  
+  MM::Vector<MM::Edge *> * nodeEdges = MM_NULL;
+  
+  if(act == MM::NodeBehavior::ACT_PULL)
+  {
+    nodeEdges = input;
+  }
+  else //act == ACT_PUSH
+  {
+    nodeEdges = output;
+  }
+
+  if(nodeEdges->isEmpty() == MM_TRUE)
+  {
+    if(behavior->getWhen() == MM::NodeBehavior::WHEN_AUTO ||
+       i->isActive(this) == MM_TRUE)
+    {
+      //printf("SATISFIED Node %s of type %s, empty edge set and activated\n", nodeName, nodeType);
+      //fflush(stdout);
+      satisfied = MM_TRUE; 
+    }
+    else
+    {
+      //printf("UNSATISFIED Node %s of type %s, empty edge set and deactivated\n", nodeName, nodeType);
+      //fflush(stdout);
+      satisfied = MM_FALSE;
+    }
+  }
+  else
+  {
+    MM::Vector<Edge *>::Iterator iIter = nodeEdges->getIterator();
+    
+    //search for edges of this node
+    while(iIter.hasNext() == MM_TRUE)
+    {
+      MM::Edge * iEdge = iIter.getNext();
+      MM::Exp * iExp = iEdge->getExp();
+      MM::BOOLEAN found = MM_FALSE;
+
+      MM::CHAR * edgeName = MM_NULL;
+      if(iEdge->getName() != MM_NULL)
+      {
+        edgeName = iEdge->getName()->getBuffer();
+      }
+      
+      MM::Vector<Element *> * tElements = tr->getElements();
+      MM::Vector<Element *>::Iterator tIter = tElements->getIterator();
+
+      //in the flow events of the transition
+      while(tIter.hasNext() == MM_TRUE)
+      {
+        MM::Element * tElement = tIter.getNext();
+        if(tElement->instanceof(MM::T_FlowEvent) == MM_TRUE)
+        {
+          MM::FlowEvent * event = (MM::FlowEvent *) tElement;
+          MM::Instance * actInstance = event->getActInstance();
+          MM::Node * actNode = event->getActNode();
+          MM::Edge * actEdge = event->getActEdge();
+
+          //found iEdge
+          if(actInstance == i && actNode == this && actEdge == iEdge)
+          {
+            found = MM_TRUE;
+            MM::UINT32 flowValue = event->getAmount();
+            //FIXME: flowValue may not be the full flow value
+            //because two nodes can operate on the same edge            
+            MM::UINT32 evaluatedEdgeExp = i->getEvaluatedExp(iExp);
+            if(flowValue > 0)
+            {
+              //there exists a flow edge for which the flow greater than zero.
+              satisfied = MM_TRUE;
+              /*
+              printf("UNSATISFIED Node %s of type %s, Edge %s flow value %ld < evaluated value.\n",
+                     nodeName,
+                     nodeType,
+                     edgeName,
+                     flowValue,
+                     evaluatedEdgeExp);
+              fflush(stdout);
+              */
+              break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  /*if(satisfied == MM_TRUE)
+  {
+    printf("SATISFIED Node %s of type %s\n", nodeName, nodeType);
+    fflush(stdout);
+  }
+  else
+  {
+    printf("UNSATISFIED Node %s of type %s\n", nodeName, nodeType);
+    fflush(stdout);
+  }*/
+  
+  return satisfied;
+}
+
+
+
 
 MM::VOID MM::Node::activateTriggerTargets(MM::Instance * i, MM::Machine * m)
 {
