@@ -637,20 +637,22 @@ MM::VOID MM::PoolNodeBehavior::change(MM::Instance * i,
   if(delta >= 0)
   {
     add(i, m, n, delta);
+    i->setValue(n, at); //saves value between steps
     i->notifyObservers(i, (MM::VOID*)delta, MM::MSG_ADD_VALUE, n);
   }
   else
   {
 	  sub(i, m, n, (MM::UINT32)-delta);
+    i->setValue(n, at); //saves value between steps
     i->notifyObservers(i, (MM::VOID*)((MM::UINT32)-delta), MM::MSG_SUB_VALUE, n);
   }
+
 
   MM::PoolNodeInstance * poolNodeInstance = i->getPoolNodeInstance(n);
   if(poolNodeInstance != MM_NULL)
   {
-    printf("init pool node instance %s\n", n->getName()->getBuffer());
-    fflush(stdout);
-
+    //printf("init pool node instance %s\n", n->getName()->getBuffer());
+    //fflush(stdout);
     poolNodeInstance->deinitExp();
     poolNodeInstance->initExp(exp);
   }
