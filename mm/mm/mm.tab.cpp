@@ -2502,6 +2502,8 @@ MM::Program * MM_parseFile(MM::Machine * machine, const MM::CHAR * file)
     yyparse();
   }
 
+  fclose(yyin);
+
   return program;
 }
 
