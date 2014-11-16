@@ -424,14 +424,14 @@ MM::VOID MM::Evaluator::setEnabledNodes(MM::Instance * i, MM::Transition * tr)
         {
           if(node->isDisabled(i, this, m) == MM_TRUE)
           {
-            //MM::Disablement * event = m->createDisablement(i, node);
-            //tr->addElement(event);
+            MM::Disablement * event = m->createDisablement(i, node);
+            tr->addElement(event);
             i->setDisabled(node);
           }
           else
           {
-            //MM::Enablement * event = m->createEnablement(i, node);
-            //tr->addElement(event);
+            MM::Enablement * event = m->createEnablement(i, node);
+            tr->addElement(event);
           }
 		    }
       }
