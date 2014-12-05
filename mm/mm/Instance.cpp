@@ -1314,7 +1314,7 @@ MM::VOID MM::Instance::findNodeInstance(MM::VarExp * exp,
   if(element->instanceof(MM::T_Node) == MM_TRUE)
   {
     MM::Node * curNode = (MM::Node *) element;
-    MM::Instance * curInstance = this;
+    //MM::Instance * curInstance = this;
     findNodeInstance(curNode, rNode, rInstance);  
   }
 }
@@ -1396,7 +1396,7 @@ MM::VOID MM::Instance::notifyValues(MM::Machine * m)
     MM::Node * node = MM_NULL;
     MM::PoolNodeInstance * poolNodeInstance = valueIter.getNext(&node);
 
-    MM::Instance * i2 = poolNodeInstance->getInstance();
+    //MM::Instance * i2 = poolNodeInstance->getInstance();
 
     //if(i2 != this)
     //{
@@ -1496,8 +1496,9 @@ MM::VOID MM::Instance::toString(MM::String * buf, MM::UINT32 indent)
   while(valueIter.hasNext() == MM_TRUE)
   {
     MM::Node * node = MM_NULL;
-    MM::PoolNodeInstance * poolNodeInstance = valueIter.getNext(&node);
-   // MM::INT32 value = node->getResources(this, m);
+    //MM::PoolNodeInstance * poolNodeInstance =
+    valueIter.getNext(&node);
+    // MM::INT32 value = node->getResources(this, m);
 
     MM::INT32 value = 0;
 

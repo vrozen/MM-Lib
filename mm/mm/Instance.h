@@ -224,7 +224,7 @@ namespace MM
     MM::VOID sub(MM::Node * node, MM::Machine * m, MM::UINT32 amount);
     MM::VOID add(MM::Node * node, MM::Machine * m, MM::UINT32 amount);
         
-    MM::VOID MM::Instance::notifyValues(MM::Machine * m);
+    MM::VOID notifyValues(MM::Machine * m);
 
     MM::VOID findNodeInstance(MM::Node * node,
                               MM::Node ** rNode,

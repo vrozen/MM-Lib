@@ -49,11 +49,12 @@
   #define snprintf _snprintf
 #endif
 
+
 #if MM_DEBUG
   #define MM_printf(fmt, ...) \
         do { fprintf(stdout, fmt, __VA_ARGS__); fflush(stdout); } while (0)
 #else
-  #define MM_printf
+  #define MM_printf printf
 #endif
 
 namespace MM

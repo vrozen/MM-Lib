@@ -453,7 +453,7 @@ MM::VOID MM::Evaluator::notifyFlow(MM::Transition * tr)
     {
       MM::FlowEvent * event = (MM::FlowEvent *) element;
       
-	    MM::Instance * instance = event->getInstance();
+      //MM::Instance * instance = event->getInstance();
       MM::Instance * srcInstance = event->getSourceInstance();
       MM::Instance * tgtInstance = event->getTargetInstance();
       MM::Node * srcNode = event->getSourceNode();

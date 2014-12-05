@@ -271,7 +271,7 @@ MM::VOID MM::PoolNodeInstance::initExp(MM::Exp * exp)
           other = instance->findPoolNodeInstance(varExp);
           if(other != MM_NULL)
           {
-            printf("%lu poolNodeInstance %s observes poolNodeInstance %s %lu\n", this, poolNode->getName()->getBuffer(), other->getNode()->getName()->getBuffer(), other);
+              printf("%lu poolNodeInstance %s observes poolNodeInstance %s %lu\n", (MM::UINT32)this, poolNode->getName()->getBuffer(), other->getNode()->getName()->getBuffer(), (MM::UINT32) other);
             fflush(stdout);
             other->addObserver(this);
             observing->add(other);

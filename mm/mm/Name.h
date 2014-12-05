@@ -50,7 +50,7 @@ namespace MM
   {
   private:
 	static const MM::CHAR DOT_CHAR; /**> dot character */
-	MM::CHAR     * str;             /**> string buffer */
+	  MM::CHAR     * str;             /**> string buffer */
     MM::UINT32     len;             /**> string length */
     MM::Location * loc;             /**> location */
     MM::Name     * name;            /**> child name */

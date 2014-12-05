@@ -1170,14 +1170,14 @@ MM::Instance * MM::Machine::createInstance(MM::Instance * parent,
                                            MM::Element * decl)
 {
   MM::Instance * instance = new MM::Instance(parent, def, decl);
-  MM::Node * node = MM_NULL;
-  MM::NodeBehavior * behavior = MM_NULL;
-  MM::Vector<Element *> * elements = def->getElements();
-  MM::Vector<Element *>::Iterator eIter = elements->getIterator();
-  MM::PoolNodeBehavior * poolNodeBehavior = MM_NULL;
-  MM::UINT32 at = 0;
-  MM::Exp * exp = MM_NULL;
-  MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
+  //MM::Node * node = MM_NULL;
+  //MM::NodeBehavior * behavior = MM_NULL;
+  //MM::Vector<Element *> * elements = def->getElements();
+  //MM::Vector<Element *>::Iterator eIter = elements->getIterator();
+  //MM::PoolNodeBehavior * poolNodeBehavior = MM_NULL;
+  //MM::UINT32 at = 0;
+  //MM::Exp * exp = MM_NULL;
+  //MM::PoolNodeInstance * poolNodeInstance = MM_NULL;
 
   /*
   //create poolNodeInstances

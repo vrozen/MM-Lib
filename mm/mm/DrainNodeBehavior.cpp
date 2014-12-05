@@ -170,7 +170,7 @@ MM::VOID MM::DrainNodeBehavior::stepPullAll(MM::Node * tgtNode,
                                             MM::Machine * m,
                                             MM::Transition * tr)
 {
-  MM::Evaluator * evaluator = m->getEvaluator();
+  //MM::Evaluator * evaluator = m->getEvaluator();
   
   MM::Vector<MM::Element *> es;
   MM::Vector<MM::NodeWorkItem *>::Iterator workIter = work->getIterator();

@@ -703,7 +703,7 @@ MM::VOID MM::NodeBehavior::activateTriggerTargets(MM::Node * node,
                                                   MM::Instance * i,
                                                   MM::Machine * m)
 {
-  MM::Evaluator * e = m->getEvaluator();
+  //MM::Evaluator * e = m->getEvaluator();
   MM::Vector<MM::Edge *> * triggers = node->getTriggers();
   MM::Vector<MM::Edge *>::Iterator tIter = triggers->getIterator();
   while(tIter.hasNext() == MM_TRUE)

@@ -133,7 +133,7 @@ MM::BOOLEAN MM::Name::instanceof(MM::TID tid)
 
 MM::BOOLEAN MM::Name::equals(MM::Name * name)
 {
-  MM::CHAR * str = name->getBuffer();  
+  MM::CHAR * str = name->getBuffer();
   MM::UINT32 len = name->getLength();
   return equals(str, len);
 }

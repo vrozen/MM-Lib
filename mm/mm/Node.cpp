@@ -404,7 +404,7 @@ MM::BOOLEAN MM::Node::isDisabled(MM::Instance  * i,
     {
       resultExp->recycle(r);
       //FIXME: run-time type error!
-      r = MM_FALSE;
+      result = MM_FALSE;
       break;
     }
   }
@@ -706,7 +706,7 @@ MM::BOOLEAN MM::Node::isSatisfiedAny(MM::Instance * i, MM::Transition * tr)
     while(iIter.hasNext() == MM_TRUE)
     {
       MM::Edge * iEdge = iIter.getNext();
-      MM::Exp * iExp = iEdge->getExp();
+      //MM::Exp * iExp = iEdge->getExp();
       MM::BOOLEAN found = MM_FALSE;
 
       MM::CHAR * edgeName = MM_NULL;
@@ -736,7 +736,7 @@ MM::BOOLEAN MM::Node::isSatisfiedAny(MM::Instance * i, MM::Transition * tr)
             MM::UINT32 flowValue = event->getAmount();
             //FIXME: flowValue may not be the full flow value
             //because two nodes can operate on the same edge            
-            MM::UINT32 evaluatedEdgeExp = i->getEvaluatedExp(iExp);
+            //MM::UINT32 evaluatedEdgeExp = i->getEvaluatedExp(iExp);
             if(flowValue > 0)
             {
               //there exists a flow edge for which the flow greater than zero.

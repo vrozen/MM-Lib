@@ -63,7 +63,7 @@ namespace MM
     MM::TID getTypeId();
     MM::BOOLEAN instanceof(MM::TID tid);
     MM::Location * getLocation();
-	MM::MESSAGE getMessage();
+	  MM::MESSAGE getMessage();
     MM::VOID toString(MM::String * buf);
     MM::VOID toString(MM::String * buf, MM::UINT32 indent);
   };
