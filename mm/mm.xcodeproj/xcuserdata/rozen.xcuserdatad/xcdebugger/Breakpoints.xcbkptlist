@@ -109,7 +109,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "867"
          endingLineNumber = "867"
-         landmarkName = "MM::Reflector::init(MM::Definition * def, MM::Definition * def2)"
+         landmarkName = "MM::Reflector::init(MM::Definition * def, MM::FlowEdge * edge)"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -134,7 +134,9 @@
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "542"
-         endingLineNumber = "542">
+         endingLineNumber = "542"
+         landmarkName = "MM::Instance::update(MM::Observable * observable, MM::VOID * aux, MM::UINT32 message, MM::VOID * object)"
+         landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "No"
@@ -159,7 +161,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "1069"
          endingLineNumber = "1069"
-         landmarkName = "MM::Reflector::deinit(MM::Definition * def, MM::Node * node, MM::PoolNodeBehavior * behavior)"
+         landmarkName = "MM::Reflector::deinit(MM::Definition * def, MM::Node * node)"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -172,7 +174,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "594"
          endingLineNumber = "594"
-         landmarkName = "MM::Reflector::init(MM::Definition * def, MM::Node * node, MM::DrainNodeBehavior * behavior)"
+         landmarkName = "MM::Reflector::init(MM::Definition * def, MM::Node * node, MM::SourceNodeBehavior * behavior)"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -184,7 +186,9 @@
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "462"
-         endingLineNumber = "462">
+         endingLineNumber = "462"
+         landmarkName = "MM::Evaluator::notifyFlow(MM::Transition * tr)"
+         landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "No"
@@ -195,9 +199,7 @@
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "733"
-         endingLineNumber = "733"
-         landmarkName = "MM::Evaluator::setActiveNodes(MM::Instance * i, MM::Transition * tr)"
-         landmarkType = "5">
+         endingLineNumber = "733">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "No"
@@ -246,7 +248,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "178"
          endingLineNumber = "178"
-         landmarkName = "MM::Definition::findNode(MM::Name * name, MM::NodeBehavior::IO direction)"
+         landmarkName = "MM::Definition::instanceof(MM::TID tid)"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -258,9 +260,7 @@
          startingColumnNumber = "9223372036854775807"
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "202"
-         endingLineNumber = "202"
-         landmarkName = "MM::Reflector::merge(MM::Definition * root, MM::Element * element)"
-         landmarkType = "5">
+         endingLineNumber = "202">
       </FileBreakpoint>
       <FileBreakpoint
          shouldBeEnabled = "Yes"
@@ -272,7 +272,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "1420"
          endingLineNumber = "1420"
-         landmarkName = "MM::Reflector::replace(MM::Definition * def, MM::StateEdge * edge, MM::Element * element)"
+         landmarkName = "MM::Reflector::replace(MM::Definition * def, MM::FlowEdge * edge, MM::Element * element)"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -285,7 +285,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "1393"
          endingLineNumber = "1393"
-         landmarkName = "MM::Reflector::replace(MM::Definition * def, MM::Declaration * decl, MM::Element * element)"
+         landmarkName = "MM::Reflector::replace(MM::Definition * def, MM::Edge * edge, MM::Element * element)"
          landmarkType = "5">
       </FileBreakpoint>
       <FileBreakpoint
@@ -298,7 +298,7 @@
          endingColumnNumber = "9223372036854775807"
          startingLineNumber = "1426"
          endingLineNumber = "1426"
-         landmarkName = "MM::Reflector::replace(MM::Definition * def, MM::StateEdge * edge, MM::Element * element)"
+         landmarkName = "MM::Reflector::replace(MM::Definition * def, MM::FlowEdge * edge, MM::Element * element)"
          landmarkType = "5">
       </FileBreakpoint>
    </FileBreakpoints>

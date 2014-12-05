@@ -54,7 +54,6 @@
 		66D87CCD179C17A700E9022C /* Definition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66D87CCB179C17A400E9022C /* Definition.cpp */; };
 		66DD53F3183EA53600CBF698 /* ConverterNodeBehavior.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66DD53F1183EA53500CBF698 /* ConverterNodeBehavior.cpp */; };
 		66DD53F7183FCC9B00CBF698 /* Activation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66DD53F5183FCC9900CBF698 /* Activation.cpp */; };
-		66E0733516E747B000C65EE9 /* mm.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 66E0733416E747B000C65EE9 /* mm.1 */; };
 		66E751D318043AB8004389C6 /* InterfaceNode.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66E751D118043AB8004389C6 /* InterfaceNode.cpp */; };
 		66E751D91805D9E9004389C6 /* NodeBehavior.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66E751D71805D9E9004389C6 /* NodeBehavior.cpp */; };
 		66E751E0180ECB7C004389C6 /* Transformation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66E751DE180ECB61004389C6 /* Transformation.cpp */; };
@@ -64,6 +63,7 @@
 		66F86F3F17A70A010035874C /* Assertion.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66F86F3D17A70A000035874C /* Assertion.cpp */; };
 		66F86F4217AAAA230035874C /* Recyclable.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66F86F4017AAAA210035874C /* Recyclable.cpp */; };
 		66F86F4517AAAC3B0035874C /* Recycler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66F86F4317AAAC390035874C /* Recycler.cpp */; };
+		66F8EB4A1A32156400BFA5E1 /* PoolNodeInstance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66F8EB481A32156400BFA5E1 /* PoolNodeInstance.cpp */; };
 		66FB84FB17A415D6005F2392 /* Location.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66FB84F917A415D5005F2392 /* Location.cpp */; };
 		66FB84FE17A4419B005F2392 /* Operator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66FB84FC17A44199005F2392 /* Operator.cpp */; };
 		66FB850117A445E4005F2392 /* Name.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 66FB84FF17A445E1005F2392 /* Name.cpp */; };
@@ -77,7 +77,6 @@
 			dstPath = /usr/share/man/man1/;
 			dstSubfolderSpec = 0;
 			files = (
-				66E0733516E747B000C65EE9 /* mm.1 in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
@@ -184,7 +183,6 @@
 		66DD53F6183FCC9A00CBF698 /* Activation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Activation.h; sourceTree = "<group>"; };
 		66DED7B817E3480800852939 /* Map.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Map.h; sourceTree = "<group>"; };
 		66E0732F16E747B000C65EE9 /* mm */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = mm; sourceTree = BUILT_PRODUCTS_DIR; };
-		66E0733416E747B000C65EE9 /* mm.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = mm.1; sourceTree = "<group>"; };
 		66E751D118043AB8004389C6 /* InterfaceNode.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InterfaceNode.cpp; sourceTree = "<group>"; };
 		66E751D218043AB8004389C6 /* InterfaceNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InterfaceNode.h; sourceTree = "<group>"; };
 		66E751D71805D9E9004389C6 /* NodeBehavior.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = NodeBehavior.cpp; sourceTree = "<group>"; };
@@ -202,6 +200,8 @@
 		66F86F4117AAAA220035874C /* Recyclable.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Recyclable.h; sourceTree = "<group>"; };
 		66F86F4317AAAC390035874C /* Recycler.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Recycler.cpp; sourceTree = "<group>"; };
 		66F86F4417AAAC3A0035874C /* Recycler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Recycler.h; sourceTree = "<group>"; };
+		66F8EB481A32156400BFA5E1 /* PoolNodeInstance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PoolNodeInstance.cpp; sourceTree = "<group>"; };
+		66F8EB491A32156400BFA5E1 /* PoolNodeInstance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PoolNodeInstance.h; sourceTree = "<group>"; };
 		66FB84F917A415D5005F2392 /* Location.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Location.cpp; sourceTree = "<group>"; };
 		66FB84FA17A415D6005F2392 /* Location.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Location.h; sourceTree = "<group>"; };
 		66FB84FC17A44199005F2392 /* Operator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Operator.cpp; sourceTree = "<group>"; };
@@ -245,7 +245,6 @@
 				66E751D41805BADB004389C6 /* base */,
 				66E751D51805BD61004389C6 /* parser */,
 				66E751D61805BD81004389C6 /* model */,
-				66E0733416E747B000C65EE9 /* mm.1 */,
 				6690F73317F06979001EDFC8 /* mm.h */,
 				66D87C8717955D5800E9022C /* Machine.h */,
 				66D87C8617955D5800E9022C /* Machine.cpp */,
@@ -292,6 +291,8 @@
 		66E751D61805BD81004389C6 /* model */ = {
 			isa = PBXGroup;
 			children = (
+				66F8EB481A32156400BFA5E1 /* PoolNodeInstance.cpp */,
+				66F8EB491A32156400BFA5E1 /* PoolNodeInstance.h */,
 				6678603118FC08B400579005 /* Violation.cpp */,
 				6678603218FC08B400579005 /* Violation.h */,
 				6678602E18FC08A900579005 /* TriggerEvent.cpp */,
@@ -452,6 +453,7 @@
 				66A7122D178D73B800F71DC0 /* Node.cpp in Sources */,
 				66A71230178D848400F71DC0 /* Element.cpp in Sources */,
 				66A71236178D8F6A00F71DC0 /* Transition.cpp in Sources */,
+				66F8EB4A1A32156400BFA5E1 /* PoolNodeInstance.cpp in Sources */,
 				66A71249178DDE4700F71DC0 /* String.cpp in Sources */,
 				66A7124C178EADB700F71DC0 /* Exp.cpp in Sources */,
 				66A71255178EF92F00F71DC0 /* FlowEdge.cpp in Sources */,
